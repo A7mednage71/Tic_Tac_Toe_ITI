@@ -14,11 +14,14 @@ import java.io.IOException;
 
 
 public class MainApp extends Application {
+    
+
+
 
     @Override
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(
-            getClass().getResource("/com/mycompany/finalprojectclient/login.fxml")
+            getClass().getResource("/com/mycompany/finalprojectclient/Home.fxml")
         );
         Scene scene = new Scene(root);
         stage.setScene(scene);
