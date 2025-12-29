@@ -10,6 +10,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
 /**
@@ -25,6 +26,8 @@ public class PrimaryController implements Initializable {
     private Button stopServer;
     @FXML
     private VBox playersList;
+    @FXML
+    private TextField searchPlayerTextField;
 
     /**
      * Initializes the controller class.

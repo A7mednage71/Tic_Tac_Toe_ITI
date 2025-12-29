@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.gluonhq.charm.glisten.control.TextField?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -43,21 +43,154 @@
          </children>
       </StackPane>
    </top>
-   <left>
-      <VBox prefHeight="200.0" spacing="10.0" BorderPane.alignment="CENTER">
+   <padding>
+      <Insets bottom="5.0" left="10.0" right="10.0" />
+   </padding>
+   <opaqueInsets>
+      <Insets />
+   </opaqueInsets>
+   <center>
+      <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" spacing="50.0" BorderPane.alignment="CENTER">
          <children>
-            <HBox prefHeight="30.0">
+            <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" spacing="10.0" HBox.hgrow="ALWAYS">
                <children>
-                  <Label text="Players" />
-                  <Region prefHeight="200.0" prefWidth="50.0" />
-                  <TextField fx:id="searchPlayerTextField" promptText="Search..." />
-               </children>
-            </HBox>
-            <ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0">
-               <content>
-                  <VBox fx:id="playersList" prefHeight="200.0" prefWidth="100.0">
+                  <HBox maxWidth="1.7976931348623157E308" prefHeight="30.0">
                      <children>
-                        <HBox alignment="CENTER_LEFT" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 0 0 1 0;">
+                        <Label text="Players" />
+                        <Region prefHeight="200.0" prefWidth="50.0" />
+                        <TextField fx:id="searchPlayerTextField" maxWidth="1.7976931348623157E308" promptText="Search..." HBox.hgrow="ALWAYS" />
+                     </children>
+                  </HBox>
+                  <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+                     <content>
+                        <VBox fx:id="playersList" prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" prefHeight="40.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 0 0 1 0;">
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding>
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label text="Ahmed Nageh" />
+                                          <Label layoutX="10.0" layoutY="10.0" text="1024" />
+                                       </children>
+                                    </VBox>
+                                    <Region prefWidth="100.0" HBox.hgrow="ALWAYS" />
+                                    <Circle fill="#1eff00" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 0 0 1 0;">
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding>
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label text="Ashraf Sherif" />
+                                          <Label layoutX="10.0" layoutY="10.0" text="850" />
+                                       </children>
+                                    </VBox>
+                                    <Region prefWidth="100.0" HBox.hgrow="ALWAYS" />
+                                    <Circle fill="#1eff00" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 0 0 1 0;">
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding>
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label text="Shady Ramadan" />
+                                          <Label layoutX="10.0" layoutY="10.0" text="1024" />
+                                       </children>
+                                    </VBox>
+                                    <Region prefWidth="100.0" HBox.hgrow="ALWAYS" />
+                                    <Circle fill="WHITE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="65.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 0 0 1 0;">
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding>
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label text="Abd Elhamed Zyada" />
+                                          <Label layoutX="10.0" layoutY="10.0" text="1024" />
+                                       </children>
+                                    </VBox>
+                                    <Region prefWidth="100.0" HBox.hgrow="ALWAYS" />
+                                    <Circle fill="WHITE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="175.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 0 0 1 0;">
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding>
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label text="Abd Elhamed Zyada" />
+                                          <Label layoutX="10.0" layoutY="10.0" text="1024" />
+                                       </children>
+                                    </VBox>
+                                    <Region prefWidth="100.0" HBox.hgrow="ALWAYS" />
+                                    <Circle fill="WHITE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="230.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 0 0 1 0;">
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding>
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label text="Abd Elhamed Zyada" />
+                                          <Label layoutX="10.0" layoutY="10.0" text="1024" />
+                                       </children>
+                                    </VBox>
+                                    <Region prefWidth="100.0" HBox.hgrow="ALWAYS" />
+                                    <Circle fill="WHITE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </content>
+                  </ScrollPane>
+                  <HBox layoutX="10.0" layoutY="10.0" maxWidth="1.7976931348623157E308" prefHeight="10.0">
+                     <children>
+                        <Label prefHeight="10.0" text="8">
+                           <padding>
+                              <Insets right="10.0" />
+                           </padding>
+                        </Label>
+                        <Circle fill="#00ff51" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                        <Label text="5">
+                           <padding>
+                              <Insets right="10.0" />
+                           </padding>
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                        </Label>
+                        <Circle fill="WHITE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            <VBox maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+               <children>
+                  <HBox prefHeight="30.0">
+                     <children>
+                        <Label text="Development Team" />
+                        <Region prefHeight="200.0" prefWidth="50.0" />
+                     </children>
+                  </HBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 1 1 0 1;">
                            <padding>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </padding>
@@ -68,11 +201,9 @@
                                     <Label layoutX="10.0" layoutY="10.0" text="1024" />
                                  </children>
                               </VBox>
-                              <Region prefWidth="100.0" HBox.hgrow="ALWAYS" />
-                              <Circle fill="#1eff00" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
                            </children>
                         </HBox>
-                        <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 0 0 1 0;">
+                        <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" prefHeight="58.0" prefWidth="122.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 1 1 0 1;">
                            <padding>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </padding>
@@ -83,11 +214,9 @@
                                     <Label layoutX="10.0" layoutY="10.0" text="850" />
                                  </children>
                               </VBox>
-                              <Region prefWidth="100.0" HBox.hgrow="ALWAYS" />
-                              <Circle fill="#1eff00" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
                            </children>
                         </HBox>
-                        <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 0 0 1 0;">
+                        <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 1 1 0 1;">
                            <padding>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </padding>
@@ -98,11 +227,9 @@
                                     <Label layoutX="10.0" layoutY="10.0" text="1024" />
                                  </children>
                               </VBox>
-                              <Region prefWidth="100.0" HBox.hgrow="ALWAYS" />
-                              <Circle fill="WHITE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
                            </children>
                         </HBox>
-                        <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="65.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 0 0 1 0;">
+                        <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="65.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 1 1 1 1;">
                            <padding>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </padding>
@@ -113,117 +240,19 @@
                                     <Label layoutX="10.0" layoutY="10.0" text="1024" />
                                  </children>
                               </VBox>
-                              <Region prefWidth="100.0" HBox.hgrow="ALWAYS" />
-                              <Circle fill="WHITE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
                            </children>
                         </HBox>
                      </children>
                   </VBox>
-               </content>
-            </ScrollPane>
-            <HBox layoutX="10.0" layoutY="10.0" prefHeight="10.0">
-               <children>
-                  <Label prefHeight="10.0" text="8">
-                     <padding>
-                        <Insets right="10.0" />
-                     </padding>
-                  </Label>
-                  <Circle fill="#00ff51" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
-                  <Label text="5">
-                     <padding>
-                        <Insets right="10.0" />
-                     </padding>
-                     <HBox.margin>
-                        <Insets left="10.0" />
-                     </HBox.margin>
-                  </Label>
-                  <Circle fill="WHITE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
                </children>
-            </HBox>
-         </children>
-         <BorderPane.margin>
-            <Insets top="30.0" />
-         </BorderPane.margin>
-      </VBox>
-   </left>
-   <padding>
-      <Insets bottom="5.0" left="10.0" right="10.0" />
-   </padding>
-   <opaqueInsets>
-      <Insets />
-   </opaqueInsets>
-   <right>
-      <VBox BorderPane.alignment="CENTER">
-         <children>
-            <HBox prefHeight="30.0">
-               <children>
-                  <Label text="Development Team" />
-                  <Region prefHeight="200.0" prefWidth="50.0" />
-               </children>
-            </HBox>
-            <VBox prefHeight="200.0" prefWidth="100.0">
-               <children>
-                  <HBox alignment="CENTER_LEFT" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 1 1 0 1;">
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                     <children>
-                        <VBox>
-                           <children>
-                              <Label text="Ahmed Nageh" />
-                              <Label layoutX="10.0" layoutY="10.0" text="1024" />
-                           </children>
-                        </VBox>
-                     </children>
-                  </HBox>
-                  <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" prefHeight="58.0" prefWidth="122.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 1 1 0 1;">
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                     <children>
-                        <VBox>
-                           <children>
-                              <Label text="Ashraf Sherif" />
-                              <Label layoutX="10.0" layoutY="10.0" text="850" />
-                           </children>
-                        </VBox>
-                     </children>
-                  </HBox>
-                  <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 1 1 0 1;">
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                     <children>
-                        <VBox>
-                           <children>
-                              <Label text="Shady Ramadan" />
-                              <Label layoutX="10.0" layoutY="10.0" text="1024" />
-                           </children>
-                        </VBox>
-                     </children>
-                  </HBox>
-                  <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="65.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0" style="-fx-border-color: #504a4a; -fx-border-width: 1 1 1 1;">
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                     <children>
-                        <VBox>
-                           <children>
-                              <Label text="Abd Elhamed Zyada" />
-                              <Label layoutX="10.0" layoutY="10.0" text="1024" />
-                           </children>
-                        </VBox>
-                     </children>
-                  </HBox>
-               </children>
+               <padding>
+                  <Insets right="50.0" top="10.0" />
+               </padding>
             </VBox>
          </children>
-         <padding>
-            <Insets right="50.0" top="10.0" />
-         </padding>
          <BorderPane.margin>
-            <Insets top="20.0" />
+            <Insets bottom="10.0" top="20.0" />
          </BorderPane.margin>
-      </VBox>
-   </right>
+      </HBox>
+   </center>
 </BorderPane>
