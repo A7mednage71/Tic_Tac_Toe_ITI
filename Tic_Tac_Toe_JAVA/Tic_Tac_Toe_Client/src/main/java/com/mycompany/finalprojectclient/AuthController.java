@@ -9,15 +9,22 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 public class AuthController {
 
-    @FXML private TextField txtUser;
-    @FXML private TextField txtEmail;
-    @FXML private PasswordField txtPass;
+    private TextField txtUser;
+    private TextField txtEmail;
+    private PasswordField txtPass;
+    @FXML
+    private TextField usernameField;
+    @FXML
+    private PasswordField passwordField;
+    @FXML
+    private Button loginButton;
 
     private void switchScene(String fxml, ActionEvent e) throws Exception {
         Parent root = FXMLLoader.load(
@@ -42,7 +49,6 @@ public class AuthController {
         }
     }
 
-    @FXML
     public void login(ActionEvent e) {
         try {
             String res = send("LOGIN", txtEmail.getText(), txtPass.getText());
@@ -56,8 +62,24 @@ public class AuthController {
         }
     }
 
+    public void goRegister(ActionEvent e) throws Exception {
+        switchScene("register.fxml", e);
+    }
+
+    public void goLogin(ActionEvent e) throws Exception {
+        switchScene("login.fxml", e);
+    }
+
     @FXML
-    public void register(ActionEvent e) {
+    private void handleLogin(ActionEvent event) {
+    }
+
+    @FXML
+    private void handleForgotPassword(ActionEvent event) {
+    }
+
+    @FXML
+    private void handleSignUp(ActionEvent e) {
         try {
             String res = send("REGISTER", txtUser.getText(), txtEmail.getText(), txtPass.getText());
             if (res.equals("REGISTER_SUCCESS")) {
@@ -68,15 +90,5 @@ public class AuthController {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-    }
-
-    @FXML
-    public void goRegister(ActionEvent e) throws Exception {
-        switchScene("register.fxml", e);
-    }
-
-    @FXML
-    public void goLogin(ActionEvent e) throws Exception {
-        switchScene("login.fxml", e);
     }
 }

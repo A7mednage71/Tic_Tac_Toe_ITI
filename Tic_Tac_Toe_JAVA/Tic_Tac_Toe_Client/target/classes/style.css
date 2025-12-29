@@ -1,59 +1,80 @@
-/* Background el app */
-.root {
-    -fx-background-color: #3b3431;
-    -fx-alignment: center;
-    -fx-padding: 50;
+/* الخلفية العامة */
+.main-container {
+    -fx-background-color: #2D2727;
+    /* اللون البني الداكن جداً */
+    -fx-pref-width: 350;
+    -fx-pref-height: 550;
 }
 
-/* Title Text */
-.title-text {
-    -fx-font-family: "System Bold";
+/* العنوان الرئيسي */
+.title-label {
     -fx-font-size: 28px;
-    -fx-fill: #f5f2e9;
-}
-
-/* El box elly gowah el X wel O icons */
-.icon-container {
-    -fx-background-color: #2c2522;
-    -fx-background-radius: 15;
-    -fx-padding: 10;
-}
-
-/* El murabba'at el 5adra (X/O cells) */
-.icon-cell {
-    -fx-background-color: #6a8c3d;
-    -fx-background-radius: 5;
-    -fx-min-width: 45;
-    -fx-min-height: 45;
-    -fx-alignment: center;
-}
-
-.icon-text {
-    -fx-font-size: 30px;
     -fx-font-weight: bold;
-    -fx-fill: #f5f2e9;
+    -fx-text-fill: #E5E1DA;
 }
 
-/* El Buttons el kbeera */
-.main-button {
-    -fx-background-color: #6a8c3d;
-    -fx-text-fill: #f5f2e9;
+.title-text {
+    -fx-fill: #FFFFFF;
+    /* اللون الأبيض الصريح */
+    -fx-font-size: 42px;
+    /* تكبير الخط (كان 32) */
+    -fx-font-weight: bold;
+    -fx-font-family: "System";
+    /* أو أي خط تفضله */
+}
+
+.login-header {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #E5E1DA;
+}
+
+/* تصميم حقول الإدخال */
+.input-group {
+    -fx-background-color: #3D3636;
+    /* لون الحقل الداكن */
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.custom-text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #888888;
+    -fx-font-size: 14px;
+}
+
+/* إزالة البرواز عند الضغط على الحقل */
+.custom-text-field:focused {
+    -fx-focus-color: transparent;
+    -fx-text-box-border: transparent;
+}
+
+/* زر تسجيل الدخول */
+.login-button {
+    -fx-background-color: #5C7A33;
+    /* اللون الأخضر الزيتوني */
+    -fx-text-fill: white;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-background-radius: 8;
-    -fx-min-width: 250;
-    -fx-padding: 12;
+    -fx-padding: 10;
+    -fx-cursor: hand;
 }
 
-.main-button:hover {
-    -fx-background-color: #7da548;
+.login-button:hover {
+    -fx-background-color: #6D8B44;
 }
 
-/* Button el Settings el so3'ayar */
-.settings-button {
-    -fx-background-color: #6a8c3d;
-    -fx-text-fill: #f5f2e9;
-    -fx-font-size: 14px;
-    -fx-background-radius: 5;
-    -fx-padding: 5 15;
+/* الروابط */
+.forgot-link,
+.signup-link {
+    -fx-text-fill: #7FA04B;
+    -fx-underline: false;
+}
+
+.forgot-link:hover,
+.signup-link:hover {
+    -fx-text-fill: #99BC66;
 }

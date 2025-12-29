@@ -10,7 +10,6 @@ package com.mycompany.finalprojectclient;
  */
 public class AppLauncher {
     public static void main(String[] args) {
-        // ده هينادي على الـ MainApp بس من غير ما الـ JVM يحس بـ JavaFX في الأول
         MainApp.main(args);
     }
 }
