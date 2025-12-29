@@ -13,12 +13,12 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>25</maven.compiler.release>
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
         <exec.mainClass>com.mycompany.finalprojectserver.FinalprojectServer</exec.mainClass>
     </properties>
 
     <dependencies>
-        <!-- Apache Derby (Java DB) -->
         <dependency>
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
