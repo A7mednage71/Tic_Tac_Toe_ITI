@@ -1,12 +1,9 @@
-/* الخلفية العامة */
 .main-container {
     -fx-background-color: #2D2727;
-    /* اللون البني الداكن جداً */
     -fx-pref-width: 350;
     -fx-pref-height: 550;
 }
 
-/* العنوان الرئيسي */
 .title-label {
     -fx-font-size: 28px;
     -fx-font-weight: bold;
@@ -15,12 +12,9 @@
 
 .title-text {
     -fx-fill: #FFFFFF;
-    /* اللون الأبيض الصريح */
     -fx-font-size: 42px;
-    /* تكبير الخط (كان 32) */
     -fx-font-weight: bold;
     -fx-font-family: "System";
-    /* أو أي خط تفضله */
 }
 
 .login-header {
@@ -29,10 +23,8 @@
     -fx-text-fill: #E5E1DA;
 }
 
-/* تصميم حقول الإدخال */
 .input-group {
     -fx-background-color: #3D3636;
-    /* لون الحقل الداكن */
     -fx-background-radius: 8;
     -fx-padding: 8 12;
     -fx-alignment: CENTER_LEFT;
@@ -45,16 +37,13 @@
     -fx-font-size: 14px;
 }
 
-/* إزالة البرواز عند الضغط على الحقل */
 .custom-text-field:focused {
     -fx-focus-color: transparent;
     -fx-text-box-border: transparent;
 }
 
-/* زر تسجيل الدخول */
 .login-button {
     -fx-background-color: #5C7A33;
-    /* اللون الأخضر الزيتوني */
     -fx-text-fill: white;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
@@ -67,7 +56,6 @@
     -fx-background-color: #6D8B44;
 }
 
-/* الروابط */
 .forgot-link,
 .signup-link {
     -fx-text-fill: #7FA04B;

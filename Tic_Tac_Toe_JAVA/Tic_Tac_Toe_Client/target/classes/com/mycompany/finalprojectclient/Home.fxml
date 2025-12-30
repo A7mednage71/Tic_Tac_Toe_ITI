@@ -7,7 +7,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.geometry.Insets?>
 
-<VBox alignment="TOP_CENTER" spacing="30.0" stylesheets="/style.css" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.finalprojectclient.HomeController">
+<VBox alignment="TOP_CENTER" spacing="30.0" stylesheets="/home_screen_style.css" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.finalprojectclient.HomeController">
     <children>
         <Text styleClass="title-text" text="Tic Tac Toe">
             <VBox.margin>
