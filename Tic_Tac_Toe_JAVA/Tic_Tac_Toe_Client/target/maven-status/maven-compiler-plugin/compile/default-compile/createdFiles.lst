@@ -1,4 +1,5 @@
 com\mycompany\finalprojectclient\GameController.class
+com\mycompany\finalprojectclient\RegisterController.class
 module-info.class
 com\mycompany\finalprojectclient\AppLauncher.class
 com\mycompany\finalprojectclient\AuthController.class
