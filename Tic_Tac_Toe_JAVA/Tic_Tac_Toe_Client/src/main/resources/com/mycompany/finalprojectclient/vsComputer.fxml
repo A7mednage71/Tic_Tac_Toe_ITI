@@ -6,16 +6,24 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.text.Text?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.HBox?>
+
 
 <VBox alignment="TOP_CENTER"
       spacing="30.0"
       stylesheets="/home_screen_style.css"
       xmlns="http://javafx.com/javafx/13"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.mycompany.finalprojectclient.HomeController">
+      fx:controller="com.mycompany.finalprojectclient.VsComputerController">
+	  
 
     <children>
+	<HBox alignment="TOP_LEFT" maxWidth="Infinity">
+    <Button fx:id="backButton" onAction="#handleBack" text="← Back" 
+            style="-fx-background-color: #5C7A33; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 5;" />
+</HBox>
 
+	
         <Text styleClass="title-text" text="Tic Tac Toe">
             <VBox.margin>
                 <Insets bottom="10" top="20"/>
@@ -55,12 +63,14 @@
         <VBox alignment="CENTER" spacing="15.0">
             <children>
                 <Button styleClass="main-button"
-                        text="Play vs Computer"
-                        onAction="#playVsComputer"/>
-
+                        text="Easy"
+                        onAction="#playEasy"/>
                 <Button styleClass="main-button"
-                        text="Two Players"
-                        onAction="#twoPlayers"/>
+                        text="Medium"
+                        onAction="#playMedium"/>
+                <Button styleClass="main-button"
+                        text="Hard"
+                        onAction="#playHard"/>
             </children>
         </VBox>
 
