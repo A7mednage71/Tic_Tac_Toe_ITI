@@ -1,13 +1,15 @@
 package com.mycompany.finalprojectclient;
-import javafx.event.ActionEvent;
+
 import javafx.fxml.FXML;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
-public class HomeController{
+public class VsComputerController {
     private void switchScene(String fxml, ActionEvent e) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/com/mycompany/finalprojectclient/" + fxml));
         Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
@@ -16,23 +18,32 @@ public class HomeController{
     }
 
     @FXML
-    private void playVsComputer(ActionEvent event) {
-         try {
-            switchScene("vsComputer.fxml", event);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-      
+    private Button backButton;
+
+    @FXML
+    private void playEasy(ActionEvent event) {
+        System.out.println("Easy mode selected");
+       
     }
 
     @FXML
-    private void twoPlayers(ActionEvent event) {
+    private void playMedium(ActionEvent event) {
+        System.out.println("Medium mode selected");
+         
+    }
+
+    @FXML
+    private void playHard(ActionEvent event) {
+        System.out.println("Hard mode selected");
+        
+    }
+
+    @FXML
+    private void handleBack(ActionEvent event) {
          try {
-            switchScene("TicTacToeLobby.fxml", event);
+            switchScene("Home.fxml", event);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
-
-    
 }

@@ -1,3 +1,4 @@
+com\mycompany\finalprojectclient\TicTacToeLobbyController.class
 com\mycompany\finalprojectclient\AuthController.class
 com\mycompany\finalprojectclient\HomeController.class
 com\mycompany\finalprojectclient\MainApp.class
@@ -5,3 +6,4 @@ com\mycompany\finalprojectclient\GameController.class
 com\mycompany\finalprojectclient\RegisterController.class
 module-info.class
 com\mycompany\finalprojectclient\AppLauncher.class
+com\mycompany\finalprojectclient\VsComputerController.class
