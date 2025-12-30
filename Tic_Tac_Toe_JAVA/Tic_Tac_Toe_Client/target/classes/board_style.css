@@ -1,0 +1,68 @@
+.board-container {
+    -fx-background-color: #2D2727;
+}
+
+.title-text {
+    -fx-fill: #FFFFFF;
+    -fx-font-size: 42px;
+    -fx-font-weight: bold;
+    -fx-font-family: "System";
+    -fx-text-fill: white;
+}
+
+.turn-label {
+    -fx-font-size: 18px;
+    -fx-text-fill: #7FA04B;
+    -fx-font-weight: bold;
+}
+
+.game-grid-container {
+    -fx-background-color: #3D3636;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+}
+
+.cell-button-empty {
+    -fx-background-color: #E5E1DA;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.cell-button-x {
+    -fx-background-color: #5C7A33;
+    -fx-text-fill: white;
+    -fx-font-size: 40px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+}
+
+.cell-button-o {
+    -fx-background-color: #E5E1DA;
+    -fx-text-fill: #5C7A33;
+    -fx-font-size: 40px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+}
+
+.action-button {
+    -fx-background-color: #5C7A33;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+.player-name-label {
+    -fx-font-size: 16px;
+    -fx-text-fill: #FFFFFF; /* تغيير للأبيض */
+    -fx-font-weight: bold;
+}
+.score-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #FFFFFF; /* تغيير للأبيض */
+    -fx-opacity: 0.9;
+}
+.action-button:hover {
+    -fx-background-color: #6D8B44;
+}
