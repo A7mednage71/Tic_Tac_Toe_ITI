@@ -1,0 +1,75 @@
+.root {
+    -fx-background-color: #3b302a;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.label {
+    -fx-text-fill: #e8e2d2;
+}
+
+.button {
+    -fx-cursor: hand;
+    -fx-background-radius: 5;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+#startServer {
+    -fx-background-color: #6a8c3d;
+}
+
+#startServer:hover {
+    -fx-background-color: #7da548;
+}
+
+#stopServer {
+    -fx-background-color: #a64436;
+}
+
+.list-container {
+    -fx-background-color: #2d2522;
+    -fx-background-radius: 10;
+    -fx-padding: 15;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.text-field {
+    -fx-background-color: #241e1b;
+    -fx-text-fill: #e8e2d2;
+    -fx-background-radius: 15;
+    -fx-prompt-text-fill: #6d645e;
+    -fx-border-color: #4a403a;
+    -fx-border-radius: 15;
+}
+
+.player-row {
+    -fx-background-color: transparent;
+    -fx-border-color: #4a403a;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8;
+}
+
+.player-row:hover {
+    -fx-background-color: #352d29;
+}
+
+.invite-button {
+    -fx-background-color: #6a8c3d;
+    -fx-font-size: 11px;
+    -fx-background-radius: 15;
+    -fx-padding: 2 10;
+}
+
+#backButton {
+    -fx-background-color: #6a8c3d;
+    -fx-background-radius: 5;
+    -fx-min-width: 100;
+}
