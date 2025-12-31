@@ -1,5 +1,6 @@
 package com.mycompany.finalprojectclient;
 
+import com.mycompany.finalprojectclient.GameSession.Difficulty;
 import javafx.fxml.FXML;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
@@ -10,37 +11,51 @@ import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
 public class VsComputerController {
-    private void switchScene(String fxml, ActionEvent e) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/com/mycompany/finalprojectclient/" + fxml));
+   private void switchScene(String fxml, ActionEvent e) throws Exception {
+        Parent root = FXMLLoader.load(
+            getClass().getResource("/com/mycompany/finalprojectclient/" + fxml)
+        );
         Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
         stage.setScene(new Scene(root));
         stage.show();
     }
 
     @FXML
-    private Button backButton;
-
-    @FXML
     private void playEasy(ActionEvent event) {
-        System.out.println("Easy mode selected");
-       
+        try {
+            GameSession.vsComputer = true;
+            GameSession.difficulty = Difficulty.EASY;
+            switchScene("Board.fxml", event);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     @FXML
     private void playMedium(ActionEvent event) {
-        System.out.println("Medium mode selected");
-         
+        try {
+            GameSession.vsComputer = true;
+            GameSession.difficulty = Difficulty.MEDIUM;
+            switchScene("Board.fxml", event);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     @FXML
     private void playHard(ActionEvent event) {
-        System.out.println("Hard mode selected");
-        
+        try {
+            GameSession.vsComputer = true;
+            GameSession.difficulty = Difficulty.HARD;
+            switchScene("Board.fxml", event);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     @FXML
     private void handleBack(ActionEvent event) {
-         try {
+        try {
             switchScene("Home.fxml", event);
         } catch (Exception ex) {
             ex.printStackTrace();
