@@ -34,5 +34,14 @@ public class HomeController{
         }
     }
 
+    @FXML
+    private void gameHistory(ActionEvent event) {
+        try {
+            switchScene("game_history.fxml", event);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     
 }
