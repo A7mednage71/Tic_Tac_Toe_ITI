@@ -12,8 +12,8 @@ public class UserDAO {
 
     private UserDAO() {
         try {
-            String url = "jdbc:derby://localhost:1527/TicTacToeDB";
-            con = DriverManager.getConnection(url, "app", "app");
+            String url = "jdbc:derby://localhost:1527/Tic_Tac_Toe_DB";
+            con = DriverManager.getConnection(url, "root", "root");
             System.out.println("Connected to TicTacToeDB successfully");
         } catch (Exception e) {
             System.err.println("Failed to connect to database: " + e.getMessage());
