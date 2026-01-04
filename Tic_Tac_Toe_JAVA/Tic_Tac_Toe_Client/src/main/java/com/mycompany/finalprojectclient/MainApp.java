@@ -22,7 +22,7 @@ public class MainApp extends Application {
         );
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        stage.setTitle("Login");
+        stage.setTitle("Tic Tac Toe");
         stage.show();
     }
 

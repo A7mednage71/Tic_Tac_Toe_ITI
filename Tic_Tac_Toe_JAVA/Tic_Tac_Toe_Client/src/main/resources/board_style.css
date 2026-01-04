@@ -1,68 +1,145 @@
+
 .board-container {
     -fx-background-color: #2D2727;
 }
 
+
 .title-text {
-    -fx-fill: #FFFFFF;
-    -fx-font-size: 42px;
+    -fx-fill: white;
+    -fx-font-size: 32px;
     -fx-font-weight: bold;
     -fx-font-family: "System";
-    -fx-text-fill: white;
 }
 
-.turn-label {
-    -fx-font-size: 18px;
-    -fx-text-fill: #7FA04B;
+
+.back-arrow-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #5C7A33;
+    -fx-font-size: 28px;
     -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.back-arrow-button:hover {
+    -fx-text-fill: #E5E1DA;
+}
+
+
+.players-header-box {
+    -fx-background-color: rgba(61, 54, 54, 0.5);
+    -fx-padding: 10;
+    -fx-background-radius: 10;
+}
+
+.player-name-label {
+    -fx-font-size: 16px;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+}
+
+.score-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #7FA04B; 
 }
 
 .game-grid-container {
     -fx-background-color: #3D3636;
-    -fx-background-radius: 8;
-    -fx-padding: 10;
+    -fx-background-radius: 12;
+    -fx-padding: 15;
 }
 
 .cell-button-empty {
-    -fx-background-color: #E5E1DA;
-    -fx-background-radius: 8;
+    -fx-background-color: #4A4242;
+    -fx-background-radius: 10;
     -fx-cursor: hand;
+    -fx-transition: 0.3s;
 }
 
-.cell-button-x {
-    -fx-background-color: #5C7A33;
-    -fx-text-fill: white;
-    -fx-font-size: 40px;
-    -fx-font-weight: bold;
-    -fx-background-radius: 8;
+.cell-button-empty:hover {
+    -fx-background-color: #554D4D;
 }
 
-.cell-button-o {
-    -fx-background-color: #E5E1DA;
-    -fx-text-fill: #5C7A33;
+
+.cell-button-x, .cell-button-o {
+    -fx-background-color: #E5E1DA; 
+    -fx-text-fill: #3D3636;      
     -fx-font-size: 40px;
     -fx-font-weight: bold;
-    -fx-background-radius: 8;
+    -fx-background-radius: 10;
 }
+
+.winning-button {
+    -fx-background-color: #5C7A33 !important;
+    -fx-text-fill: white !important;   
+}       
 
 .action-button {
     -fx-background-color: #5C7A33;
     -fx-text-fill: white;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-background-radius: 8;
-    -fx-padding: 10 20;
+    -fx-background-radius: 20;
+    -fx-padding: 10 25;
     -fx-cursor: hand;
+}
+
+.action-button:hover {
+    -fx-background-color: #6D8B44;
 }
 .player-name-label {
     -fx-font-size: 16px;
-    -fx-text-fill: #FFFFFF; /* تغيير للأبيض */
+    -fx-text-fill: #E5E1DA; 
     -fx-font-weight: bold;
 }
-.score-label {
-    -fx-font-size: 13px;
-    -fx-text-fill: #FFFFFF; /* تغيير للأبيض */
-    -fx-opacity: 0.9;
+.cell-button-empty:hover {
+    -fx-background-color: #554D4D;
+    -fx-effect: dropshadow(three-pass-box, #7FA04B, 15, 0.5, 0, 0); /* ضوء أخضر خفيف */
+    -fx-cursor: hand;
 }
-.action-button:hover {
-    -fx-background-color: #6D8B44;
+
+.cell-button-x, .cell-button-o {
+    -fx-background-color: #4A4242;
+    -fx-text-fill: #E5E1DA;
+    -fx-font-size: 40px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-effect: inner-shadow(three-pass-box, rgba(255,255,255,0.2), 10, 0, 0, 0);
+}
+
+.winning-button {
+    -fx-background-color: #5C7A33 !important;
+    -fx-text-fill: white !important;
+    -fx-effect: dropshadow(gaussian, #BDFF6B, 20, 0.5, 0, 0);
+}
+
+
+.game-grid-container {
+    -fx-background-color: #3D3636;
+    -fx-background-radius: 12;
+    -fx-padding: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 20, 0, 0, 10);
+}
+.pulse-effect {
+    -fx-background-color: #FFFFFF !important; 
+    -fx-effect: dropshadow(three-pass-box, white, 30, 0.5, 0, 0);
+}
+
+
+
+.cell-button-x, .cell-button-o {
+    -fx-font-size: 5em; 
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-content-display: center;
+}
+
+
+.game-grid-container {
+    -fx-background-color: #3D3636;
+    -fx-background-radius: 15;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 20, 0, 0, 0);
+}
+.cell-button-x, .cell-button-o {
+    -fx-font-size: 40px;
 }
