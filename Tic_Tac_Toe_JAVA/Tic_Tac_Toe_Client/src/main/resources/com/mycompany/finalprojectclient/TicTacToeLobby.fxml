@@ -13,7 +13,7 @@
             style="-fx-background-color: #2D2926;"
             xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.mycompany.finalprojectclient.TicTacToeLobbyController">
+            fx:controller="com.mycompany.finalprojectclient.controllers.TicTacToeLobbyController">
 
     <children>
 

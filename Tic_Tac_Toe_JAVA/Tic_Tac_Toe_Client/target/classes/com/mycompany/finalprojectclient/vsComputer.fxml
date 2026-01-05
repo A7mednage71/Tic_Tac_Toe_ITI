@@ -12,7 +12,7 @@
             stylesheets="/home_screen_style.css" 
             xmlns="http://javafx.com/javafx/13" 
             xmlns:fx="http://javafx.com/fxml/1" 
-            fx:controller="com.mycompany.finalprojectclient.VsComputerController">
+            fx:controller="com.mycompany.finalprojectclient.controllers.VsComputerController">
     
     <children>
         <VBox alignment="TOP_CENTER" 

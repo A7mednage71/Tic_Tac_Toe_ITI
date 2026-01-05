@@ -18,7 +18,7 @@
             stylesheets="game_history_style.css"
             xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.mycompany.finalprojectclient.GameHistoryController">
+            fx:controller="com.mycompany.finalprojectclient.controllers.GameHistoryController">
 
     
     <top>
