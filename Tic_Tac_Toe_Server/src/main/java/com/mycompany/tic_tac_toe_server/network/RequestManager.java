@@ -1,7 +1,10 @@
-package com.mycompany.tic_tac_toe_server;
+package com.mycompany.tic_tac_toe_server.network;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+
+import com.mycompany.tic_tac_toe_server.database.UserDAO;
+import com.mycompany.tic_tac_toe_server.models.RequestData;
 
 public class RequestManager {
 

@@ -1,4 +1,4 @@
-package com.mycompany.tic_tac_toe_server;
+package com.mycompany.tic_tac_toe_server.database;
 
 public final class DatabaseConstants {
 
@@ -17,6 +17,6 @@ public final class DatabaseConstants {
     // ==========================================================
     public static final String CHECK_USER_QUERY = "SELECT USERNAME FROM APP.USERS WHERE USERNAME = ?";
     public static final String REGISTER_USER_QUERY = "INSERT INTO APP.USERS(USERNAME, PASSWORD) VALUES (?, ?)";
-    //   login with Status='Active'
+    // login with Status='Active'
     public static final String LOGIN_USER_QUERY = "SELECT * FROM APP.USERS WHERE USERNAME=? AND PASSWORD=? AND STATUS='Active'";
 }
