@@ -71,7 +71,7 @@ public class ClientHandler extends Thread {
         ServerThread.onlineUsers.remove(username);
         
      
-        UserDAO.getInstance().updateUserStatus(username, "disactive");
+        UserDAO.getInstance().updateUserStatus(username, "Disactive");
         
         System.out.println("User " + username + " is now disactive in DB.");
     }

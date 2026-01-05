@@ -1,5 +1,6 @@
 package com.mycompany.finalprojectclient.controllers;
 
+import com.mycompany.finalprojectclient.network.ServerConnection;
 import com.mycompany.finalprojectclient.utils.AppConstants;
 import com.mycompany.finalprojectclient.utils.NavigationManager;
 import javafx.fxml.FXML;
@@ -25,9 +26,20 @@ public class TicTacToeLobbyController implements Initializable {
     @FXML
     private void handleBack(ActionEvent event) {
         try {
+            closeConnection();
             NavigationManager.switchScene(event, AppConstants.PATH_HOME);
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    private void closeConnection() {
+        try {
+            ServerConnection.getInstance().disconnect();
+            System.out.println("Connection closed from login screen");
+        } catch (Exception e) {
+            System.err.println("Error closing connection: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

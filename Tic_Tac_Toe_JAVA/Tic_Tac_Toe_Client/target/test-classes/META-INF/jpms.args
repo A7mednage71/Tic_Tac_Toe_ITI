@@ -1,4 +1,0 @@
---patch-module
-com.mycompany.finalprojectclient=_
---add-reads
-com.mycompany.finalprojectclient=ALL-UNNAMED
