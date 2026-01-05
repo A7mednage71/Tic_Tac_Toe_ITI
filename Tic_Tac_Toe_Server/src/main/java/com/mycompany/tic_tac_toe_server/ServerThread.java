@@ -1,37 +1,50 @@
 package com.mycompany.tic_tac_toe_server;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
+//  act as security officer
 public class ServerThread extends Thread {
 
     private static final int PORT = 5002;
-    private volatile boolean running = true;
+    private ServerSocket serverSocket;
 
     @Override
     public void run() {
         try {
-            ServerSocket serverSocket = new ServerSocket(PORT);
+            serverSocket = new ServerSocket(PORT);
             System.out.println("Server started on port " + PORT);
             System.out.println("Waiting for clients...");
 
-            while (running) {
-                Socket socket = serverSocket.accept();
-                System.out.println("New client connected: " + socket.getInetAddress());
-                new ClientHandler(socket).start();
+            while (!serverSocket.isClosed()) {
+                try {
+                    Socket socket = serverSocket.accept();
+                    System.out.println("New client connected: " + socket.getInetAddress());
+                    // act as Customer Service Employee
+                    new ClientHandler(socket).start();
+                } catch (SocketException e) {
+                    System.out.println("Server socket closed via Stop button.");
+                    break;
+                }
             }
 
-            serverSocket.close();
-        } catch (Exception e) {
-            if (running) {
-                System.err.println("Server error: " + e.getMessage());
-                e.printStackTrace();
-            }
+        } catch (IOException e) {
+            System.err.println("Server Error: " + e.getMessage());
+        } finally {
+            stopServer();
         }
     }
 
     public void stopServer() {
-        running = false;
-        System.out.println("Server stopping...");
+        try {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                serverSocket.close();
+            }
+            System.out.println("Server stopped.");
+        } catch (IOException e) {
+            System.err.println("Error stopping server: " + e.getMessage());
+        }
     }
 }

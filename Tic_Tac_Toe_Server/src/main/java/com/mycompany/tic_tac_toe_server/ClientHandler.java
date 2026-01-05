@@ -1,13 +1,20 @@
 package com.mycompany.tic_tac_toe_server;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 
 public class ClientHandler extends Thread {
-    Socket socket;
-    DataInputStream dis;
-    DataOutputStream dos;
+
+    private final Socket socket;
+    private DataInputStream dis;
+    private DataOutputStream dos;
+    private boolean isRunning = true;
+    private final Gson gson = new Gson();
+    private RequestManager requestManager;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -19,45 +26,44 @@ public class ClientHandler extends Thread {
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
 
-            while (true) {
-                String action = dis.readUTF();
-                System.out.println("Received action: " + action);
+            //handel ِAll Requests are here
+            requestManager = new RequestManager(dos, this);
 
-                if (action.equals("REGISTER")) {
-                    String username = dis.readUTF();
-                    String password = dis.readUTF();
-                    System.out.println("Registration attempt for: " + username);
-                    boolean success = UserDAO.getInstance().register(username, password);
-                    dos.writeUTF(success ? "REGISTER_SUCCESS" : "REGISTER_FAIL");
-                    dos.flush();
-                    System.out.println("Sent response: " + (success ? "REGISTER_SUCCESS" : "REGISTER_FAIL"));
-                }
-
-                if (action.equals("LOGIN")) {
-                    String username = dis.readUTF();
-                    String password = dis.readUTF();
-                    System.out.println("Login attempt for: " + username);
-                    boolean success = UserDAO.getInstance().login(username, password);
-                    dos.writeUTF(success ? "LOGIN_SUCCESS" : "LOGIN_FAIL");
-                    dos.flush();
-                    System.out.println("Sent response: " + (success ? "LOGIN_SUCCESS" : "LOGIN_FAIL"));
-                }
-
-                if (action.equals("DISCONNECT")) {
-                    System.out.println("Client requested disconnect");
-                    break;
+            while (isRunning) {
+                String jsonRequest = dis.readUTF();
+                System.out.println("Received JSON: " + jsonRequest);
+                try {
+                    RequestData request = gson.fromJson(jsonRequest, RequestData.class);
+                    if (request.key != null) {
+                        requestManager.processRequest(request);
+                    }
+                } catch (JsonSyntaxException e) {
+                    System.err.println("Wrong JSON format");
                 }
             }
 
-        } catch (Exception e) {
-            System.err.println("Error handling client: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Client disconnected: " + e.getMessage());
         } finally {
-            try {
-                socket.close();
-                System.out.println("Client disconnected");
-            } catch (Exception e) {
-                e.printStackTrace();
+            closeConnection();
+        }
+    }
+
+    public void closeConnection() {
+        isRunning = false;
+        try {
+            if (dis != null) {
+                dis.close();
             }
+            if (dos != null) {
+                dos.close();
+            }
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+            }
+            System.out.println("Connection closed.");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

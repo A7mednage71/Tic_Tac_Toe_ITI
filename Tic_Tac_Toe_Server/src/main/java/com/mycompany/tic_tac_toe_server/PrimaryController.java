@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/javafx/FXMLController.java to edit this template
- */
 package com.mycompany.tic_tac_toe_server;
 
 import java.net.URL;
@@ -15,11 +11,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
-/**
- * FXML Controller class
- *
- * @author Hp
- */
 public class PrimaryController implements Initializable {
 
     @FXML
@@ -60,7 +51,7 @@ public class PrimaryController implements Initializable {
             startServer.setDisable(true);
             stopServer.setDisable(false);
 
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Server started on port 5001");
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Server started");
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Error", "Failed to start server");
             e.printStackTrace();
@@ -88,4 +79,3 @@ public class PrimaryController implements Initializable {
         alert.showAndWait();
     }
 }
-

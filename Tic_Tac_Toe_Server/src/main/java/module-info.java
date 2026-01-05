@@ -4,8 +4,8 @@ module com.mycompany.tic_tac_toe_server {
     requires java.base;
     requires java.sql;
     requires java.desktop;
-
-    opens com.mycompany.tic_tac_toe_server to javafx.fxml;
-
+    requires com.google.gson;
+    
+    opens com.mycompany.tic_tac_toe_server to javafx.fxml, com.google.gson;
     exports com.mycompany.tic_tac_toe_server;
 }

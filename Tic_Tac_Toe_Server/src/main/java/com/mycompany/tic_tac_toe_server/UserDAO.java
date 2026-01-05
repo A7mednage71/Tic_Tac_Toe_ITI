@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class UserDAO {
 
@@ -12,12 +13,15 @@ public class UserDAO {
 
     private UserDAO() {
         try {
-            String url = "jdbc:derby://localhost:1527/Tic_Tac_Toe_DB";
-            con = DriverManager.getConnection(url, "root", "root");
-            System.out.println("Connected to TicTacToeDB successfully");
-        } catch (Exception e) {
+            con = DriverManager.getConnection(
+                    DatabaseConstants.DB_URL,
+                    DatabaseConstants.DB_USER,
+                    DatabaseConstants.DB_PASSWORD
+            );
+
+            System.out.println("Connected to Tic_Tac_Toe_DB successfully");
+        } catch (SQLException e) {
             System.err.println("Failed to connect to database: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -32,60 +36,70 @@ public class UserDAO {
         return con;
     }
 
+    // ===================== Register Function =================================
     public boolean register(String username, String password) {
         if (con == null) {
-            System.err.println("Database connection is null");
+            System.err.println("Registration failed: No database connection.");
             return false;
         }
 
         try {
-            PreparedStatement checkPs = con.prepareStatement(
-                    "SELECT * FROM APP.USERS WHERE USERNAME=?");
-            checkPs.setString(1, username);
-            ResultSet checkRs = checkPs.executeQuery();
-
-            if (checkRs.next()) {
-                System.out.println("Username already exists: " + username);
+            if (isUserExists(username)) {
+                System.out.println("Username '" + username + "' is already taken.");
                 return false;
             }
 
-            PreparedStatement ps = con.prepareStatement(
-                    "INSERT INTO APP.USERS(USERNAME, PASSWORD) VALUES (?, ?)");
-            ps.setString(1, username);
-            ps.setString(2, password);
-            ps.executeUpdate();
-            System.out.println("User registered successfully: " + username);
-            return true;
-        } catch (Exception e) {
-            System.err.println("Registration error: " + e.getMessage());
+            try (PreparedStatement ps = con.prepareStatement(DatabaseConstants.REGISTER_USER_QUERY)) {
+                ps.setString(1, username);
+                ps.setString(2, password);
+                ps.executeUpdate();
+
+                System.out.println("User registered successfully: " + username);
+                return true;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Registration failed: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
+    // ===================== Check UserName availabilty Function ===============
+    private boolean isUserExists(String username) throws SQLException {
+        try (PreparedStatement checkPs = con.prepareStatement(DatabaseConstants.CHECK_USER_QUERY)) {
+            checkPs.setString(1, username);
+            try (ResultSet rs = checkPs.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    // ===================== Login Function =====================
     public boolean login(String username, String password) {
         if (con == null) {
-            System.err.println("Database connection is null");
+            System.err.println("Login failed: No database connection.");
             return false;
         }
 
-        try {
-            PreparedStatement ps = con.prepareStatement(
-                    "SELECT * FROM APP.USERS WHERE USERNAME=? AND PASSWORD=? AND STATUS='Active'");
+        try (PreparedStatement ps = con.prepareStatement(DatabaseConstants.LOGIN_USER_QUERY)) {
+
             ps.setString(1, username);
             ps.setString(2, password);
-            ResultSet rs = ps.executeQuery();
-            boolean success = rs.next();
 
-            if (success) {
-                System.out.println("Login successful for user: " + username);
-            } else {
-                System.out.println("Login failed for user: " + username);
+            try (ResultSet rs = ps.executeQuery()) {
+                boolean success = rs.next();
+
+                if (success) {
+                    System.out.println("Login successful for user: " + username);
+                } else {
+                    System.out.println("Login failed for user: " + username);
+                }
+                return success;
             }
 
-            return success;
         } catch (Exception e) {
-            System.err.println("Login error: " + e.getMessage());
+            System.err.println("Login failed: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
