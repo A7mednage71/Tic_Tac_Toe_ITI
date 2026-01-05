@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Text?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane prefHeight="600.0" prefWidth="400.0" 
+            stylesheets="/home_screen_style.css" 
+            xmlns="http://javafx.com/javafx/13" 
+            xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="com.mycompany.finalprojectclient.controllers.Online_offline">
+    
+    <children>
+        <VBox alignment="TOP_CENTER" 
+              spacing="30.0" 
+              AnchorPane.bottomAnchor="0.0" 
+              AnchorPane.leftAnchor="0.0" 
+              AnchorPane.rightAnchor="0.0" 
+              AnchorPane.topAnchor="0.0">
+            
+            <children>
+                <Text styleClass="title-text" text="Tic Tac Toe">
+                    <VBox.margin>
+                        <Insets bottom="10" top="20"/>
+                    </VBox.margin>
+                </Text>
+
+                <StackPane maxWidth="-Infinity">
+                    <children>
+                        <GridPane hgap="5" vgap="5" styleClass="icon-container">
+                            <children>
+                                <StackPane styleClass="icon-cell" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                    <Text styleClass="icon-text" text="X"/>
+                                </StackPane>
+                                <StackPane styleClass="icon-cell" style="-fx-background-color: transparent;" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                    <Text styleClass="icon-text" style="-fx-fill: #cbc0ad; -fx-stroke: #cbc0ad; -fx-stroke-width: 2;" text="O"/>
+                                </StackPane>
+                                <StackPane styleClass="icon-cell" style="-fx-background-color: transparent;" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                    <Text styleClass="icon-text" style="-fx-fill: #6a8c3d; -fx-stroke: #6a8c3d; -fx-stroke-width: 2;" text="O"/>
+                                </StackPane>
+                                <StackPane styleClass="icon-cell" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <Text styleClass="icon-text" text="X"/>
+                                </StackPane>
+                            </children>
+                        </GridPane>
+                    </children>
+                </StackPane>
+
+                <VBox alignment="CENTER" spacing="15.0">
+                    <children>
+                        <Button fx:id="onlineButton" styleClass="main-button" text="Online Multiplayer" onAction="#handleOnlinePlay"/>
+                        <Button fx:id="offlineButton" styleClass="main-button" text="Offline Modes" onAction="#handleOfflinePlay"/>
+                        <Button fx:id="historyButton" styleClass="main-button" text="Game History" onAction="#gameHistory"/>
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+
+        <Button text="←" 
+                fx:id="backButton"
+                onAction="#handleBack"
+                style="-fx-background-color: #4a4a4a; -fx-text-fill: white; -fx-font-size: 20px; -fx-padding: 5 15 5 15; -fx-background-radius: 20; -fx-cursor: hand;"
+                AnchorPane.leftAnchor="15.0" 
+                AnchorPane.topAnchor="15.0" />
+    </children>
+</AnchorPane>

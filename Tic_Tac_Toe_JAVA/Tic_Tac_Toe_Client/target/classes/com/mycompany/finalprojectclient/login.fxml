@@ -8,7 +8,7 @@
 <StackPane fx:id="rootStackPane" stylesheets="/style.css" 
            xmlns="http://javafx.com/javafx/13" 
            xmlns:fx="http://javafx.com/fxml/1" 
-           fx:controller="com.mycompany.finalprojectclient.AuthController">
+           fx:controller="com.mycompany.finalprojectclient.controllers.LoginController">
     
     <children>
         <VBox alignment="CENTER" spacing="20.0" styleClass="main-container">

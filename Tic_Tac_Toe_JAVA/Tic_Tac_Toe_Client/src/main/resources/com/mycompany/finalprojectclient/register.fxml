@@ -5,56 +5,70 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.geometry.Insets?>
 
-<VBox alignment="CENTER" spacing="20.0" styleClass="main-container" stylesheets="/style.css" 
-      xmlns="http://javafx.com/javafx/13" 
-      xmlns:fx="http://javafx.com/fxml/1" 
-      fx:controller="com.mycompany.finalprojectclient.RegisterController">
-	  <HBox alignment="TOP_LEFT" maxWidth="Infinity">
-    <Button fx:id="backButton" onAction="#handleBack" text="← Back" 
-            style="-fx-background-color: #5C7A33; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 5;" />
-</HBox>
-    
-    <padding>
-        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
-    </padding>
+<StackPane xmlns="http://javafx.com/javafx/13" 
+           xmlns:fx="http://javafx.com/fxml/1" 
+           fx:controller="com.mycompany.finalprojectclient.controllers.RegisterController"
+           stylesheets="@/style.css">
 
-    <Text styleClass="title-text" text="Tic Tac Toe" />
-    
-    <StackPane maxWidth="-Infinity">
-        <GridPane hgap="5" vgap="5" alignment="CENTER">
-            <children>
-                <StackPane styleClass="icon-cell" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-background-color: #5C7A33; -fx-pref-width: 40; -fx-pref-height: 40; -fx-background-radius: 5;">
-                    <Text styleClass="icon-text" text="X" style="-fx-fill: white; -fx-font-weight: bold;" />
-                </StackPane>
-                <StackPane GridPane.columnIndex="1" GridPane.rowIndex="0" style="-fx-pref-width: 40; -fx-pref-height: 40;">
-                    <Text text="O" style="-fx-fill: #cbc0ad; -fx-font-size: 20; -fx-stroke: #cbc0ad; -fx-stroke-width: 1;" />
-                </StackPane>
-                <StackPane GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-pref-width: 40; -fx-pref-height: 40;">
-                    <Text text="O" style="-fx-fill: #6a8c3d; -fx-font-size: 20; -fx-stroke: #6a8c3d; -fx-stroke-width: 1;" />
-                </StackPane>
-                <StackPane styleClass="icon-cell" GridPane.columnIndex="1" GridPane.rowIndex="1" style="-fx-background-color: #5C7A33; -fx-pref-width: 40; -fx-pref-height: 40; -fx-background-radius: 5;">
-                    <Text styleClass="icon-text" text="X" style="-fx-fill: white; -fx-font-weight: bold;" />
-                </StackPane>
-            </children>
-        </GridPane>
+    <VBox alignment="CENTER" spacing="20.0" styleClass="main-container">
+        
+        <HBox alignment="TOP_LEFT" maxWidth="Infinity">
+            <Button fx:id="backButton" onAction="#handleBack" text="← Back" 
+                    style="-fx-background-color: #5C7A33; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 5;" />
+        </HBox>
+        
+        <padding>
+            <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+        </padding>
+
+        <Text styleClass="title-text" text="Tic Tac Toe" />
+        
+        <StackPane maxWidth="-Infinity">
+            <GridPane hgap="5" vgap="5" alignment="CENTER">
+                <children>
+                    <StackPane styleClass="icon-cell" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-background-color: #5C7A33; -fx-pref-width: 40; -fx-pref-height: 40; -fx-background-radius: 5;">
+                        <Text styleClass="icon-text" text="X" style="-fx-fill: white; -fx-font-weight: bold;" />
+                    </StackPane>
+                    <StackPane GridPane.columnIndex="1" GridPane.rowIndex="0" style="-fx-pref-width: 40; -fx-pref-height: 40;">
+                        <Text text="O" style="-fx-fill: #cbc0ad; -fx-font-size: 20; -fx-stroke: #cbc0ad; -fx-stroke-width: 1;" />
+                    </StackPane>
+                    <StackPane GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-pref-width: 40; -fx-pref-height: 40;">
+                        <Text text="O" style="-fx-fill: #6a8c3d; -fx-font-size: 20; -fx-stroke: #6a8c3d; -fx-stroke-width: 1;" />
+                    </StackPane>
+                    <StackPane styleClass="icon-cell" GridPane.columnIndex="1" GridPane.rowIndex="1" style="-fx-background-color: #5C7A33; -fx-pref-width: 40; -fx-pref-height: 40; -fx-background-radius: 5;">
+                        <Text styleClass="icon-text" text="X" style="-fx-fill: white; -fx-font-weight: bold;" />
+                    </StackPane>
+                </children>
+            </GridPane>
+        </StackPane>
+
+        <Label text="Register" styleClass="login-header" />
+
+        <HBox styleClass="input-group">
+            <TextField fx:id="usernameField" promptText="Username" HBox.hgrow="ALWAYS" styleClass="custom-text-field" />
+        </HBox>
+
+        <HBox styleClass="input-group">
+            <PasswordField fx:id="passwordField" promptText="Password" HBox.hgrow="ALWAYS" styleClass="custom-text-field" />
+        </HBox>
+        <HBox styleClass="input-group">
+            <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" HBox.hgrow="ALWAYS" styleClass="custom-text-field" />
+        </HBox>
+
+        <Button fx:id="registerButton" onAction="#handleRegister" text="Register" maxWidth="Infinity" styleClass="login-button" />
+
+    </VBox>
+
+    <StackPane fx:id="customAlertOverlay" managed="false" visible="false" style="-fx-background-color: rgba(0,0,0,0.85);">
+        <children>
+            <VBox fx:id="alertBox" alignment="CENTER" maxHeight="200.0" maxWidth="350.0" spacing="20.0" styleClass="custom-alert-box">
+                <children>
+                    <Label fx:id="alertTitle" styleClass="alert-title" text="Error" />
+                    <Label fx:id="alertMessage" styleClass="alert-msg" textAlignment="CENTER" wrapText="true" />
+                    <Button onAction="#closeCustomAlert" styleClass="alert-button" text="OK" />
+                </children>
+            </VBox>
+        </children>
     </StackPane>
 
-    <Label text="Register" styleClass="login-header" />
-
-    <HBox styleClass="input-group">
-        <TextField fx:id="usernameField" promptText="Username" HBox.hgrow="ALWAYS" styleClass="custom-text-field" />
-    </HBox>
-
-    <HBox styleClass="input-group">
-        <PasswordField fx:id="passwordField" promptText="Password" HBox.hgrow="ALWAYS" styleClass="custom-text-field" />
-    </HBox>
-	<HBox styleClass="input-group">
-        <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" HBox.hgrow="ALWAYS" styleClass="custom-text-field" />
-    </HBox>
-
-    <Button fx:id="registerButton" onAction="#handleRegister" text="Register" maxWidth="Infinity" styleClass="login-button" />
-	
-
-    
-
-</VBox>
+</StackPane>
