@@ -5,6 +5,7 @@ import java.util.ResourceBundle;
 
 import com.mycompany.finalprojectclient.models.ResponseData;
 import com.mycompany.finalprojectclient.models.ResponseStatus;
+import com.mycompany.finalprojectclient.network.ServerConnection;
 import com.mycompany.finalprojectclient.utils.AppConstants;
 import com.mycompany.finalprojectclient.utils.AuthManager;
 import com.mycompany.finalprojectclient.utils.CustomAlertHandler;
@@ -32,7 +33,6 @@ public class LoginController implements Initializable {
     @FXML
     private Button loginButton;
 
-   
     @FXML
     private StackPane customAlertOverlay;
     @FXML
@@ -65,31 +65,31 @@ public class LoginController implements Initializable {
     }
 
     private void performLogin(String username, String password, ActionEvent event) {
-    ResponseData response = AuthManager.getInstance().login(username, password);
+        ResponseData response = AuthManager.getInstance().login(username, password);
 
-    Platform.runLater(() -> {
-        setLoadingState(false);
-        if (response.status == ResponseStatus.SUCCESS) {
-            alertHandler.showSuccess("WELCOME HERO!", "Hello " + username.toUpperCase() + ", redirecting...");
+        Platform.runLater(() -> {
+            setLoadingState(false);
+            if (response.status == ResponseStatus.SUCCESS) {
+                alertHandler.showSuccess("WELCOME HERO!", "Hello " + username.toUpperCase() + ", redirecting...");
 
-            PauseTransition delay = new PauseTransition(Duration.seconds(2));
-            delay.setOnFinished(e -> NavigationManager.switchScene(event, AppConstants.PATH_GAME_LOBBY));
-            delay.play();
+                PauseTransition delay = new PauseTransition(Duration.seconds(2));
+                delay.setOnFinished(e -> NavigationManager.switchScene(event, AppConstants.PATH_GAME_LOBBY));
+                delay.play();
 
-        } else {
-           
-            String errorMsg = response.message != null ? response.message : "Invalid username or password.";
-            
-            if (errorMsg.toUpperCase().contains("ALREADY")) {
-                alertHandler.showError("DUPLICATE LOGIN", "This account is already logged in from another device.");
             } else {
-                alertHandler.showError("ACCESS DENIED", errorMsg);
+
+                String errorMsg = response.message != null ? response.message : "Invalid username or password.";
+
+                if (errorMsg.toUpperCase().contains("ALREADY")) {
+                    alertHandler.showError("DUPLICATE LOGIN", "This account is already logged in from another device.");
+                } else {
+                    alertHandler.showError("ACCESS DENIED", errorMsg);
+                }
+
+                passwordField.clear();
             }
-            
-            passwordField.clear();
-        }
-    });
-}
+        });
+    }
 
     @FXML
     private void handleSignUp(ActionEvent event) {

@@ -8,10 +8,9 @@ public final class DatabaseConstants {
     // ==========================================================
     // Connection Config
     // ==========================================================
-    public static final String DB_URL = "jdbc:derby://localhost:1527/Tic_Tac_Toe_DB";
-    public static final String DB_USER = "root";
-    public static final String DB_PASSWORD = "root";
-
+    public static final String DB_URL = "jdbc:derby://localhost:1527/TicTacToeDB";
+    public static final String DB_USER = "app";
+    public static final String DB_PASSWORD = "app";
     // ==========================================================
     // SQL Queries
     // ==========================================================
