@@ -49,16 +49,27 @@ public class RequestManager {
         sendResponse(response);
     }
 
-    private void handleLogin(RequestData req) throws IOException {
-        boolean success = UserDAO.getInstance().login(req.username, req.password);
-        ResponseData response;
-        if (success) {
-            response = new ResponseData(ResponseStatus.SUCCESS, "Login successful");
+ private void handleLogin(RequestData req) throws IOException {
+    String cleanUsername = req.username.trim().toLowerCase();
+    boolean isValid = UserDAO.getInstance().login(cleanUsername, req.password);
+    ResponseData response;
+
+    if (isValid) {
+        if (ServerThread.onlineUsers.containsKey(cleanUsername)) {
+            response = new ResponseData(ResponseStatus.FAILURE, "ALREADY_LOGGED_IN");
         } else {
-            response = new ResponseData(ResponseStatus.FAILURE, "Invalid username or password");
+            clientHandler.setUsername(cleanUsername);
+            
+           
+            UserDAO.getInstance().updateUserStatus(cleanUsername, "active"); 
+            
+            response = new ResponseData(ResponseStatus.SUCCESS, "Login successful");
         }
-        sendResponse(response);
+    } else {
+        response = new ResponseData(ResponseStatus.FAILURE, "Invalid username or password");
     }
+    sendResponse(response);
+}
 
     private void sendResponse(ResponseData responseData) throws IOException {
         String jsonResponse = gson.toJson(responseData);

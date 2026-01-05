@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.concurrent.ConcurrentHashMap;
 
-//  act as security officer
 public class ServerThread extends Thread {
 
     private static final int PORT = 5002;
     private ServerSocket serverSocket;
+    
+    public static final ConcurrentHashMap<String, ClientHandler> onlineUsers = new ConcurrentHashMap<>();
 
     @Override
     public void run() {
@@ -22,7 +24,6 @@ public class ServerThread extends Thread {
                 try {
                     Socket socket = serverSocket.accept();
                     System.out.println("New client connected: " + socket.getInetAddress());
-                    // act as Customer Service Employee
                     new ClientHandler(socket).start();
                 } catch (SocketException e) {
                     System.out.println("Server socket closed via Stop button.");
@@ -39,6 +40,9 @@ public class ServerThread extends Thread {
 
     public void stopServer() {
         try {
+          
+            onlineUsers.clear();
+            
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
             }

@@ -103,4 +103,25 @@ public class UserDAO {
             return false;
         }
     }
+         // ===================== Update status in database =====================   
+    public void updateUserStatus(String username, String status) {
+ 
+    String query = "UPDATE APP.USERS SET STATUS = ? WHERE USERNAME = ?"; 
+    
+    try (PreparedStatement pstmt = con.prepareStatement(query)) {
+        pstmt.setString(1, status.toLowerCase());
+        pstmt.setString(2, username);
+        
+        int rowsAffected = pstmt.executeUpdate();
+        
+        if (rowsAffected > 0) {
+            System.out.println("DB Success: Status updated to " + status + " for " + username);
+        } else {
+            System.out.println("DB Warning: User " + username + " not found in APP.ROOT table.");
+        }
+    } catch (SQLException e) {
+        System.err.println("DB Error Detail: " + e.getMessage());
+        
+    }
+}
 }
