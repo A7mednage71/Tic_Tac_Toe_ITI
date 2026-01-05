@@ -14,12 +14,12 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 
 public class PrimaryController implements Initializable {
-
+    private Boolean started = false; 
     @FXML
     private Button startServer;
-    @FXML
     private Button stopServer;
     @FXML
     private VBox playersList;
@@ -30,8 +30,9 @@ public class PrimaryController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        stopServer.setDisable(true);
-
+        startServer.setText("Start Server");
+        startServer.setTextFill(Color.BLACK);
+        startServer.setStyle("-fx-background-color: green;");
         Platform.runLater(() -> {
             if (UserDAO.getInstance().getConnection() == null) {
                 showAlert(Alert.AlertType.ERROR, "Error", "Database connection failed");
@@ -43,38 +44,50 @@ public class PrimaryController implements Initializable {
 
     @FXML
     private void onStartServer(ActionEvent event) {
+        if(started){
+            stopServer();
+        }
+        else{
+            startServer();
+        }
+    }
+
+    private void startServer(){
         if (UserDAO.getInstance().getConnection() == null) {
             showAlert(Alert.AlertType.ERROR, "Error", "Database not connected");
             return;
         }
-
         try {
             serverThread = new ServerThread();
             serverThread.start();
 
-            startServer.setDisable(true);
-            stopServer.setDisable(false);
-
             showAlert(Alert.AlertType.INFORMATION, "Success", "Server started");
+            
+            startServer.setText("Stop Server");
+            startServer.setTextFill(Color.WHITE);
+            startServer.setStyle("-fx-background-color: red;");
+            started = true ;
+        
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Error", "Failed to start server");
             e.printStackTrace();
         }
     }
-
-    @FXML
-    private void onStopServer(ActionEvent event) {
+    
+    private void stopServer(){
         if (serverThread != null) {
             serverThread.stopServer();
             serverThread = null;
 
-            startServer.setDisable(false);
-            stopServer.setDisable(true);
+            startServer.setText("Start Server");
+            startServer.setTextFill(Color.BLACK);
+            startServer.setStyle("-fx-background-color: green;");
+            started = false ;
 
             showAlert(Alert.AlertType.INFORMATION, "Success", "Server stopped");
         }
     }
-
+    
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
