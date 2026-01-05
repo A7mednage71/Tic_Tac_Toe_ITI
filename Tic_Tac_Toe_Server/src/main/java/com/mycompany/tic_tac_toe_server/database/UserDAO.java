@@ -1,4 +1,4 @@
-package com.mycompany.tic_tac_toe_server;
+package com.mycompany.tic_tac_toe_server.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,8 +16,7 @@ public class UserDAO {
             con = DriverManager.getConnection(
                     DatabaseConstants.DB_URL,
                     DatabaseConstants.DB_USER,
-                    DatabaseConstants.DB_PASSWORD
-            );
+                    DatabaseConstants.DB_PASSWORD);
 
             System.out.println("Connected to Tic_Tac_Toe_DB successfully");
         } catch (SQLException e) {

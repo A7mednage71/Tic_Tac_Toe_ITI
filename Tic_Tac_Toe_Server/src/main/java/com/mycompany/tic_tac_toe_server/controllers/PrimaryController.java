@@ -1,7 +1,11 @@
-package com.mycompany.tic_tac_toe_server;
+package com.mycompany.tic_tac_toe_server.controllers;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import com.mycompany.tic_tac_toe_server.database.UserDAO;
+import com.mycompany.tic_tac_toe_server.network.ServerThread;
+
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

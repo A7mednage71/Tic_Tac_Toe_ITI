@@ -1,11 +1,13 @@
-package com.mycompany.tic_tac_toe_server;
+package com.mycompany.tic_tac_toe_server.network;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.mycompany.tic_tac_toe_server.models.RequestData;
 
 public class ClientHandler extends Thread {
 
@@ -26,7 +28,7 @@ public class ClientHandler extends Thread {
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
 
-            //handel ِAll Requests are here
+            // handel ِAll Requests are here
             requestManager = new RequestManager(dos, this);
 
             while (isRunning) {
