@@ -28,7 +28,7 @@ public class HomeController{
     @FXML
     private void twoPlayers(ActionEvent event) {
          try {
-            switchScene("TicTacToeLobby.fxml", event);
+            switchScene("online&offline.fxml", event);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -42,6 +42,7 @@ public class HomeController{
             ex.printStackTrace();
         }
     }
+
 
     
 }

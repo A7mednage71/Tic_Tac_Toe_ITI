@@ -55,7 +55,7 @@ public class GameHistoryController {
     private void handleBack(ActionEvent event) {
         
         try {
-            switchScene("Home.fxml", event);
+            switchScene("online&offline.fxml", event);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

@@ -66,3 +66,62 @@
 .signup-link:hover {
     -fx-text-fill: #99BC66;
 }
+
+#customAlertOverlay {
+    -fx-background-color: rgba(0, 0, 0, 0.75);
+}
+
+
+.custom-alert-box {
+    -fx-background-color: #000000;
+
+    -fx-background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+    -fx-background-repeat: repeat;
+
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-padding: 35;
+    -fx-min-width: 380;
+    -fx-alignment: center;
+
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 255, 255, 0.1), 10, 0, 0, 0);
+}
+
+.alert-box-success {
+    -fx-border-color: #2ecc71;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 204, 113, 0.8), 30, 0.5, 0, 0);
+}
+
+.alert-box-error {
+    -fx-border-color: #ff4757;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 71, 87, 0.8), 30, 0.5, 0, 0);
+}
+
+.alert-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-font-size: 26px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.5), 5, 0.1, 0, 0);
+}
+
+.alert-msg {
+    -fx-text-fill: #ecf0f1;
+    -fx-font-size: 16px;
+}
+
+.back-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #5C7A33;
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 5;
+    -fx-transition: 0.3s;
+}
+
+.back-button:hover {
+    -fx-text-fill: #2ecc71;
+    -fx-translate-x: -5;
+}

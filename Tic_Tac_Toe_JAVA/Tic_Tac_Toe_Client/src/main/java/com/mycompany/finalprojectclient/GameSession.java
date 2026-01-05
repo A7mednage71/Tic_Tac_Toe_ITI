@@ -9,12 +9,10 @@ package com.mycompany.finalprojectclient;
  * @author Shady
  */
 public class GameSession {
-    public enum Difficulty {
-    EASY, MEDIUM, HARD
-}
+    public enum Difficulty { EASY, MEDIUM, HARD }
     
     public static boolean vsComputer = false;
-    public static Difficulty difficulty = null;
+    public static Difficulty difficulty = Difficulty.EASY;
 }
 
 
