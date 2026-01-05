@@ -12,7 +12,7 @@
             stylesheets="/home_screen_style.css" 
             xmlns="http://javafx.com/javafx/13" 
             xmlns:fx="http://javafx.com/fxml/1" 
-            fx:controller="com.mycompany.finalprojectclient.VsComputerController">
+            fx:controller="com.mycompany.finalprojectclient.Online_offline">
     
     <children>
         <VBox alignment="TOP_CENTER" 
@@ -52,9 +52,9 @@
 
                 <VBox alignment="CENTER" spacing="15.0">
                     <children>
-                        <Button styleClass="main-button" text="Easy" onAction="#playEasy"/>
-                        <Button styleClass="main-button" text="Medium" onAction="#playMedium"/>
-                        <Button styleClass="main-button" text="Hard" onAction="#playHard"/>
+                        <Button fx:id="onlineButton" styleClass="main-button" text="Online Multiplayer" onAction="#handleOnlinePlay"/>
+                        <Button fx:id="offlineButton" styleClass="main-button" text="Offline Modes" onAction="#handleOfflinePlay"/>
+                        <Button fx:id="historyButton" styleClass="main-button" text="Game History" onAction="#gameHistory"/>
                     </children>
                 </VBox>
             </children>

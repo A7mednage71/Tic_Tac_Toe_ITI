@@ -9,82 +9,97 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Text?>
 
-<VBox alignment="TOP_CENTER" spacing="15.0" styleClass="board-container" 
-      stylesheets="/board_style.css" xmlns="http://javafx.com/javafx/17" 
-      xmlns:fx="http://javafx.com/fxml/1" 
-      fx:controller="com.mycompany.finalprojectclient.BoardController">
-   <padding>
-      <Insets bottom="20.0" left="20.0" right="20.0" top="15.0" />
-   </padding>
-   <children>
-      <HBox alignment="CENTER_LEFT" prefWidth="410.0">
-         <children>
-            <Button onAction="#handleBack" styleClass="back-arrow-button" text="←" />
-            <Region HBox.hgrow="ALWAYS" /> 
-            <Text styleClass="title-text" text="Tic Tac Toe" />
-            <Region HBox.hgrow="ALWAYS" /> 
-         </children>
-      </HBox>
+<StackPane stylesheets="/board_style.css" xmlns="http://javafx.com/javafx/17" 
+           xmlns:fx="http://javafx.com/fxml/1" 
+           fx:controller="com.mycompany.finalprojectclient.BoardController">
+    
+    <children>
+        <VBox alignment="TOP_CENTER" spacing="15.0" styleClass="board-container">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="15.0" />
+            </padding>
+            <children>
+                <HBox alignment="CENTER_LEFT" prefWidth="410.0">
+                    <children>
+                        <Button onAction="#handleBack" styleClass="back-arrow-button" text="←" />
+                        <Region HBox.hgrow="ALWAYS" /> 
+                        <Text styleClass="title-text" text="Tic Tac Toe" />
+                        <Region HBox.hgrow="ALWAYS" /> 
+                    </children>
+                </HBox>
 
-      <HBox alignment="CENTER" spacing="30.0" styleClass="players-header-box">
-         <children>
-            <HBox spacing="10.0" alignment="CENTER">
-               <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#5C7A33" height="35.0" width="35.0" />
-               <VBox alignment="CENTER_LEFT">
-                  <Label styleClass="player-name-label" text="You (X)" />
-                  <Label fx:id="scoreX" styleClass="score-label" text="Score: 0" />
-               </VBox>
-            </HBox>
+                <HBox alignment="CENTER" spacing="30.0" styleClass="players-header-box">
+                    <children>
+                        <HBox spacing="10.0" alignment="CENTER">
+                            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#5C7A33" height="35.0" width="35.0" />
+                            <VBox alignment="CENTER_LEFT">
+                                <Label styleClass="player-name-label" text="You (X)" />
+                                <Label fx:id="scoreX" styleClass="score-label" text="Score: 0" />
+                            </VBox>
+                        </HBox>
 
-            <HBox spacing="10.0" alignment="CENTER">
-               <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#3D3636" height="35.0" width="35.0" />
-               <VBox alignment="CENTER_LEFT">
-                  <Label fx:id="opponentNameLabel" styleClass="player-name-label" text="Opponent 💻" />
-                  <Label fx:id="scoreO" styleClass="score-label" text="Score: 0" />
-               </VBox>
-            </HBox>
-         </children>
-      </HBox>
+                        <HBox spacing="10.0" alignment="CENTER">
+                            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#3D3636" height="35.0" width="35.0" />
+                            <VBox alignment="CENTER_LEFT">
+                                <Label fx:id="opponentNameLabel" styleClass="player-name-label" text="Opponent 💻" />
+                                <Label fx:id="scoreO" styleClass="score-label" text="Score: 0" />
+                            </VBox>
+                        </HBox>
+                    </children>
+                </HBox>
 
-      <GridPane fx:id="gameGrid" alignment="CENTER" hgap="10.0" vgap="10.0" 
-                VBox.vgrow="ALWAYS" styleClass="game-grid-container"
-                minWidth="350.0" minHeight="350.0" 
-                style="-fx-max-width: 600px; -fx-max-height: 600px;"> 
-         
-         <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.3" minWidth="100.0" />
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.3" minWidth="100.0" />
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.3" minWidth="100.0" />
-         </columnConstraints>
-         
-         <rowConstraints>
-            <RowConstraints percentHeight="33.3" vgrow="SOMETIMES" minHeight="100.0" />
-            <RowConstraints percentHeight="33.3" vgrow="SOMETIMES" minHeight="100.0" />
-            <RowConstraints percentHeight="33.3" vgrow="SOMETIMES" minHeight="100.0" />
-         </rowConstraints>
+                <GridPane fx:id="gameGrid" alignment="CENTER" hgap="10.0" vgap="10.0" 
+                          VBox.vgrow="ALWAYS" styleClass="game-grid-container"
+                          minWidth="350.0" minHeight="350.0" 
+                          style="-fx-max-width: 600px; -fx-max-height: 600px;"> 
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.3" minWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.3" minWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.3" minWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints percentHeight="33.3" vgrow="SOMETIMES" minHeight="100.0" />
+                        <RowConstraints percentHeight="33.3" vgrow="SOMETIMES" minHeight="100.0" />
+                        <RowConstraints percentHeight="33.3" vgrow="SOMETIMES" minHeight="100.0" />
+                    </rowConstraints>
+                    <children>
+                        <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                        <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                        <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                    </children>
+                </GridPane>
 
-         <children>
-            <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-            <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-            <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-            
-            <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            
-            <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-            <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <Button onAction="#handleCellClick" maxHeight="Infinity" maxWidth="Infinity" styleClass="cell-button-empty" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-         </children>
-      </GridPane>
+                <Button onAction="#handlePlayAgain" styleClass="action-button" text="Play Again">
+                    <VBox.margin>
+                        <Insets bottom="10.0" top="10.0" />
+                    </VBox.margin>
+                </Button>
+            </children>
+        </VBox>
 
-      <Button onAction="#handlePlayAgain" styleClass="action-button" text="Play Again">
-         <VBox.margin>
-            <Insets bottom="10.0" top="10.0" />
-         </VBox.margin>
-      </Button>
-   </children>
-</VBox>
+        <StackPane fx:id="drawOverlay" visible="false" managed="false" 
+                   style="-fx-background-color: rgba(0, 0, 0, 0.7); -fx-background-radius: 10;">
+            <children>
+                <VBox alignment="CENTER" spacing="20" maxWidth="300" maxHeight="250" 
+                      style="-fx-background-color: #2c3e50; -fx-background-radius: 20; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 0);">
+                    <children>
+                        <Text text="🤝" style="-fx-font-size: 50px;" />
+                        <Text text="DRAW!" style="-fx-fill: white; -fx-font-size: 30px; -fx-font-weight: bold;" />
+                        <Button text="Play Again" onAction="#handlePlayAgainFromOverlay" 
+                                style="-fx-background-color: #5C7A33; -fx-text-fill: white; -fx-font-size: 18px; -fx-padding: 10 25; -fx-background-radius: 10; -fx-cursor: hand;" />
+                    </children>
+                </VBox>
+            </children>
+        </StackPane>
+    </children>
+</StackPane>
