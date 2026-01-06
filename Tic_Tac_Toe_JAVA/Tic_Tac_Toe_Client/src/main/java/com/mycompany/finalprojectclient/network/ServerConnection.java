@@ -20,10 +20,18 @@ public class ServerConnection {
     private final Gson gson = new Gson();
     private BlockingQueue<String> responseQueue = new LinkedBlockingQueue<>();
     private NotificationListener notificationListener;
+    private InviteListener inviteListener;
     private Thread messageRouter;
 
     public interface NotificationListener {
         void onUserListUpdated();
+    }
+
+    public interface InviteListener {
+        void onInviteReceived(String fromUsername);
+        void onInviteAccepted(String username);
+        void onInviteRejected(String username);
+        void onOpponentWithdrew(String username);
     }
 
     private ServerConnection() {
@@ -42,6 +50,10 @@ public class ServerConnection {
 
     public void setNotificationListener(NotificationListener listener) {
         this.notificationListener = listener;
+    }
+
+    public void setInviteListener(InviteListener listener) {
+        this.inviteListener = listener;
     }
 
     private boolean connect() {
@@ -73,6 +85,26 @@ public class ServerConnection {
                     if ("USER_LIST_UPDATED".equals(message)) {
                         if (notificationListener != null) {
                             notificationListener.onUserListUpdated();
+                        }
+                    } else if (message.startsWith("INVITE_FROM:")) {
+                        String fromUsername = message.substring("INVITE_FROM:".length());
+                        if (inviteListener != null) {
+                            inviteListener.onInviteReceived(fromUsername);
+                        }
+                    } else if (message.startsWith("INVITE_ACCEPTED:")) {
+                        String username = message.substring("INVITE_ACCEPTED:".length());
+                        if (inviteListener != null) {
+                            inviteListener.onInviteAccepted(username);
+                        }
+                    } else if (message.startsWith("INVITE_REJECTED:")) {
+                        String username = message.substring("INVITE_REJECTED:".length());
+                        if (inviteListener != null) {
+                            inviteListener.onInviteRejected(username);
+                        }
+                    } else if (message.startsWith("OPPONENT_WITHDREW:")) {
+                        String username = message.substring("OPPONENT_WITHDREW:".length());
+                        if (inviteListener != null) {
+                            inviteListener.onOpponentWithdrew(username);
                         }
                     } else {
                         responseQueue.put(message);

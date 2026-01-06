@@ -12,11 +12,15 @@ import java.io.IOException;
 public class NavigationManager {
 
     public static void switchScene(ActionEvent event, String fxmlPath) {
+        switchSceneUsingNode((Node) event.getSource(), fxmlPath);
+    }
+
+    public static void switchSceneUsingNode(Node node, String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(NavigationManager.class.getResource(fxmlPath));
             Parent root = loader.load();
 
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Stage stage = (Stage) node.getScene().getWindow();
 
             Scene scene = new Scene(root);
             stage.setScene(scene);

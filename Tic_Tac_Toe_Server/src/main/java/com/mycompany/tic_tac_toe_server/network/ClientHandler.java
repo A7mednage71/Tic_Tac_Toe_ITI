@@ -19,9 +19,18 @@ public class ClientHandler extends Thread {
     private RequestManager requestManager;
 
     private String username;
+    private String status = "active";
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getStatus() {
+        return status;
     }
 
     @Override
@@ -80,6 +89,54 @@ public class ClientHandler extends Thread {
             }
         } catch (IOException e) {
             System.err.println("Error sending user list update: " + e.getMessage());
+        }
+    }
+
+    public void sendInvite(String fromUsername) {
+        try {
+            if (dos != null) {
+                dos.writeUTF("INVITE_FROM:" + fromUsername);
+                dos.flush();
+                System.out.println("Sent invite notification to " + username + " from " + fromUsername);
+            }
+        } catch (IOException e) {
+            System.err.println("Error sending invite: " + e.getMessage());
+        }
+    }
+
+    public void sendInviteAccepted(String acceptingUsername) {
+        try {
+            if (dos != null) {
+                dos.writeUTF("INVITE_ACCEPTED:" + acceptingUsername);
+                dos.flush();
+                System.out.println("Sent invite accepted notification to " + username);
+            }
+        } catch (IOException e) {
+            System.err.println("Error sending invite accepted: " + e.getMessage());
+        }
+    }
+
+    public void sendInviteRejected(String rejectingUsername) {
+        try {
+            if (dos != null) {
+                dos.writeUTF("INVITE_REJECTED:" + rejectingUsername);
+                dos.flush();
+                System.out.println("Sent invite rejected notification to " + username);
+            }
+        } catch (IOException e) {
+            System.err.println("Error sending invite rejected: " + e.getMessage());
+        }
+    }
+
+    public void sendWithdrawNotification(String fromUsername) {
+        try {
+            if (dos != null) {
+                dos.writeUTF("OPPONENT_WITHDREW:" + fromUsername);
+                dos.flush();
+                System.out.println("Sent withdraw notification to " + username);
+            }
+        } catch (IOException e) {
+            System.err.println("Error sending withdraw: " + e.getMessage());
         }
     }
 

@@ -5,5 +5,10 @@ public enum RequestType {
     REGISTER,
     DISCONNECT,
     PLAY_AGAIN,
-    GET_ONLINE_USERS
+    GET_ONLINE_USERS,
+    SEND_INVITE,
+    ACCEPT_INVITE,
+    REJECT_INVITE,
+    UPDATE_STATUS,
+    WITHDRAW
 }
