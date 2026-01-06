@@ -16,5 +16,8 @@ public final class DatabaseConstants {
     // ==========================================================
     public static final String CHECK_USER_QUERY = "SELECT USERNAME FROM APP.USERS WHERE USERNAME = ?";
     public static final String REGISTER_USER_QUERY = "INSERT INTO APP.USERS(USERNAME, PASSWORD) VALUES (?, ?)";
-    public static final String LOGIN_USER_QUERY = "SELECT * FROM APP.USERS WHERE TRIM(USERNAME)=? AND TRIM(PASSWORD)=?";
+    public static final String LOGIN_USER_QUERY = "SELECT * FROM APP.USERS WHERE LOWER(TRIM(USERNAME))=? AND TRIM(PASSWORD)=?";
+    public static final String UPDATE_USER_STATUS = "UPDATE APP.USERS SET STATUS = ? WHERE LOWER(TRIM(USERNAME)) = ?";
+    public static final String GET_ALL_PLAYERS = "SELECT USERNAME, SCORE, STATUS FROM APP.USERS";
+
 }

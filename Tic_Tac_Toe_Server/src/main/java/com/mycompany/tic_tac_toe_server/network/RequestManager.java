@@ -7,8 +7,6 @@ import com.mycompany.tic_tac_toe_server.models.ResponseData;
 import com.mycompany.tic_tac_toe_server.models.ResponseStatus;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
 
 public class RequestManager {
 
@@ -62,49 +60,6 @@ public class RequestManager {
                 handleWithdraw(request);
                 break;
         }
-    }
-
-    private void handleUpdateStatus(RequestData req) throws IOException {
-        String newStatus = req.password; // Using password field as a temp container for status string
-        if (newStatus == null) return;
-        
-        clientHandler.setStatus(newStatus);
-        UserDAO.getInstance().updateUserStatus(clientHandler.getUsername(), newStatus);
-        
-        System.out.println("Status updated to " + newStatus + " for " + clientHandler.getUsername());
-        
-        // Send response to the requester so they don't hang
-        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Status updated");
-        sendResponse(response);
-        
-        ServerThread.broadcastUserListUpdate();
-    }
-
-    private void handleWithdraw(RequestData req) throws IOException {
-        String fromUser = req.username;
-        String targetUser = req.targetUsername;
-
-        System.out.println(fromUser + " withdrew from game against " + targetUser);
-
-        // Update statuses back to active
-        clientHandler.setStatus("active");
-        UserDAO.getInstance().updateUserStatus(fromUser, "active");
-
-        ClientHandler targetClient = findClientByUsername(targetUser);
-        if (targetClient != null) {
-            targetClient.setStatus("active");
-            UserDAO.getInstance().updateUserStatus(targetUser, "active");
-            
-            // Notify target that opponent left
-            try {
-                targetClient.sendWithdrawNotification(fromUser);
-            } catch (Exception e) {}
-        }
-
-        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Withdrawn");
-        sendResponse(response);
-        
-        ServerThread.broadcastUserListUpdate();
     }
 
     private void handleRegister(RequestData req) throws IOException {
@@ -185,24 +140,29 @@ public class RequestManager {
         String acceptingUsername = req.username;
         String inviterUsername = req.targetUsername;
 
-        System.out.println(acceptingUsername + " accepted invite from " + inviterUsername);
-
-        // Update ClientHandlers
-        clientHandler.setStatus("in_game");
         ClientHandler inviterClient = findClientByUsername(inviterUsername);
-        if (inviterClient != null) {
-            inviterClient.setStatus("in_game");
-            inviterClient.sendInviteAccepted(acceptingUsername);
+
+        if (inviterClient == null) {
+            sendResponse(new ResponseData(ResponseStatus.FAILURE, "Inviter is offline"));
+            return;
         }
 
-        // Update both users' status to "in_game" in database
+        if ("in_game".equalsIgnoreCase(inviterClient.getStatus())) {
+            sendResponse(new ResponseData(ResponseStatus.FAILURE, "Inviter is already in a game"));
+            return;
+        }
+
+        this.clientHandler.setStatus("in_game");
+        inviterClient.setStatus("in_game");
+
         UserDAO.getInstance().updateUserStatus(acceptingUsername, "in_game");
         UserDAO.getInstance().updateUserStatus(inviterUsername, "in_game");
 
         ServerThread.broadcastUserListUpdate();
 
-        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Invite accepted");
-        sendResponse(response);
+        inviterClient.sendInviteAccepted(acceptingUsername);
+
+        sendResponse(new ResponseData(ResponseStatus.SUCCESS, "Invite accepted"));
     }
 
     private void handleRejectInvite(RequestData req) throws IOException {
@@ -218,6 +178,48 @@ public class RequestManager {
         }
 
         ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Invite rejected");
+        sendResponse(response);
+    }
+
+    private void handleUpdateStatus(RequestData req) throws IOException {
+        String newStatus = req.password; // Using password field as a temp container for status string
+        if (newStatus == null) {
+            return;
+        }
+
+        clientHandler.setStatus(newStatus);
+        UserDAO.getInstance().updateUserStatus(clientHandler.getUsername(), newStatus);
+
+        System.out.println("Status updated to " + newStatus + " for " + clientHandler.getUsername());
+
+        // Send response to the requester so they don't hang
+        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Status updated");
+        sendResponse(response);
+
+        ServerThread.broadcastUserListUpdate();
+    }
+
+    private void handleWithdraw(RequestData req) throws IOException {
+        String fromUser = req.username;
+        String targetUser = req.targetUsername;
+
+        System.out.println(fromUser + " withdrew from game against " + targetUser);
+
+        // Update statuses back to active
+        clientHandler.setStatus("active");
+        UserDAO.getInstance().updateUserStatus(fromUser, "active");
+
+        ClientHandler targetClient = findClientByUsername(targetUser);
+
+        if (targetClient != null) {
+            targetClient.setStatus("active");
+            UserDAO.getInstance().updateUserStatus(targetUser, "active");
+            // Notify target that opponent left
+            targetClient.sendWithdrawNotification(fromUser);
+        }
+
+        ServerThread.broadcastUserListUpdate();
+        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Withdrawn");
         sendResponse(response);
     }
 
