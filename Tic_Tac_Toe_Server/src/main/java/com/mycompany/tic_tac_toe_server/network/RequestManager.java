@@ -7,6 +7,8 @@ import com.mycompany.tic_tac_toe_server.models.ResponseData;
 import com.mycompany.tic_tac_toe_server.models.ResponseStatus;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
 
 public class RequestManager {
 
@@ -35,6 +37,10 @@ public class RequestManager {
             case DISCONNECT:
                 clientHandler.closeConnection();
                 break;
+
+            case GET_ONLINE_USERS:
+                handleGetOnlineUsers();
+                break;
         }
     }
 
@@ -49,27 +55,49 @@ public class RequestManager {
         sendResponse(response);
     }
 
- private void handleLogin(RequestData req) throws IOException {
-    String cleanUsername = req.username.trim().toLowerCase();
-    boolean isValid = UserDAO.getInstance().login(cleanUsername, req.password);
-    ResponseData response;
+    private void handleLogin(RequestData req) throws IOException {
+        String cleanUsername = req.username.trim().toLowerCase();
+        boolean isValid = UserDAO.getInstance().login(cleanUsername, req.password);
+        ResponseData response;
 
-    if (isValid) {
-        if (ServerThread.onlineUsers.containsKey(cleanUsername)) {
-            response = new ResponseData(ResponseStatus.FAILURE, "ALREADY_LOGGED_IN");
+        if (isValid) {
+            boolean alreadyLoggedIn = false;
+            for (ClientHandler client : ServerThread.onlineUsers) {
+                if (client.getUsername() != null && client.getUsername().equals(cleanUsername)) {
+                    alreadyLoggedIn = true;
+                    break;
+                }
+            }
+
+            if (alreadyLoggedIn) {
+                response = new ResponseData(ResponseStatus.FAILURE, "ALREADY_LOGGED_IN");
+            } else {
+                clientHandler.setUsername(cleanUsername);
+
+                UserDAO.getInstance().updateUserStatus(cleanUsername, "active");
+
+                response = new ResponseData(ResponseStatus.SUCCESS, "Login successful");
+                sendResponse(response);
+
+                ServerThread.broadcastUserListUpdate();
+                return;
+            }
         } else {
-            clientHandler.setUsername(cleanUsername);
-            
-           
-            UserDAO.getInstance().updateUserStatus(cleanUsername, "active"); 
-            
-            response = new ResponseData(ResponseStatus.SUCCESS, "Login successful");
+            response = new ResponseData(ResponseStatus.FAILURE, "Invalid username or password");
         }
-    } else {
-        response = new ResponseData(ResponseStatus.FAILURE, "Invalid username or password");
+        sendResponse(response);
     }
-    sendResponse(response);
-}
+
+    private void handleGetOnlineUsers() throws IOException {
+        List<String> onlineUsersList = new ArrayList<>();
+        for (ClientHandler client : ServerThread.onlineUsers) {
+            if (client.getUsername() != null) {
+                onlineUsersList.add(client.getUsername());
+            }
+        }
+        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, gson.toJson(onlineUsersList));
+        sendResponse(response);
+    }
 
     private void sendResponse(ResponseData responseData) throws IOException {
         String jsonResponse = gson.toJson(responseData);

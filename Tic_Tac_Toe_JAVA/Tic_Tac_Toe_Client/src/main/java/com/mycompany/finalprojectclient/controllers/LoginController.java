@@ -5,7 +5,6 @@ import java.util.ResourceBundle;
 
 import com.mycompany.finalprojectclient.models.ResponseData;
 import com.mycompany.finalprojectclient.models.ResponseStatus;
-import com.mycompany.finalprojectclient.network.ServerConnection;
 import com.mycompany.finalprojectclient.utils.AppConstants;
 import com.mycompany.finalprojectclient.utils.AuthManager;
 import com.mycompany.finalprojectclient.utils.CustomAlertHandler;

@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Vector;
 
 public class ServerThread extends Thread {
 
     private static final int PORT = 5002;
     private ServerSocket serverSocket;
-    
-    public static final ConcurrentHashMap<String, ClientHandler> onlineUsers = new ConcurrentHashMap<>();
+
+    public static final Vector<ClientHandler> onlineUsers = new Vector<ClientHandler>();
 
     @Override
     public void run() {
@@ -40,15 +40,25 @@ public class ServerThread extends Thread {
 
     public void stopServer() {
         try {
-          
+
             onlineUsers.clear();
-            
+
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
             }
             System.out.println("Server stopped.");
         } catch (IOException e) {
             System.err.println("Error stopping server: " + e.getMessage());
+        }
+    }
+
+    public static void broadcastUserListUpdate() {
+        for (ClientHandler client : onlineUsers) {
+            try {
+                client.sendUserListUpdate();
+            } catch (Exception e) {
+                System.err.println("Error broadcasting to client: " + e.getMessage());
+            }
         }
     }
 }
