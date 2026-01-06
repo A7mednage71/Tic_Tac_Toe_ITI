@@ -17,9 +17,8 @@ public class ClientHandler extends Thread {
     private boolean isRunning = true;
     private final Gson gson = new Gson();
     private RequestManager requestManager;
-    
-    
-    private String username; 
+
+    private String username;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -31,7 +30,6 @@ public class ClientHandler extends Thread {
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
 
-          
             requestManager = new RequestManager(dos, this);
 
             while (isRunning) {
@@ -50,39 +48,50 @@ public class ClientHandler extends Thread {
         } catch (IOException e) {
             System.err.println("Client disconnected: " + e.getMessage());
         } finally {
-            logout(); 
+            logout();
             closeConnection();
         }
     }
 
-    
     public void setUsername(String username) {
-    this.username = username; 
-    ServerThread.onlineUsers.put(username, this); 
-}
+        this.username = username;
+        ServerThread.onlineUsers.add(this);
+    }
 
     public String getUsername() {
         return username;
     }
 
     private void logout() {
-    if (username != null) {
-       
-        ServerThread.onlineUsers.remove(username);
-        
-     
-        UserDAO.getInstance().updateUserStatus(username, "Disactive");
-        
-        System.out.println("User " + username + " is now disactive in DB.");
+        if (username != null) {
+            ServerThread.onlineUsers.remove(this);
+            UserDAO.getInstance().updateUserStatus(username, "Disactive");
+            System.out.println("User " + username + " is now disactive in DB.");
+
+            ServerThread.broadcastUserListUpdate();
+        }
     }
-}
+
+    public void sendUserListUpdate() {
+        try {
+            if (dos != null) {
+                dos.writeUTF("USER_LIST_UPDATED");
+                dos.flush();
+            }
+        } catch (IOException e) {
+            System.err.println("Error sending user list update: " + e.getMessage());
+        }
+    }
 
     public void closeConnection() {
         isRunning = false;
         try {
-            if (dis != null) dis.close();
-            if (dos != null) dos.close();
-            if (socket != null && !socket.isClosed()) socket.close();
+            if (dis != null)
+                dis.close();
+            if (dos != null)
+                dos.close();
+            if (socket != null && !socket.isClosed())
+                socket.close();
             UserDAO.getInstance().updateUserStatus(username, "disactive");
             System.out.println("Connection closed for user: " + (username != null ? username : "Unknown"));
         } catch (IOException e) {

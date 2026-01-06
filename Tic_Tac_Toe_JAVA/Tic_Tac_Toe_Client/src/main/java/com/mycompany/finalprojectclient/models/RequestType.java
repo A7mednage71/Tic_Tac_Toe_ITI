@@ -4,5 +4,6 @@ public enum RequestType {
     LOGIN,
     REGISTER,
     DISCONNECT,
-    PLAY_AGAIN
+    PLAY_AGAIN,
+    GET_ONLINE_USERS
 }
