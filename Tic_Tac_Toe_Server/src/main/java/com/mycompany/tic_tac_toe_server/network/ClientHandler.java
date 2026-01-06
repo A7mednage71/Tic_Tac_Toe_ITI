@@ -71,16 +71,6 @@ public class ClientHandler extends Thread {
         return username;
     }
 
-    private void logout() {
-        if (username != null) {
-            ServerThread.onlineUsers.remove(this);
-            UserDAO.getInstance().updateUserStatus(username, "Disactive");
-            System.out.println("User " + username + " is now disactive in DB.");
-
-            ServerThread.broadcastUserListUpdate();
-        }
-    }
-
     public void sendUserListUpdate() {
         try {
             if (dos != null) {
@@ -140,6 +130,16 @@ public class ClientHandler extends Thread {
         }
     }
 
+    private void logout() {
+        if (username != null) {
+            ServerThread.onlineUsers.remove(this);
+            UserDAO.getInstance().updateUserStatus(username, "Disactive");
+            System.out.println("User " + username + " is now disactive in DB.");
+
+            ServerThread.broadcastUserListUpdate();
+        }
+    }
+
     public void closeConnection() {
         isRunning = false;
         try {
@@ -152,7 +152,7 @@ public class ClientHandler extends Thread {
             UserDAO.getInstance().updateUserStatus(username, "disactive");
             System.out.println("Connection closed for user: " + (username != null ? username : "Unknown"));
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Error in close Connection for user: " + (username != null ? username : "Unknown"));
         }
     }
 }

@@ -5,6 +5,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.mycompany.tic_tac_toe_server.models.PlayerModel;
 
 public class UserDAO {
 
@@ -59,7 +63,6 @@ public class UserDAO {
 
         } catch (SQLException e) {
             System.err.println("Registration failed: " + e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }
@@ -84,6 +87,7 @@ public class UserDAO {
         try (PreparedStatement ps = con.prepareStatement(DatabaseConstants.LOGIN_USER_QUERY)) {
 
             ps.setString(1, username);
+
             ps.setString(2, password);
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -99,29 +103,45 @@ public class UserDAO {
 
         } catch (Exception e) {
             System.err.println("Login failed: " + e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }
-         // ===================== Update status in database =====================   
+
+    // ===================== Update status in database ============
+
     public void updateUserStatus(String username, String status) {
- 
-    String query = "UPDATE APP.USERS SET STATUS = ? WHERE USERNAME = ?"; 
-    
-    try (PreparedStatement pstmt = con.prepareStatement(query)) {
-        pstmt.setString(1, status.toLowerCase());
-        pstmt.setString(2, username);
-        
-        int rowsAffected = pstmt.executeUpdate();
-        
-        if (rowsAffected > 0) {
-            System.out.println("DB Success: Status updated to " + status + " for " + username);
-        } else {
-            System.out.println("DB Warning: User " + username + " not found in APP.ROOT table.");
+
+        try (PreparedStatement pstmt = con.prepareStatement(DatabaseConstants.UPDATE_USER_STATUS)) {
+            pstmt.setString(1, status.toLowerCase());
+            pstmt.setString(2, username);
+
+            int rowsAffected = pstmt.executeUpdate();
+            // return 1 if user found
+            if (rowsAffected > 0) {
+                System.out.println("DB Success: Status updated to " + status + " for " + username);
+            } else {
+                System.out.println("DB Warning: User " + username + " not found in APP.ROOT table.");
+            }
+        } catch (SQLException e) {
+            System.err.println("DB Error Detail: " + e.getMessage());
         }
-    } catch (SQLException e) {
-        System.err.println("DB Error Detail: " + e.getMessage());
-        
     }
-}
+
+    // ================ Get All Players From database ================
+
+    public List<PlayerModel> getAllPlayers() throws SQLException {
+        List<PlayerModel> players = new ArrayList<>();
+
+        try (PreparedStatement ps = con.prepareStatement(DatabaseConstants.GET_ALL_PLAYERS)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                players.add(new PlayerModel(
+                        rs.getString("USERNAME"),
+                        rs.getInt("SCORE"),
+                        rs.getString("STATUS")));
+            }
+        }
+        System.err.println("Players Number = : " + players.size());
+        return players;
+    }
 }
