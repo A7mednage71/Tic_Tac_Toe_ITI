@@ -12,6 +12,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.media.MediaView?>
 
 <StackPane stylesheets="/board_style.css" xmlns="http://javafx.com/javafx/17" 
            xmlns:fx="http://javafx.com/fxml/1" 
@@ -37,7 +38,7 @@
                         <HBox spacing="10.0" alignment="CENTER">
                             <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#5C7A33" height="35.0" width="35.0" />
                             <VBox alignment="CENTER_LEFT">
-                                <Label styleClass="player-name-label" text="You (X)" />
+                                <Label fx:id="playerNameLabel" styleClass="player-name-label" text="You (X)" />
                                 <Label fx:id="scoreX" styleClass="score-label" text="Score: 0" />
                             </VBox>
                         </HBox>
@@ -97,6 +98,18 @@
                         <Text text="DRAW!" style="-fx-fill: white; -fx-font-size: 30px; -fx-font-weight: bold;" />
                         <Button text="Play Again" onAction="#handlePlayAgainFromOverlay" 
                                 style="-fx-background-color: #5C7A33; -fx-text-fill: white; -fx-font-size: 18px; -fx-padding: 10 25; -fx-background-radius: 10; -fx-cursor: hand;" />
+                    </children>
+                </VBox>
+            </children>
+        </StackPane>
+        <StackPane fx:id="videoOverlay" visible="false" managed="false" 
+                   style="-fx-background-color: rgba(0, 0, 0, 0.9);">
+            <children>
+                <VBox alignment="CENTER" spacing="15">
+                    <children>
+                        <MediaView fx:id="videoMediaView" fitWidth="380" preserveRatio="true" />
+                        <Button text="CLOSE" onAction="#handleCloseVideo" 
+                                style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 30; -fx-background-radius: 10; -fx-cursor: hand;" />
                     </children>
                 </VBox>
             </children>

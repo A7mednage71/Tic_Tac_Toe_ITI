@@ -42,12 +42,14 @@ public class RegisterController implements Initializable {
     private Label alertTitle;
     @FXML
     private Label alertMessage;
+    @FXML
+    private Label alertIcon;
 
     private CustomAlertHandler alertHandler;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        alertHandler = new CustomAlertHandler(customAlertOverlay, alertBox, alertTitle, alertMessage);
+        alertHandler = new CustomAlertHandler(customAlertOverlay, alertBox, alertTitle, alertMessage, alertIcon);
     }
 
     @FXML

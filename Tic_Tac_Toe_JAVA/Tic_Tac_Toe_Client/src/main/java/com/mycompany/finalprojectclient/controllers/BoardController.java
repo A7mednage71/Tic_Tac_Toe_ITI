@@ -36,9 +36,17 @@ public class BoardController implements Initializable {
     @FXML
     private Label scoreO;
     @FXML
+    private Label playerNameLabel;
+    @FXML
     private Label opponentNameLabel;
     @FXML
     private StackPane drawOverlay;
+    @FXML
+    private StackPane videoOverlay;
+    @FXML
+    private MediaView videoMediaView;
+
+    private MediaPlayer mediaPlayer;
 
     private String playerX = "You";
     private String playerO = "Opponent";
@@ -49,14 +57,49 @@ public class BoardController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        if (GameSession.vsComputer) {
+        if (GameSession.isOnline) {
+            String myName = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
+            if ("X".equals(GameSession.playerSymbol)) {
+                playerX = myName;
+                playerO = GameSession.opponentName;
+                playerNameLabel.setText(playerX + " (X)");
+                opponentNameLabel.setText(playerO + " (O)");
+            } else {
+                playerX = GameSession.opponentName;
+                playerO = myName;
+                playerNameLabel.setText(playerO + " (O)");
+                opponentNameLabel.setText(playerX + " (X)");
+            }
+
+            // Setup listener for opponent withdrawal
+            com.mycompany.finalprojectclient.network.ServerConnection.getInstance().setInviteListener(new com.mycompany.finalprojectclient.network.ServerConnection.InviteListener() {
+                @Override public void onInviteReceived(String from) {}
+                @Override public void onInviteAccepted(String user) {}
+                @Override public void onInviteRejected(String user) {}
+                
+                @Override
+                public void onOpponentWithdrew(String username) {
+                    Platform.runLater(() -> {
+                        if (!gameOver) {
+                            // Update score for the winner who stayed
+                            if ("X".equals(GameSession.playerSymbol)) countX++; else countO++;
+                            updateScoreLabels();
+                            finishGame("Opponent Left. You Win!");
+                        }
+                    });
+                }
+            });
+
+        } else if (GameSession.vsComputer) {
             playerX = "You";
             playerO = "Computer";
+            playerNameLabel.setText("You (X)");
             opponentNameLabel.setText("Computer 💻");
         } else {
             playerX = "Player 1";
             playerO = "Player 2";
-            opponentNameLabel.setText("Player 1's Turn (X)");
+            playerNameLabel.setText("Player 1 (X)");
+            opponentNameLabel.setText("Player 2 (O)");
         }
         updateScoreLabels();
     }
@@ -213,13 +256,34 @@ public class BoardController implements Initializable {
         gameOver = true;
         updateScoreLabels();
         Platform.runLater(() -> {
-            if (message.contains("X Wins"))
-                playVideo("/videos/winner.mp4");
-            else if (message.contains("O Wins")) {
-                if (GameSession.vsComputer)
-                    playVideo("/videos/loser.mp4");
-                else
+            String msgLower = message.toLowerCase();
+            if (msgLower.contains("win")) {
+                boolean showWinnerVideo = true;
+
+                if (GameSession.isOnline) {
+                    // In online mode, check if the winning symbol matches our symbol
+                    // message could be "X Wins!", "O Wins!", or "Opponent Left. You Win!"
+                    if (message.contains("X Wins") && !"X".equals(GameSession.playerSymbol)) {
+                        showWinnerVideo = false;
+                    } else if (message.contains("O Wins") && !"O".equals(GameSession.playerSymbol)) {
+                        showWinnerVideo = false;
+                    }
+                    // If message contains "You Win" (from withdrawal), showWinnerVideo stays true
+                } else if (GameSession.vsComputer) {
+                    // In vsComputer, player is always X
+                    if (message.contains("O Wins")) {
+                        showWinnerVideo = false;
+                    }
+                }
+                // For Local PVP, we'll keep showing winner video as both players are at the same screen
+
+                if (showWinnerVideo) {
                     playVideo("/videos/winner.mp4");
+                } else {
+                    playVideo("/videos/loser.mp4");
+                }
+            } else if (msgLower.contains("draw")) {
+                showDrawAlert();
             } else {
                 showDrawAlert();
             }
@@ -302,7 +366,19 @@ public class BoardController implements Initializable {
     @FXML
     private void handleBack(ActionEvent event) {
         try {
-            switchScene(GameSession.vsComputer ? "vsComputer.fxml" : "Home.fxml", event);
+            if (GameSession.isOnline) {
+                // Send WITHDRAW to server
+                com.mycompany.finalprojectclient.models.RequestData req = new com.mycompany.finalprojectclient.models.RequestData();
+                req.key = com.mycompany.finalprojectclient.models.RequestType.WITHDRAW;
+                req.username = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
+                req.targetUsername = GameSession.opponentName;
+                com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendRequest(req);
+
+                GameSession.isOnline = false;
+                switchScene("TicTacToeLobby.fxml", event);
+            } else {
+                switchScene(GameSession.vsComputer ? "vsComputer.fxml" : "Home.fxml", event);
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -323,27 +399,49 @@ public class BoardController implements Initializable {
     private void playVideo(String videoPath) {
         try {
             URL videoUrl = getClass().getResource(videoPath);
-            if (videoUrl == null)
-                return;
+            if (videoUrl == null) return;
+            
+            if (mediaPlayer != null) {
+                mediaPlayer.stop();
+                mediaPlayer.dispose();
+            }
+
             Media media = new Media(videoUrl.toExternalForm());
-            MediaPlayer mediaPlayer = new MediaPlayer(media);
-            MediaView mediaView = new MediaView(mediaPlayer);
-            mediaView.setFitWidth(400);
-            mediaView.setPreserveRatio(true);
-            StackPane root = new StackPane(mediaView);
-            Scene scene = new Scene(root, 400, 300);
-            Stage videoStage = new Stage();
-            videoStage.setTitle(videoPath.contains("winner") ? "🎉 Winner! 🎉" : "😢 Loser! 😢");
-            videoStage.setScene(scene);
-            videoStage.show();
+            mediaPlayer = new MediaPlayer(media);
+            videoMediaView.setMediaPlayer(mediaPlayer);
+            
+            videoOverlay.setVisible(true);
+            videoOverlay.setManaged(true);
+            videoOverlay.setOpacity(0);
+            
+            FadeTransition ft = new FadeTransition(Duration.millis(500), videoOverlay);
+            ft.setToValue(1.0);
+            ft.play();
+
             mediaPlayer.play();
             mediaPlayer.setOnEndOfMedia(() -> {
-                mediaPlayer.dispose();
-                videoStage.close();
+                // Keep the last frame or show button
             });
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void handleCloseVideo(ActionEvent event) {
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.dispose();
+            mediaPlayer = null;
+        }
+        
+        FadeTransition ft = new FadeTransition(Duration.millis(300), videoOverlay);
+        ft.setToValue(0);
+        ft.setOnFinished(e -> {
+            videoOverlay.setVisible(false);
+            videoOverlay.setManaged(false);
+        });
+        ft.play();
     }
 
     private boolean takeCenter() {

@@ -41,7 +41,70 @@ public class RequestManager {
             case GET_ONLINE_USERS:
                 handleGetOnlineUsers();
                 break;
+
+            case SEND_INVITE:
+                handleSendInvite(request);
+                break;
+
+            case ACCEPT_INVITE:
+                handleAcceptInvite(request);
+                break;
+
+            case REJECT_INVITE:
+                handleRejectInvite(request);
+                break;
+
+            case UPDATE_STATUS:
+                handleUpdateStatus(request);
+                break;
+
+            case WITHDRAW:
+                handleWithdraw(request);
+                break;
         }
+    }
+
+    private void handleUpdateStatus(RequestData req) throws IOException {
+        String newStatus = req.password; // Using password field as a temp container for status string
+        if (newStatus == null) return;
+        
+        clientHandler.setStatus(newStatus);
+        UserDAO.getInstance().updateUserStatus(clientHandler.getUsername(), newStatus);
+        
+        System.out.println("Status updated to " + newStatus + " for " + clientHandler.getUsername());
+        
+        // Send response to the requester so they don't hang
+        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Status updated");
+        sendResponse(response);
+        
+        ServerThread.broadcastUserListUpdate();
+    }
+
+    private void handleWithdraw(RequestData req) throws IOException {
+        String fromUser = req.username;
+        String targetUser = req.targetUsername;
+
+        System.out.println(fromUser + " withdrew from game against " + targetUser);
+
+        // Update statuses back to active
+        clientHandler.setStatus("active");
+        UserDAO.getInstance().updateUserStatus(fromUser, "active");
+
+        ClientHandler targetClient = findClientByUsername(targetUser);
+        if (targetClient != null) {
+            targetClient.setStatus("active");
+            UserDAO.getInstance().updateUserStatus(targetUser, "active");
+            
+            // Notify target that opponent left
+            try {
+                targetClient.sendWithdrawNotification(fromUser);
+            } catch (Exception e) {}
+        }
+
+        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Withdrawn");
+        sendResponse(response);
+        
+        ServerThread.broadcastUserListUpdate();
     }
 
     private void handleRegister(RequestData req) throws IOException {
@@ -73,6 +136,7 @@ public class RequestManager {
                 response = new ResponseData(ResponseStatus.FAILURE, "ALREADY_LOGGED_IN");
             } else {
                 clientHandler.setUsername(cleanUsername);
+                clientHandler.setStatus("active");
 
                 UserDAO.getInstance().updateUserStatus(cleanUsername, "active");
 
@@ -89,14 +153,81 @@ public class RequestManager {
     }
 
     private void handleGetOnlineUsers() throws IOException {
-        List<String> onlineUsersList = new ArrayList<>();
+        java.util.Map<String, String> onlineUsersMap = new java.util.HashMap<>();
         for (ClientHandler client : ServerThread.onlineUsers) {
             if (client.getUsername() != null) {
-                onlineUsersList.add(client.getUsername());
+                onlineUsersMap.put(client.getUsername(), client.getStatus());
             }
         }
-        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, gson.toJson(onlineUsersList));
+        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, gson.toJson(onlineUsersMap));
         sendResponse(response);
+    }
+
+    private void handleSendInvite(RequestData req) throws IOException {
+        String fromUsername = req.username;
+        String targetUsername = req.targetUsername;
+
+        System.out.println("Invite from " + fromUsername + " to " + targetUsername);
+
+        // Find target client
+        ClientHandler targetClient = findClientByUsername(targetUsername);
+        if (targetClient != null) {
+            targetClient.sendInvite(fromUsername);
+            ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Invite sent");
+            sendResponse(response);
+        } else {
+            ResponseData response = new ResponseData(ResponseStatus.FAILURE, "User not found");
+            sendResponse(response);
+        }
+    }
+
+    private void handleAcceptInvite(RequestData req) throws IOException {
+        String acceptingUsername = req.username;
+        String inviterUsername = req.targetUsername;
+
+        System.out.println(acceptingUsername + " accepted invite from " + inviterUsername);
+
+        // Update ClientHandlers
+        clientHandler.setStatus("in_game");
+        ClientHandler inviterClient = findClientByUsername(inviterUsername);
+        if (inviterClient != null) {
+            inviterClient.setStatus("in_game");
+            inviterClient.sendInviteAccepted(acceptingUsername);
+        }
+
+        // Update both users' status to "in_game" in database
+        UserDAO.getInstance().updateUserStatus(acceptingUsername, "in_game");
+        UserDAO.getInstance().updateUserStatus(inviterUsername, "in_game");
+
+        ServerThread.broadcastUserListUpdate();
+
+        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Invite accepted");
+        sendResponse(response);
+    }
+
+    private void handleRejectInvite(RequestData req) throws IOException {
+        String rejectingUsername = req.username;
+        String inviterUsername = req.targetUsername;
+
+        System.out.println(rejectingUsername + " rejected invite from " + inviterUsername);
+
+        // Notify the inviter that their invite was rejected
+        ClientHandler inviterClient = findClientByUsername(inviterUsername);
+        if (inviterClient != null) {
+            inviterClient.sendInviteRejected(rejectingUsername);
+        }
+
+        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Invite rejected");
+        sendResponse(response);
+    }
+
+    private ClientHandler findClientByUsername(String username) {
+        for (ClientHandler client : ServerThread.onlineUsers) {
+            if (client.getUsername() != null && client.getUsername().equals(username)) {
+                return client;
+            }
+        }
+        return null;
     }
 
     private void sendResponse(ResponseData responseData) throws IOException {

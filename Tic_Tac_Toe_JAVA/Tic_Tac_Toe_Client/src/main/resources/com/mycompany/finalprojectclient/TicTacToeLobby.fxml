@@ -5,78 +5,122 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="600.0"
-            prefWidth="400.0"
-            style="-fx-background-color: #2D2926;"
-            xmlns="http://javafx.com/javafx/17"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.mycompany.finalprojectclient.controllers.TicTacToeLobbyController">
+<StackPane prefHeight="600.0"
+           prefWidth="400.0"
+           xmlns="http://javafx.com/javafx/17"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.mycompany.finalprojectclient.controllers.TicTacToeLobbyController">
 
-    <children>
+    <AnchorPane prefHeight="600.0"
+                prefWidth="400.0"
+                style="-fx-background-color: #2D2926;">
 
-        <VBox alignment="TOP_CENTER"
-              spacing="20"
-              AnchorPane.topAnchor="0"
-              AnchorPane.bottomAnchor="0"
-              AnchorPane.leftAnchor="0"
-              AnchorPane.rightAnchor="0">
+        <children>
 
-            <padding>
-                <Insets top="40" bottom="30" left="20" right="20"/>
-            </padding>
+            <VBox alignment="TOP_CENTER"
+                  spacing="20"
+                  AnchorPane.topAnchor="0"
+                  AnchorPane.bottomAnchor="0"
+                  AnchorPane.leftAnchor="0"
+                  AnchorPane.rightAnchor="0">
 
-            <Label text="Tic Tac Toe" textFill="WHITE">
-                <font>
-                    <Font size="32" name="System Bold"/>
-                </font>
-            </Label>
-
-            <Label text="Choose an Online Player to Invite"
-                   textFill="#88a050">
-                <font>
-                    <Font size="16"/>
-                </font>
-            </Label>
-
-         
-            <ScrollPane fitToWidth="true"
-                        hbarPolicy="NEVER"
-                        VBox.vgrow="ALWAYS"
-                        style="-fx-background-color: #3B3631;
-                               -fx-background-radius: 15;
-                               -fx-border-radius: 15;
-                               -fx-border-color: #4A443F;">
-
-                <content>
-                    <VBox fx:id="usersContainer"
-                          spacing="10"
-                          style="-fx-background-color: #3B3631;">
-                        <padding>
-                            <Insets top="10" bottom="10" left="10" right="10"/>
-                        </padding>
-                    </VBox>
-                </content>
-            </ScrollPane>
-
-         
-            <Button fx:id="backButton"
-                    text="Back"
-                    onAction="#handleBack"
-                    prefWidth="160"
-                    pickOnBounds="true"
-                    style="-fx-background-color: #4A5D23;
-                           -fx-text-fill: white;
-                           -fx-font-size: 15;
-                           -fx-background-radius: 8;">
                 <padding>
-                    <Insets top="12" bottom="12"/>
+                    <Insets top="40" bottom="30" left="20" right="20"/>
                 </padding>
-            </Button>
+
+                <Label text="Tic Tac Toe" textFill="WHITE">
+                    <font>
+                        <Font size="32" name="System Bold"/>
+                    </font>
+                </Label>
+
+                <Label text="Choose an Online Player to Invite"
+                       textFill="#88a050">
+                    <font>
+                        <Font size="16"/>
+                    </font>
+                </Label>
+
+             
+                <ScrollPane fitToWidth="true"
+                            hbarPolicy="NEVER"
+                            VBox.vgrow="ALWAYS"
+                            style="-fx-background-color: #3B3631;
+                                   -fx-background-radius: 15;
+                                   -fx-border-radius: 15;
+                                   -fx-border-color: #4A443F;">
+
+                    <content>
+                        <VBox fx:id="usersContainer"
+                              spacing="10"
+                              style="-fx-background-color: #3B3631;">
+                            <padding>
+                                <Insets top="10" bottom="10" left="10" right="10"/>
+                            </padding>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+
+             
+                <Button fx:id="backButton"
+                        text="Back"
+                        onAction="#handleBack"
+                        prefWidth="160"
+                        pickOnBounds="true"
+                        style="-fx-background-color: #4A5D23;
+                               -fx-text-fill: white;
+                               -fx-font-size: 15;
+                               -fx-background-radius: 8;">
+                    <padding>
+                        <Insets top="12" bottom="12"/>
+                    </padding>
+                </Button>
+
+            </VBox>
+
+        </children>
+    </AnchorPane>
+
+    <!-- Alert Overlay -->
+    <StackPane fx:id="alertOverlay"
+               visible="false"
+               managed="false"
+               style="-fx-background-color: rgba(0,0,0,0.7);">
+
+        <VBox fx:id="alertBox"
+              alignment="CENTER"
+              spacing="15"
+              maxWidth="320"
+              style="-fx-background-color: linear-gradient(to bottom right, #3B3631, #2D2926);
+                     -fx-background-radius: 20;
+                     -fx-border-color: #88a050;
+                     -fx-border-radius: 20;
+                     -fx-border-width: 2;
+                     -fx-padding: 35;
+                     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 20, 0, 0, 10);">
+
+            <Label fx:id="alertIcon"
+                   text="🔔"
+                   style="-fx-font-size: 40;"/>
+
+            <Label fx:id="alertTitle"
+                   text="Alert"
+                   textFill="#f39c12"
+                   style="-fx-font-size: 22; -fx-font-weight: bold; -fx-font-family: 'System'; "/>
+
+            <Label fx:id="alertMessage"
+                   text="Message"
+                   textFill="white"
+                   wrapText="true"
+                   textAlignment="CENTER"
+                   style="-fx-font-size: 15; -fx-line-spacing: 5px;"/>
 
         </VBox>
 
-    </children>
-</AnchorPane>
+    </StackPane>
+
+</StackPane>

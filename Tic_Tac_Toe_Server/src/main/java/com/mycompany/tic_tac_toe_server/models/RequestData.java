@@ -4,4 +4,5 @@ public class RequestData {
     public RequestType key;
     public String username;
     public String password;
+    public String targetUsername;
 }
