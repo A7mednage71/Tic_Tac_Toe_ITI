@@ -176,7 +176,61 @@
     -fx-font-size: 14px;
 }
 
-.dev-gold { -fx-text-fill: #f1c40f; }
-.dev-cyan { -fx-text-fill: #00d2d3; }
-.dev-red  { -fx-text-fill: #ff6b6b; }
-.dev-purple { -fx-text-fill: #a29bfe; }
+.dev-gold {
+    -fx-text-fill: #f1c40f;
+}
+.dev-cyan {
+    -fx-text-fill: #00d2d3;
+}
+.dev-red  {
+    -fx-text-fill: #ff6b6b;
+}
+.dev-purple {
+    -fx-text-fill: #a29bfe;
+}
+
+
+.custom-alert-box {
+    -fx-background-color: #222f3e;
+    -fx-border-color: #2ed573;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 213, 115, 0.4), 20, 0.3, 0, 0);
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+}
+
+.alert-title-base {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI";
+    -fx-text-fill: white;
+}
+
+.alert-title-error {
+    -fx-text-fill: #ff6b6b;
+}
+.alert-title-success {
+    -fx-text-fill: #2ed573;
+}
+.alert-title-warning {
+    -fx-text-fill: #f1c40f;
+}
+
+.alert-message {
+    -fx-text-fill: #e8e2d2;
+    -fx-font-size: 14px;
+}
+
+.alert-btn {
+    -fx-background-color: #5C7A33;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 20;
+    -fx-padding: 8 30;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
+
+.alert-btn:hover {
+    -fx-background-color: #6D8B44;
+}

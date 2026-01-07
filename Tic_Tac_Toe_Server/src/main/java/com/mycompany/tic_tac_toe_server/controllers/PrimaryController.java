@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import com.mycompany.tic_tac_toe_server.utils.CustomAlert;
 import com.mycompany.tic_tac_toe_server.database.UserDAO;
 import com.mycompany.tic_tac_toe_server.models.PlayerModel;
 import com.mycompany.tic_tac_toe_server.network.ServerThread;
@@ -29,6 +30,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.stage.Window;
 
 public class PrimaryController implements Initializable {
 
@@ -58,7 +60,7 @@ public class PrimaryController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        startServer.setText("Start Server");
+        startServer.setText("🚀 Start Server");
         startServer.setStyle("-fx-background-color: #2ed573;");
 
         checkDatabaseConnection();
@@ -67,10 +69,17 @@ public class PrimaryController implements Initializable {
         startListUpdater();
     }
 
+    private Window getWindow() {
+        if (startServer.getScene() != null) {
+            return startServer.getScene().getWindow();
+        }
+        return null;
+    }
+
     private void checkDatabaseConnection() {
         Platform.runLater(() -> {
             if (UserDAO.getInstance().getConnection() == null) {
-                showAlert(Alert.AlertType.ERROR, "Error", "Database connection failed");
+                CustomAlert.show(null, Alert.AlertType.ERROR, "Error", "Database connection failed");
             }
         });
     }
@@ -86,21 +95,21 @@ public class PrimaryController implements Initializable {
 
     private void startServer() {
         if (UserDAO.getInstance().getConnection() == null) {
-            showAlert(Alert.AlertType.ERROR, "Error", "Database not connected");
+            CustomAlert.show(getWindow(), Alert.AlertType.ERROR, "Error", "Database not connected");
             return;
         }
         try {
             serverThread = new ServerThread();
             serverThread.start();
 
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Server started");
+            CustomAlert.show(getWindow(), Alert.AlertType.INFORMATION, "Success", "Server started");
 
-            startServer.setText("Stop Server");
+            startServer.setText("⏹ Stop Server");
             startServer.setStyle("-fx-background-color: #ff4757;");
             started = true;
 
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to start server");
+            CustomAlert.show(getWindow(), Alert.AlertType.ERROR, "Error", "Failed to start server");
             e.printStackTrace();
         }
     }
@@ -110,20 +119,12 @@ public class PrimaryController implements Initializable {
             serverThread.stopServer();
             serverThread = null;
 
-            startServer.setText("Start Server");
+            startServer.setText("🚀 Start Server");
             startServer.setStyle("-fx-background-color: #2ed573;");
             started = false;
 
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Server stopped");
+            CustomAlert.show(getWindow(), Alert.AlertType.INFORMATION, "Success", "Server stopped");
         }
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     private void setupPlayersList() {
@@ -173,16 +174,12 @@ public class PrimaryController implements Initializable {
                     String status = player.getStatus() != null ? player.getStatus().toLowerCase() : "offline";
 
                     switch (status) {
-                        case "active":
-                        case "online":
+                        case "active", "online" ->
                             statusCircle.setFill(Color.LIMEGREEN);
-                            break;
-                        case "in_game":
+                        case "in_game" ->
                             statusCircle.setFill(Color.GOLD);
-                            break;
-                        default:
+                        default ->
                             statusCircle.setFill(Color.GREY);
-                            break;
                     }
 
                     HBox hBox = new HBox(vBox, statusCircle);
