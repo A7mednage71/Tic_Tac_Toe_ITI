@@ -107,16 +107,6 @@
     -fx-effect: null;
 }
 
-.card-panel {
-    -fx-background-color: #2d2522;
-    -fx-background-radius: 15;
-    -fx-border-color: #504a4a;
-    -fx-border-radius: 15;
-    -fx-border-width: 1;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 8, 0, 0, 2);
-    -fx-padding: 20;
-}
-
 .scroll-bar:vertical {
     -fx-background-color: transparent;
     -fx-pref-width: 8;
@@ -130,3 +120,63 @@
 .scroll-bar:vertical .track {
     -fx-background-color: transparent;
 }
+
+.card-panel {
+    -fx-background-color: #2d2522;
+    -fx-background-radius: 15;
+    -fx-border-color: #504a4a;
+    -fx-border-radius: 15;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 8, 0, 0, 2);
+    -fx-padding: 20;
+}
+
+.watermark-grid {
+    -fx-opacity: 0.3;
+    -fx-rotate: -15;
+    -fx-translate-y: 60;
+}
+
+.wm-card-green {
+    -fx-background-color: #2ed573;
+    -fx-background-radius: 15;
+    -fx-pref-width: 120;
+    -fx-pref-height: 120;
+}
+
+.wm-card-transparent {
+    -fx-pref-width: 120;
+    -fx-pref-height: 120;
+}
+
+.wm-text-filled {
+    -fx-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 80px;
+}
+
+.wm-text-outline-grey {
+    -fx-fill: transparent;
+    -fx-stroke: #7f8fa6;
+    -fx-stroke-width: 5;
+    -fx-font-size: 80px;
+    -fx-font-weight: bold;
+}
+
+.wm-text-outline-green {
+    -fx-fill: transparent;
+    -fx-stroke: #2ed573;
+    -fx-stroke-width: 5;
+    -fx-font-size: 80px;
+    -fx-font-weight: bold;
+}
+
+.dev-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.dev-gold { -fx-text-fill: #f1c40f; }
+.dev-cyan { -fx-text-fill: #00d2d3; }
+.dev-red  { -fx-text-fill: #ff6b6b; }
+.dev-purple { -fx-text-fill: #a29bfe; }
