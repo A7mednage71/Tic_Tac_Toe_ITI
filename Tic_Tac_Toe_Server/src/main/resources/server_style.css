@@ -134,7 +134,7 @@
 .watermark-grid {
     -fx-opacity: 0.3;
     -fx-rotate: -15;
-    -fx-translate-y: 60;
+    -fx-translate-y: 40;
 }
 
 .wm-card-green {
