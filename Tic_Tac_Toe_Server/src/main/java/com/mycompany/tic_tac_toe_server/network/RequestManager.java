@@ -124,7 +124,6 @@ public class RequestManager {
 
         System.out.println("Invite from " + fromUsername + " to " + targetUsername);
 
-        // Find target client
         ClientHandler targetClient = findClientByUsername(targetUsername);
         if (targetClient != null) {
             targetClient.sendInvite(fromUsername);
@@ -152,6 +151,10 @@ public class RequestManager {
             return;
         }
 
+        // NEW STATEMENTS: Pairing the clients for raw data forwarding
+        this.clientHandler.setOpponent(inviterClient);
+        inviterClient.setOpponent(this.clientHandler);
+
         this.clientHandler.setStatus("in_game");
         inviterClient.setStatus("in_game");
 
@@ -160,7 +163,10 @@ public class RequestManager {
 
         ServerThread.broadcastUserListUpdate();
 
-        inviterClient.sendInviteAccepted(acceptingUsername);
+        // NEW STATEMENTS: Sending Game Start signals with tokens (X and O)
+        inviterClient.sendInviteAccepted(acceptingUsername); 
+        inviterClient.sendMessage("GAME_START|X|" + acceptingUsername);
+        this.clientHandler.sendMessage("GAME_START|O|" + inviterUsername);
 
         sendResponse(new ResponseData(ResponseStatus.SUCCESS, "Invite accepted"));
     }
@@ -171,7 +177,6 @@ public class RequestManager {
 
         System.out.println(rejectingUsername + " rejected invite from " + inviterUsername);
 
-        // Notify the inviter that their invite was rejected
         ClientHandler inviterClient = findClientByUsername(inviterUsername);
         if (inviterClient != null) {
             inviterClient.sendInviteRejected(rejectingUsername);
@@ -182,7 +187,7 @@ public class RequestManager {
     }
 
     private void handleUpdateStatus(RequestData req) throws IOException {
-        String newStatus = req.password; // Using password field as a temp container for status string
+        String newStatus = req.password; 
         if (newStatus == null) {
             return;
         }
@@ -192,7 +197,6 @@ public class RequestManager {
 
         System.out.println("Status updated to " + newStatus + " for " + clientHandler.getUsername());
 
-        // Send response to the requester so they don't hang
         ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Status updated");
         sendResponse(response);
 
@@ -205,16 +209,18 @@ public class RequestManager {
 
         System.out.println(fromUser + " withdrew from game against " + targetUser);
 
-        // Update statuses back to active
+        // NEW STATEMENTS: Unlinking the players
+        clientHandler.setOpponent(null);
         clientHandler.setStatus("active");
         UserDAO.getInstance().updateUserStatus(fromUser, "active");
 
         ClientHandler targetClient = findClientByUsername(targetUser);
 
         if (targetClient != null) {
+            // NEW STATEMENTS: Unlinking the target player
+            targetClient.setOpponent(null);
             targetClient.setStatus("active");
             UserDAO.getInstance().updateUserStatus(targetUser, "active");
-            // Notify target that opponent left
             targetClient.sendWithdrawNotification(fromUser);
         }
 

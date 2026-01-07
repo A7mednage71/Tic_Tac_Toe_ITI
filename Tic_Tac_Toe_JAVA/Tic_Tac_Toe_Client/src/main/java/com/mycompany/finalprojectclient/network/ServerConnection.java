@@ -21,6 +21,7 @@ public class ServerConnection {
     private BlockingQueue<String> responseQueue = new LinkedBlockingQueue<>();
     private NotificationListener notificationListener;
     private InviteListener inviteListener;
+    private GameMoveListener gameMoveListener;
     private Thread messageRouter;
 
     public interface NotificationListener {
@@ -29,8 +30,11 @@ public class ServerConnection {
 
     public interface InviteListener {
         void onInviteReceived(String fromUsername);
+
         void onInviteAccepted(String username);
+
         void onInviteRejected(String username);
+
         void onOpponentWithdrew(String username);
     }
 
@@ -106,6 +110,16 @@ public class ServerConnection {
                         if (inviteListener != null) {
                             inviteListener.onOpponentWithdrew(username);
                         }
+                    } else if (message.startsWith("MOVE|")) {
+                        String[] parts = message.split("\\|");
+                        if (parts.length == 3 && gameMoveListener != null) {
+                            int r = Integer.parseInt(parts[1]);
+                            int c = Integer.parseInt(parts[2]);
+                            gameMoveListener.onMoveReceived(r, c);
+                        }
+                    } else if (message.startsWith("GAME_START|")) {
+                        // Ignore or handle if needed, but don't put in responseQueue
+                        System.out.println("Game started: " + message);
                     } else {
                         responseQueue.put(message);
                     }
@@ -125,6 +139,25 @@ public class ServerConnection {
                 req.key = RequestType.DISCONNECT;
                 dos.writeUTF(gson.toJson(req));
                 socket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public interface GameMoveListener {
+        void onMoveReceived(int r, int c);
+    }
+
+    public void setGameMoveListener(GameMoveListener listener) {
+        this.gameMoveListener = listener;
+    }
+
+    public void sendGameMove(int r, int c) {
+        try {
+            if (dos != null) {
+                dos.writeUTF("MOVE|" + r + "|" + c);
+                dos.flush();
             }
         } catch (IOException e) {
             e.printStackTrace();

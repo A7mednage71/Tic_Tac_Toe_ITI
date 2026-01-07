@@ -72,22 +72,55 @@ public class BoardController implements Initializable {
             }
 
             // Setup listener for opponent withdrawal
-            com.mycompany.finalprojectclient.network.ServerConnection.getInstance().setInviteListener(new com.mycompany.finalprojectclient.network.ServerConnection.InviteListener() {
-                @Override public void onInviteReceived(String from) {}
-                @Override public void onInviteAccepted(String user) {}
-                @Override public void onInviteRejected(String user) {}
-                
-                @Override
-                public void onOpponentWithdrew(String username) {
-                    Platform.runLater(() -> {
-                        if (!gameOver) {
-                            // Update score for the winner who stayed
-                            if ("X".equals(GameSession.playerSymbol)) countX++; else countO++;
-                            updateScoreLabels();
-                            finishGame("Opponent Left. You Win!");
+            com.mycompany.finalprojectclient.network.ServerConnection.getInstance()
+                    .setInviteListener(new com.mycompany.finalprojectclient.network.ServerConnection.InviteListener() {
+                        @Override
+                        public void onInviteReceived(String from) {
+                        }
+
+                        @Override
+                        public void onInviteAccepted(String user) {
+                        }
+
+                        @Override
+                        public void onInviteRejected(String user) {
+                        }
+
+                        @Override
+                        public void onOpponentWithdrew(String username) {
+                            Platform.runLater(() -> {
+                                if (!gameOver) {
+                                    // Update score for the winner who stayed
+                                    if ("X".equals(GameSession.playerSymbol))
+                                        countX++;
+                                    else
+                                        countO++;
+                                    updateScoreLabels();
+                                    finishGame("Opponent Left. You Win!");
+                                }
+                            });
                         }
                     });
-                }
+
+            com.mycompany.finalprojectclient.network.ServerConnection.getInstance().setGameMoveListener((r, c) -> {
+                Platform.runLater(() -> {
+                    Button[][] grid = getGridArray();
+                    if (r >= 0 && r < 3 && c >= 0 && c < 3 && grid[r][c].getText().isEmpty()) {
+                        String oppSymbol = "X".equals(GameSession.playerSymbol) ? "O" : "X";
+                        playMove(grid[r][c], oppSymbol);
+                        if (checkWinner(oppSymbol)) {
+                            if (oppSymbol.equals("X"))
+                                countX++;
+                            else
+                                countO++;
+                            finishGame(oppSymbol + " Wins!");
+                        } else if (isBoardFull()) {
+                            finishGame("Draw!");
+                        } else {
+                            isXTurn = !isXTurn;
+                        }
+                    }
+                });
             });
 
         } else if (GameSession.vsComputer) {
@@ -118,6 +151,31 @@ public class BoardController implements Initializable {
                 } else {
                     gameGrid.setDisable(true);
                     playComputerTurn();
+                }
+            } else if (GameSession.isOnline) {
+                // Online Logic
+                String mySymbol = GameSession.playerSymbol;
+                boolean isMyTurn = (isXTurn && "X".equals(mySymbol)) || (!isXTurn && "O".equals(mySymbol));
+
+                if (isMyTurn) {
+                    playMove(clickedButton, mySymbol);
+
+                    // Send move
+                    int r = GridPane.getRowIndex(clickedButton) == null ? 0 : GridPane.getRowIndex(clickedButton);
+                    int c = GridPane.getColumnIndex(clickedButton) == null ? 0 : GridPane.getColumnIndex(clickedButton);
+                    com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendGameMove(r, c);
+
+                    if (checkWinner(mySymbol)) {
+                        if (mySymbol.equals("X"))
+                            countX++;
+                        else
+                            countO++;
+                        finishGame(mySymbol + " Wins!");
+                    } else if (isBoardFull()) {
+                        finishGame("Draw!");
+                    } else {
+                        isXTurn = !isXTurn;
+                    }
                 }
             } else {
                 String currentSymbol = isXTurn ? "X" : "O";
@@ -275,7 +333,8 @@ public class BoardController implements Initializable {
                         showWinnerVideo = false;
                     }
                 }
-                // For Local PVP, we'll keep showing winner video as both players are at the same screen
+                // For Local PVP, we'll keep showing winner video as both players are at the
+                // same screen
 
                 if (showWinnerVideo) {
                     playVideo("/videos/winner.mp4");
@@ -372,7 +431,9 @@ public class BoardController implements Initializable {
                 req.key = com.mycompany.finalprojectclient.models.RequestType.WITHDRAW;
                 req.username = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
                 req.targetUsername = GameSession.opponentName;
+                req.targetUsername = GameSession.opponentName;
                 com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendRequest(req);
+                com.mycompany.finalprojectclient.network.ServerConnection.getInstance().setGameMoveListener(null);
 
                 GameSession.isOnline = false;
                 switchScene("TicTacToeLobby.fxml", event);
@@ -399,8 +460,9 @@ public class BoardController implements Initializable {
     private void playVideo(String videoPath) {
         try {
             URL videoUrl = getClass().getResource(videoPath);
-            if (videoUrl == null) return;
-            
+            if (videoUrl == null)
+                return;
+
             if (mediaPlayer != null) {
                 mediaPlayer.stop();
                 mediaPlayer.dispose();
@@ -409,11 +471,11 @@ public class BoardController implements Initializable {
             Media media = new Media(videoUrl.toExternalForm());
             mediaPlayer = new MediaPlayer(media);
             videoMediaView.setMediaPlayer(mediaPlayer);
-            
+
             videoOverlay.setVisible(true);
             videoOverlay.setManaged(true);
             videoOverlay.setOpacity(0);
-            
+
             FadeTransition ft = new FadeTransition(Duration.millis(500), videoOverlay);
             ft.setToValue(1.0);
             ft.play();
@@ -434,7 +496,7 @@ public class BoardController implements Initializable {
             mediaPlayer.dispose();
             mediaPlayer = null;
         }
-        
+
         FadeTransition ft = new FadeTransition(Duration.millis(300), videoOverlay);
         ft.setToValue(0);
         ft.setOnFinished(e -> {
