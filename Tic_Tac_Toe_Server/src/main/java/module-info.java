@@ -15,4 +15,6 @@ module com.mycompany.tic_tac_toe_server {
     exports com.mycompany.tic_tac_toe_server.network;
     exports com.mycompany.tic_tac_toe_server.models;
     exports com.mycompany.tic_tac_toe_server.database;
+    exports com.mycompany.tic_tac_toe_server.utils;
+
 }
