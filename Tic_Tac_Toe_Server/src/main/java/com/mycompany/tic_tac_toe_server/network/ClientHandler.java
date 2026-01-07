@@ -18,123 +18,137 @@ public class ClientHandler extends Thread {
     private final Gson gson = new Gson();
     private RequestManager requestManager;
 
+    // Game Logic Fields
+    private ClientHandler opponent; 
+    private boolean isInGame = false;
+    
     private String username;
     private String status = "active";
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
     }
-
+    
+    // for matchmaking
     public void setStatus(String status) {
         this.status = status;
     }
-
     public String getStatus() {
         return status;
     }
+    // --------------------
+    
+    // --- Game Logic Methods ---
+
+    public void setOpponent(ClientHandler opp) {
+        this.opponent = opp;
+        this.isInGame = (opp != null);
+        this.status = (opp != null) ? "busy" : "active"; // Update status if in game
+    }
+
+    /**
+     * Helper to send strings safely to this specific client
+     */
+    public void sendMessage(String message) {
+        try {
+            if (dos != null) {
+                dos.writeUTF(message);
+                dos.flush();
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to send message to " + username);
+        }
+    }
+
+    /**
+     * Processes game-specific raw strings (e.g., MOVE|row|col)
+     */
+    private void handleGameData(String data) {
+        if (data.startsWith("MOVE|") && isInGame && opponent != null) {
+            // Forward the move directly to the opponent's device
+            opponent.sendMessage(data);
+            System.out.println("Forwarding move from " + username + " to " + opponent.getUsername());
+        } 
+        // Note: INVITE logic is likely handled via JSON in your RequestManager, 
+        // but if you want it here as a string, you can add it.
+    }
+
+    // --- Core Logic ---
 
     @Override
     public void run() {
         try {
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
-
             requestManager = new RequestManager(dos, this);
 
             while (isRunning) {
-                String jsonRequest = dis.readUTF();
-                System.out.println("Received JSON: " + jsonRequest);
-                try {
-                    RequestData request = gson.fromJson(jsonRequest, RequestData.class);
-                    if (request != null && request.key != null) {
-                        requestManager.processRequest(request);
+                String input = dis.readUTF();
+                
+                // DECIDE: Is this a Game Move (String) or a System Request (JSON)?
+                if (input.startsWith("MOVE|")) {
+                    handleGameData(input);
+                } else {
+                    // Try to process as JSON for Login, Registration, User Lists, etc.
+                    try {
+                        RequestData request = gson.fromJson(input, RequestData.class);
+                        if (request != null && request.key != null) {
+                            requestManager.processRequest(request);
+                        }
+                    } catch (JsonSyntaxException e) {
+                        // If it's not valid JSON and not a MOVE, it's an unknown protocol
+                        System.err.println("Unknown protocol received from " + username + ": " + input);
                     }
-                } catch (JsonSyntaxException e) {
-                    System.err.println("Wrong JSON format");
                 }
             }
 
         } catch (IOException e) {
-            System.err.println("Client disconnected: " + e.getMessage());
+            System.err.println("Client disconnected: " + username);
         } finally {
             logout();
             closeConnection();
         }
     }
 
+    // --- Existing UI/Status Methods (Kept for compatibility) ---
+
     public void setUsername(String username) {
         this.username = username;
         ServerThread.onlineUsers.add(this);
     }
 
-    public String getUsername() {
-        return username;
-    }
+    public String getUsername() { return username; }
 
     public void sendUserListUpdate() {
-        try {
-            if (dos != null) {
-                dos.writeUTF("USER_LIST_UPDATED");
-                dos.flush();
-            }
-        } catch (IOException e) {
-            System.err.println("Error sending user list update: " + e.getMessage());
-        }
+        sendMessage("USER_LIST_UPDATED");
     }
 
     public void sendInvite(String fromUsername) {
-        try {
-            if (dos != null) {
-                dos.writeUTF("INVITE_FROM:" + fromUsername);
-                dos.flush();
-                System.out.println("Sent invite notification to " + username + " from " + fromUsername);
-            }
-        } catch (IOException e) {
-            System.err.println("Error sending invite: " + e.getMessage());
-        }
+        sendMessage("INVITE_FROM:" + fromUsername);
     }
 
     public void sendInviteAccepted(String acceptingUsername) {
-        try {
-            if (dos != null) {
-                dos.writeUTF("INVITE_ACCEPTED:" + acceptingUsername);
-                dos.flush();
-                System.out.println("Sent invite accepted notification to " + username);
-            }
-        } catch (IOException e) {
-            System.err.println("Error sending invite accepted: " + e.getMessage());
-        }
+        sendMessage("INVITE_ACCEPTED:" + acceptingUsername);
     }
 
     public void sendInviteRejected(String rejectingUsername) {
-        try {
-            if (dos != null) {
-                dos.writeUTF("INVITE_REJECTED:" + rejectingUsername);
-                dos.flush();
-                System.out.println("Sent invite rejected notification to " + username);
-            }
-        } catch (IOException e) {
-            System.err.println("Error sending invite rejected: " + e.getMessage());
-        }
+        sendMessage("INVITE_REJECTED:" + rejectingUsername);
     }
 
     public void sendWithdrawNotification(String fromUsername) {
-        try {
-            if (dos != null) {
-                dos.writeUTF("OPPONENT_WITHDREW:" + fromUsername);
-                dos.flush();
-                System.out.println("Sent withdraw notification to " + username);
-            }
-        } catch (IOException e) {
-            System.err.println("Error sending withdraw: " + e.getMessage());
-        }
+        sendMessage("OPPONENT_WITHDREW:" + fromUsername);
     }
 
     private void logout() {
         if (username != null) {
             ServerThread.onlineUsers.remove(this);
             UserDAO.getInstance().updateUserStatus(username, "Disactive");
-            System.out.println("User " + username + " is now disactive in DB.");
+            
+            // Notify opponent if this user leaves mid-game
+            if (opponent != null) {
+                opponent.sendMessage("OPPONENT_DISCONNECTED");
+                opponent.setOpponent(null); // Free the opponent to play again
+            }
 
             ServerThread.broadcastUserListUpdate();
         }
@@ -143,16 +157,11 @@ public class ClientHandler extends Thread {
     public void closeConnection() {
         isRunning = false;
         try {
-            if (dis != null)
-                dis.close();
-            if (dos != null)
-                dos.close();
-            if (socket != null && !socket.isClosed())
-                socket.close();
-            UserDAO.getInstance().updateUserStatus(username, "disactive");
-            System.out.println("Connection closed for user: " + (username != null ? username : "Unknown"));
+            if (dis != null) dis.close();
+            if (dos != null) dos.close();
+            if (socket != null && !socket.isClosed()) socket.close();
         } catch (IOException e) {
-            System.out.println("Error in close Connection for user: " + (username != null ? username : "Unknown"));
+            System.out.println("Error closing connection for " + username);
         }
     }
 }

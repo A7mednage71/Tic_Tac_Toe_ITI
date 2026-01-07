@@ -17,8 +17,15 @@ public class ServerThread extends Thread {
     public void run() {
         try {
             serverSocket = new ServerSocket(PORT);
-            System.out.println("Server started on port " + PORT);
-            System.out.println("Waiting for clients...");
+            // Print the IP clearly for the admin
+        String ip = NetworkUtils.getServerIP();
+        
+        System.out.println("==========================================");
+        System.out.println("   TIC-TAC-TOE SERVER IS LIVE!");
+        System.out.println("   Connect clients to: " + ip + " on port " + PORT);
+        System.out.println("==========================================");
+//            System.out.println("Server started on port " + PORT);
+//            System.out.println("Waiting for clients...");
 
             while (!serverSocket.isClosed()) {
                 try {
