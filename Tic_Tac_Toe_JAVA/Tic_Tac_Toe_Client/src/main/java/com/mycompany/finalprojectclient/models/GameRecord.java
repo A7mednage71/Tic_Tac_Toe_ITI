@@ -10,6 +10,7 @@ public class GameRecord {
     private String date;
     private String result;
     private List<String> moves;
+    private int durationSeconds; // الوقت بالثواني
 
     private transient String fileName;
     private transient String move1;
@@ -19,13 +20,14 @@ public class GameRecord {
     }
 
     public GameRecord(String gameId, String playerX, String playerO, String result,
-            String date, List<String> moves) {
+            String date, List<String> moves, int durationSeconds) {
         this.gameId = gameId;
         this.playerX = playerX;
         this.playerO = playerO;
         this.result = result;
         this.date = date;
         this.moves = moves;
+        this.durationSeconds = durationSeconds;
     }
 
     public String getGameId() {
@@ -124,5 +126,20 @@ public class GameRecord {
             }
         }
         return move2 != null ? move2 : "-";
+    }
+
+    public int getDurationSeconds() {
+        return durationSeconds;
+    }
+
+    public void setDurationSeconds(int durationSeconds) {
+        this.durationSeconds = durationSeconds;
+    }
+
+    // دالة مساعدة لتحويل الثواني لصيغة MM:SS
+    public String getFormattedDuration() {
+        int minutes = durationSeconds / 60;
+        int seconds = durationSeconds % 60;
+        return String.format("%02d:%02d", minutes, seconds);
     }
 }

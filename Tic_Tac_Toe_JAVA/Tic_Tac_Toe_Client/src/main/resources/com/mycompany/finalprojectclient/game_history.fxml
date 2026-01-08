@@ -50,6 +50,7 @@
                 <TableColumn fx:id="colPlayer2" text="Opponent"/>
                 <TableColumn fx:id="colMove2" text="Move"/>
                 <TableColumn fx:id="colWinner" text="Winner"/>
+                <TableColumn fx:id="colDuration" text="Duration"/>
                 <TableColumn fx:id="colDateTime" text="datetime"/>
             </columns>
 

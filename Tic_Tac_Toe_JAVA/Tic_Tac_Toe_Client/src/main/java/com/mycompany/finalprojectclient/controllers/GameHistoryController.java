@@ -1,5 +1,17 @@
 package com.mycompany.finalprojectclient.controllers;
 
+import java.io.File;
+import java.io.FileReader;
+import java.net.URL;
+import java.util.ResourceBundle;
+
+import com.google.gson.Gson;
+import com.mycompany.finalprojectclient.models.GameRecord;
+import com.mycompany.finalprojectclient.models.GameSession;
+import com.mycompany.finalprojectclient.utils.AppConstants;
+import com.mycompany.finalprojectclient.utils.AuthManager;
+import com.mycompany.finalprojectclient.utils.NavigationManager;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -8,16 +20,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import java.io.File;
-import java.io.FileReader;
-import java.net.URL;
-import java.util.ResourceBundle;
-import com.mycompany.finalprojectclient.utils.NavigationManager;
-import com.mycompany.finalprojectclient.utils.AppConstants;
-import com.mycompany.finalprojectclient.models.GameSession;
-import com.google.gson.Gson;
-import com.mycompany.finalprojectclient.models.GameRecord;
-import com.mycompany.finalprojectclient.utils.AuthManager;
 
 public class GameHistoryController implements Initializable {
 
@@ -36,6 +38,8 @@ public class GameHistoryController implements Initializable {
     @FXML
     private TableColumn<GameRecord, String> colWinner;
     @FXML
+    private TableColumn<GameRecord, String> colDuration;
+    @FXML
     private TableColumn<GameRecord, String> colDateTime;
 
     private ObservableList<GameRecord> gameRecords = FXCollections.observableArrayList();
@@ -48,6 +52,7 @@ public class GameHistoryController implements Initializable {
         colPlayer2.setCellValueFactory(new PropertyValueFactory<>("player2"));
         colMove2.setCellValueFactory(new PropertyValueFactory<>("move2"));
         colWinner.setCellValueFactory(new PropertyValueFactory<>("winner"));
+        colDuration.setCellValueFactory(new PropertyValueFactory<>("formattedDuration"));
         colDateTime.setCellValueFactory(new PropertyValueFactory<>("date"));
         loadHistory();
     }
@@ -104,7 +109,7 @@ public class GameHistoryController implements Initializable {
         if (selected != null) {
             GameSession.isReplay = true;
             GameSession.replayFilePath = selected.getFileName();
-            GameSession.isHistoryReplay = true;  
+            GameSession.isHistoryReplay = true;
             GameSession.isOnline = false;
             GameSession.vsComputer = false;
             try {

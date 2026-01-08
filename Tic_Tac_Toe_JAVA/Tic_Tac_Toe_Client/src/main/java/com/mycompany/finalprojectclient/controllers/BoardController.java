@@ -1,6 +1,12 @@
 package com.mycompany.finalprojectclient.controllers;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -14,7 +20,12 @@ import com.mycompany.finalprojectclient.models.GameSession;
 import com.mycompany.finalprojectclient.models.RequestData;
 import com.mycompany.finalprojectclient.models.RequestType;
 import com.mycompany.finalprojectclient.network.ServerConnection;
+import com.mycompany.finalprojectclient.utils.AppConstants;
+import com.mycompany.finalprojectclient.utils.AuthManager;
+import com.mycompany.finalprojectclient.utils.CustomAlertHandler;
+import com.mycompany.finalprojectclient.utils.NavigationManager;
 
+import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -25,24 +36,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
-import javafx.util.Duration;
 import javafx.scene.shape.Circle;
-import javafx.animation.Animation;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import javafx.scene.layout.VBox;
-import com.mycompany.finalprojectclient.utils.CustomAlertHandler;
-import com.mycompany.finalprojectclient.utils.NavigationManager;
-import com.mycompany.finalprojectclient.utils.AppConstants;
-import com.mycompany.finalprojectclient.utils.AuthManager;
+import javafx.util.Duration;
 
 public class BoardController implements Initializable {
 
@@ -78,10 +77,15 @@ public class BoardController implements Initializable {
     private Circle recordingIndicator;
     @FXML
     private Button recordBtn;
+    @FXML
+    private Label timerLabel;
 
     private boolean isRecording = false;
+    private javafx.animation.Timeline gameTimer;
+    private int elapsedSeconds = 0;
     private List<String> recordedMoves = new ArrayList<>();
     private FadeTransition blinkingAnimation;
+    private boolean gameStarted = false;
 
     private String playerX = "You";
     private String playerO = "Opponent";
@@ -468,6 +472,16 @@ public class BoardController implements Initializable {
         int r = GridPane.getRowIndex(btn) == null ? 0 : GridPane.getRowIndex(btn);
         int c = GridPane.getColumnIndex(btn) == null ? 0 : GridPane.getColumnIndex(btn);
 
+        // إخفاء زرار Record نهائياً عند أول move إذا لم يكن التسجيل مفعل وبدء التايمر
+        if (!gameStarted) {
+            gameStarted = true;
+            startGameTimer();
+            if (!isRecording && recordBtn != null) {
+                recordBtn.setVisible(false);
+                recordBtn.setManaged(false);
+            }
+        }
+
         if (isRecording) {
             recordedMoves.add(r + "," + c + "," + symbol);
         }
@@ -487,20 +501,23 @@ public class BoardController implements Initializable {
 
     @FXML
     private void handleRecord(ActionEvent event) {
-        isRecording = !isRecording;
+        // لو التسجيل شغال، نوقفه
         if (isRecording) {
-            recordBtn.setText("Stop Rec");
-            recordBtn.setStyle("-fx-background-color: #c0392b;");
-            recordingIndicator.setVisible(true);
-            blinkingAnimation = new FadeTransition(Duration.millis(500), recordingIndicator);
-            blinkingAnimation.setFromValue(1.0);
-            blinkingAnimation.setToValue(0.1);
-            blinkingAnimation.setCycleCount(Animation.INDEFINITE);
-            blinkingAnimation.setAutoReverse(true);
-            blinkingAnimation.play();
-        } else {
             stopRecording();
+            return;
         }
+
+        // بدء التسجيل
+        isRecording = true;
+        recordBtn.setText("Stop Rec");
+        recordBtn.setStyle("-fx-background-color: #c0392b;");
+        recordingIndicator.setVisible(true);
+        blinkingAnimation = new FadeTransition(Duration.millis(500), recordingIndicator);
+        blinkingAnimation.setFromValue(1.0);
+        blinkingAnimation.setToValue(0.1);
+        blinkingAnimation.setCycleCount(Animation.INDEFINITE);
+        blinkingAnimation.setAutoReverse(true);
+        blinkingAnimation.play();
     }
 
     private void stopRecording() {
@@ -536,12 +553,26 @@ public class BoardController implements Initializable {
                     winner = playerO;
                 } else if (gameFinishMessage.contains("Draw")) {
                     winner = "Draw";
+                } else if (gameFinishMessage.contains("You Win")) {
+                    // في حالة الفوز بسبب انسحاب الخصم
+                    String myName = AuthManager.getInstance().getCurrentUsername();
+                    winner = myName;
+                } else if (gameFinishMessage.contains("Opponent Left") || gameFinishMessage.contains("Opponent Wins")) {
+                    // في حالة انسحاب الخصم (أنت فزت) أو انسحابك أنت (الخصم فاز)
+                    if (gameFinishMessage.contains("Opponent Wins") || gameFinishMessage.contains("You Left")) {
+                        // أنت انسحبت، الخصم فاز
+                        winner = GameSession.opponentName;
+                    } else {
+                        // الخصم انسحب، أنت فزت
+                        String myName = AuthManager.getInstance().getCurrentUsername();
+                        winner = myName;
+                    }
                 }
             }
 
             GameRecord gameRecord = new GameRecord(
                     gameId, playerX, playerO, winner,
-                    LocalDateTime.now().toString(), recordedMoves);
+                    LocalDateTime.now().toString(), recordedMoves, elapsedSeconds);
 
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             try (FileWriter writer = new FileWriter(filename)) {
@@ -557,6 +588,7 @@ public class BoardController implements Initializable {
     private void finishGame(String message) {
         gameOver = true;
         gameFinishMessage = message;
+        stopGameTimer();
         updateBoardHoverState();
         updateScoreLabels();
 
@@ -589,8 +621,13 @@ public class BoardController implements Initializable {
             opponentNameLabel.setStyle("-fx-text-fill: #f1c40f; -fx-font-weight: bold; -fx-font-size: 18px;");
         });
 
+        // إيقاف وإخفاء زرار Record بعد انتهاء اللعبة
         if (isRecording) {
             stopRecording();
+        }
+        if (recordBtn != null) {
+            recordBtn.setVisible(false);
+            recordBtn.setManaged(false);
         }
     }
 
@@ -693,6 +730,22 @@ public class BoardController implements Initializable {
         gameOver = false;
         gameFinishMessage = null;
         isXTurn = true;
+        gameStarted = false; // إعادة تعيين حالة بداية اللعبة
+
+        // إيقاف وإخفاء التايمر
+        stopGameTimer();
+        if (timerLabel != null) {
+            timerLabel.setVisible(false);
+        }
+
+        // إعادة إظهار زرار Record للعبة الجديدة (في وضع Online فقط)
+        if (GameSession.isOnline && recordBtn != null) {
+            recordBtn.setVisible(true);
+            recordBtn.setManaged(true);
+            recordBtn.setText("Record");
+            recordBtn.setStyle("-fx-background-color: #e74c3c;");
+        }
+
         opponentNameLabel.setStyle("");
         updateTurnLabel();
         updateBoardHoverState();
@@ -701,7 +754,9 @@ public class BoardController implements Initializable {
     private void updateBoardHoverState() {
         if (gameGrid == null)
             return;
-        if (gameOver) {
+
+        // في حالة الـ replay أو اللعبة منتهية، نمنع الـ hover
+        if (gameOver || GameSession.isReplay) {
             if (!gameGrid.getStyleClass().contains("not-my-turn"))
                 gameGrid.getStyleClass().add("not-my-turn");
             return;
@@ -782,7 +837,7 @@ public class BoardController implements Initializable {
         if (GameSession.isHistoryReplay) {
             alertHandler.hide();
             resetBoard();
-            GameSession.isReplay = true; 
+            GameSession.isReplay = true;
             loadReplay(GameSession.replayFilePath);
         } else if (GameSession.isOnline) {
             if (gameOver) {
@@ -799,6 +854,12 @@ public class BoardController implements Initializable {
     private void handleBack(ActionEvent event) {
         try {
             if (GameSession.isOnline) {
+                // حفظ الـ recording قبل الانسحاب إذا كان مفعل
+                if (isRecording && !recordedMoves.isEmpty()) {
+                    gameFinishMessage = "You Left. Opponent Wins!";
+                    stopRecording();
+                }
+
                 updateUserStatus(AuthManager.getInstance().getCurrentUsername(), "online");
 
                 RequestData req = new RequestData();
@@ -939,5 +1000,30 @@ public class BoardController implements Initializable {
             return true;
         }
         return false;
+    }
+
+    private void startGameTimer() {
+        if (timerLabel == null || !GameSession.isOnline)
+            return;
+
+        elapsedSeconds = 0;
+        timerLabel.setVisible(true);
+        timerLabel.setText("⏱ 00:00");
+
+        gameTimer = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(Duration.seconds(1), e -> {
+                    elapsedSeconds++;
+                    int minutes = elapsedSeconds / 60;
+                    int seconds = elapsedSeconds % 60;
+                    timerLabel.setText(String.format("⏱ %02d:%02d", minutes, seconds));
+                }));
+        gameTimer.setCycleCount(javafx.animation.Animation.INDEFINITE);
+        gameTimer.play();
+    }
+
+    private void stopGameTimer() {
+        if (gameTimer != null) {
+            gameTimer.stop();
+        }
     }
 }
