@@ -779,7 +779,12 @@ public class BoardController implements Initializable {
 
     @FXML
     private void handlePlayAgain(ActionEvent event) {
-        if (GameSession.isOnline) {
+        if (GameSession.isHistoryReplay) {
+            alertHandler.hide();
+            resetBoard();
+            GameSession.isReplay = true; 
+            loadReplay(GameSession.replayFilePath);
+        } else if (GameSession.isOnline) {
             if (gameOver) {
                 sendOnlinePlayAgainRequest();
             } else {

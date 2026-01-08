@@ -104,6 +104,7 @@ public class GameHistoryController implements Initializable {
         if (selected != null) {
             GameSession.isReplay = true;
             GameSession.replayFilePath = selected.getFileName();
+            GameSession.isHistoryReplay = true;  
             GameSession.isOnline = false;
             GameSession.vsComputer = false;
             try {
