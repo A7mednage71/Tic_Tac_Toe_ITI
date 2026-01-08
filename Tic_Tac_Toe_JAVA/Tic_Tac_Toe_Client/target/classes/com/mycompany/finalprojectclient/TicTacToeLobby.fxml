@@ -11,13 +11,15 @@
 <?import javafx.scene.text.Font?>
 
 <StackPane prefHeight="600.0"
-           prefWidth="400.0"
+           prefWidth="800.0"
+           minWidth="800.0"
+           minHeight="600.0"
            xmlns="http://javafx.com/javafx/13"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.mycompany.finalprojectclient.controllers.TicTacToeLobbyController">
 
     <AnchorPane prefHeight="600.0"
-                prefWidth="400.0"
+                prefWidth="800.0"
                 style="-fx-background-color: #2D2926;">
 
         <children>
@@ -77,9 +79,10 @@
                                 style="-fx-background-color: #4A5D23;
                                        -fx-text-fill: white;
                                        -fx-font-size: 15;
-                                       -fx-background-radius: 8;">
+                                       -fx-background-radius: 20;
+                                       -fx-cursor: hand;">
                             <padding>
-                                <Insets top="12" bottom="12"/>
+                                <Insets top="10" bottom="10" left="25" right="25"/>
                             </padding>
                         </Button>
                         <Button fx:id="historyButton"
@@ -90,9 +93,10 @@
                                 style="-fx-background-color: #88a050;
                                        -fx-text-fill: white;
                                        -fx-font-size: 15;
-                                       -fx-background-radius: 8;">
+                                       -fx-background-radius: 20;
+                                       -fx-cursor: hand;">
                             <padding>
-                                <Insets top="12" bottom="12"/>
+                                <Insets top="10" bottom="10" left="25" right="25"/>
                             </padding>
                         </Button>
                     </children>

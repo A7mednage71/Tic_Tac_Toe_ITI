@@ -1,15 +1,19 @@
 package com.mycompany.finalprojectclient.models;
 
 public class GameSession {
-    public enum Difficulty { EASY, MEDIUM, HARD }
-    
+    public enum Difficulty {
+        EASY, MEDIUM, HARD
+    }
+
     public static boolean vsComputer = false;
     public static Difficulty difficulty = Difficulty.EASY;
-    
+
     public static boolean isOnline = false;
     public static String opponentName = "";
-    public static String playerSymbol = "X"; 
+    public static String playerSymbol = "X";
 
     public static boolean isReplay = false;
     public static String replayFilePath = "";
+
+    public static String previousScreen = "";
 }

@@ -5,6 +5,7 @@
 <?import javafx.geometry.Insets?>
 
 <VBox spacing="15" alignment="CENTER"
+      prefWidth="800.0" prefHeight="600.0"
       xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.mycompany.finalprojectclient.controllers.GameController">

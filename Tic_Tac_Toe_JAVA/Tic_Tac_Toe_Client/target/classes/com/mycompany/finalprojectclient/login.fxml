@@ -5,7 +5,8 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.geometry.Insets?>
 
-<StackPane fx:id="rootStackPane" stylesheets="/style.css" 
+<StackPane fx:id="rootStackPane" prefWidth="800.0" prefHeight="600.0" minWidth="800.0" minHeight="600.0" 
+           stylesheets="/style.css" 
            xmlns="http://javafx.com/javafx/13" 
            xmlns:fx="http://javafx.com/fxml/1" 
            fx:controller="com.mycompany.finalprojectclient.controllers.LoginController">

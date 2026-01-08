@@ -35,9 +35,10 @@
     -fx-text-fill: #f5f2e9;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-background-radius: 8;
+    -fx-background-radius: 20;
     -fx-min-width: 250;
-    -fx-padding: 12;
+    -fx-padding: 10 25;
+    -fx-cursor: hand;
 }
 
 .main-button:hover {

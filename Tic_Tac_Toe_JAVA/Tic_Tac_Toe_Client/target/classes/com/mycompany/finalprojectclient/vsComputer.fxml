@@ -8,7 +8,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.geometry.Insets?>
 
-<AnchorPane prefHeight="600.0" prefWidth="400.0" 
+<AnchorPane prefHeight="600.0" prefWidth="800.0" minWidth="800.0" minHeight="600.0" 
             stylesheets="/home_screen_style.css" 
             xmlns="http://javafx.com/javafx/13" 
             xmlns:fx="http://javafx.com/fxml/1" 

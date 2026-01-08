@@ -6,17 +6,21 @@ import java.util.List;
 import java.util.Random;
 import java.util.ResourceBundle;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.mycompany.finalprojectclient.MainApp;
+import com.mycompany.finalprojectclient.models.GameRecord;
 import com.mycompany.finalprojectclient.models.GameSession;
+import com.mycompany.finalprojectclient.models.RequestData;
+import com.mycompany.finalprojectclient.models.RequestType;
+import com.mycompany.finalprojectclient.network.ServerConnection;
 
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -24,15 +28,11 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.shape.Circle;
-import javafx.animation.Timeline;
-import javafx.animation.KeyFrame;
 import javafx.animation.Animation;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,8 +40,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import javafx.scene.layout.VBox;
 import com.mycompany.finalprojectclient.utils.CustomAlertHandler;
-import com.mycompany.finalprojectclient.utils.AppConstants;
 import com.mycompany.finalprojectclient.utils.NavigationManager;
+import com.mycompany.finalprojectclient.utils.AppConstants;
+import com.mycompany.finalprojectclient.utils.AuthManager;
 
 public class BoardController implements Initializable {
 
@@ -94,14 +95,14 @@ public class BoardController implements Initializable {
         System.out.println("BoardController Initializing...");
         System.out.println("videoOverlay injected: " + (videoOverlay != null));
         System.out.println("videoMediaView injected: " + (videoMediaView != null));
-        
+
         com.mycompany.finalprojectclient.network.ServerConnection.getInstance().setNotificationListener(null);
-        
+
         alertHandler = new CustomAlertHandler(customAlertOverlay, alertBox, alertTitle, alertMessage, alertIcon);
         updateBoardHoverState();
 
         if (GameSession.isOnline) {
-            String myName = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
+            String myName = AuthManager.getInstance().getCurrentUsername();
             if ("X".equals(GameSession.playerSymbol)) {
                 playerX = myName;
                 playerO = GameSession.opponentName;
@@ -114,44 +115,48 @@ public class BoardController implements Initializable {
                 opponentNameLabel.setText(playerX + " (X)");
             }
 
-            com.mycompany.finalprojectclient.network.ServerConnection.getInstance()
-                    .setInviteListener(new com.mycompany.finalprojectclient.network.ServerConnection.InviteListener() {
+            ServerConnection.getInstance()
+                    .setInviteListener(new ServerConnection.InviteListener() {
                         @Override
                         public void onInviteReceived(String from) {
                         }
 
                         @Override
                         public void onInviteAccepted(String user) {
-                            javafx.application.Platform.runLater(() -> {
+                            Platform.runLater(() -> {
                                 alertHandler.hide();
                             });
                         }
 
                         @Override
                         public void onInviteRejected(String user) {
-                            javafx.application.Platform.runLater(() -> {
+                            Platform.runLater(() -> {
                                 alertHandler.showError("DECLINED", user + " doesn't want to play again.");
                             });
                         }
+
                         @Override
                         public void onPlayAgainRequested(String username) {
-                            javafx.application.Platform.runLater(() -> {
-                                alertHandler.showConfirmation("REMATCH CHALLENGE", username + " wants a rematch! Accept?", new CustomAlertHandler.ConfirmationCallback() {
-                                    @Override
-                                    public void onYes() {
-                                        acceptOnlineRematch();
-                                    }
-                                    @Override
-                                    public void onNo() {
-                                        rejectOnlineRematch();
-                                    }
-                                });
+                            Platform.runLater(() -> {
+                                alertHandler.showConfirmation("REMATCH CHALLENGE",
+                                        username + " wants a rematch! Accept?",
+                                        new CustomAlertHandler.ConfirmationCallback() {
+                                            @Override
+                                            public void onYes() {
+                                                acceptOnlineRematch();
+                                            }
+
+                                            @Override
+                                            public void onNo() {
+                                                rejectOnlineRematch();
+                                            }
+                                        });
                             });
                         }
 
                         @Override
                         public void onOpponentWithdrew(String username) {
-                            javafx.application.Platform.runLater(() -> {
+                            Platform.runLater(() -> {
                                 if (gameOver) {
                                     alertHandler.showError("LEFT", username + " has left.");
                                     return;
@@ -166,25 +171,26 @@ public class BoardController implements Initializable {
 
                         @Override
                         public void onGameStart(String symbol, String opponent) {
-                            javafx.application.Platform.runLater(() -> {
+                            Platform.runLater(() -> {
                                 GameSession.playerSymbol = symbol;
                                 alertHandler.hide();
-                                updateUserStatus(com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername(), "in_game");
+                                updateUserStatus(AuthManager.getInstance()
+                                        .getCurrentUsername(), "in_game");
                                 resetBoard();
                                 updateScoreLabels();
-        
-        if (!GameSession.isOnline) {
-            recordBtn.setVisible(false);
-            recordBtn.setManaged(false);
-        } else {
-            recordBtn.setVisible(true);
-            recordBtn.setManaged(true);
-        }
-    });
-                        }
-                   });
 
-            com.mycompany.finalprojectclient.network.ServerConnection.getInstance().setGameMoveListener((r, c) -> {
+                                if (!GameSession.isOnline) {
+                                    recordBtn.setVisible(false);
+                                    recordBtn.setManaged(false);
+                                } else {
+                                    recordBtn.setVisible(true);
+                                    recordBtn.setManaged(true);
+                                }
+                            });
+                        }
+                    });
+
+            ServerConnection.getInstance().setGameMoveListener((r, c) -> {
                 Platform.runLater(() -> {
                     Button[][] grid = getGridArray();
                     if (r >= 0 && r < 3 && c >= 0 && c < 3 && grid[r][c].getText().isEmpty()) {
@@ -220,7 +226,7 @@ public class BoardController implements Initializable {
             opponentNameLabel.setText("Player 2 (O)");
         }
         updateScoreLabels();
-        
+
         if (!GameSession.isOnline) {
             recordBtn.setVisible(false);
             recordBtn.setManaged(false);
@@ -233,43 +239,54 @@ public class BoardController implements Initializable {
     private void loadReplay(String path) {
         gameOver = true;
         new Thread(() -> {
-            try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
-                String playersLine = reader.readLine();
-                String dateLine = reader.readLine();
-                if (playersLine != null && playersLine.contains(" vs ")) {
-                    String[] p = playersLine.split(" vs ");
+            try (FileReader reader = new FileReader(path)) {
+                Gson gson = new Gson();
+                GameRecord gameRecord = gson.fromJson(reader, GameRecord.class);
+
+                if (gameRecord == null) {
                     Platform.runLater(() -> {
-                        playerX = p[0];
-                        playerO = p[1];
-                        playerNameLabel.setText(playerX);
-                        opponentNameLabel.setText(playerO);
-                        updateScoreLabels();
-        
-        if (!GameSession.isOnline) {
-            recordBtn.setVisible(false);
-            recordBtn.setManaged(false);
-        } else {
-            recordBtn.setVisible(true);
-            recordBtn.setManaged(true);
-        }
-    });
+                        showResultOverlay("❌", "FAILED TO LOAD REPLAY");
+                        GameSession.isReplay = false;
+                    });
+                    return;
                 }
 
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    if (line.contains(",")) {
-                        String[] parts = line.split(",");
-                        int r = Integer.parseInt(parts[0]);
-                        int c = Integer.parseInt(parts[1]);
-                        String sym = parts[2];
+                Platform.runLater(() -> {
+                    playerX = gameRecord.getPlayerX();
+                    playerO = gameRecord.getPlayerO();
+                    playerNameLabel.setText(playerX);
+                    opponentNameLabel.setText(playerO);
+                    updateScoreLabels();
 
-                        Thread.sleep(800);
-                        Platform.runLater(() -> {
-                            Button[][] grid = getGridArray();
-                            playMove(grid[r][c], sym);
-                        });
+                    if (!GameSession.isOnline) {
+                        recordBtn.setVisible(false);
+                        recordBtn.setManaged(false);
+                    } else {
+                        recordBtn.setVisible(true);
+                        recordBtn.setManaged(true);
+                    }
+                });
+
+                List<String> moves = gameRecord.getMoves();
+                if (moves != null) {
+                    for (String move : moves) {
+                        if (move.contains(",")) {
+                            String[] parts = move.split(",");
+                            if (parts.length >= 3) {
+                                int r = Integer.parseInt(parts[0].trim());
+                                int c = Integer.parseInt(parts[1].trim());
+                                String sym = parts[2].trim();
+
+                                Thread.sleep(800);
+                                Platform.runLater(() -> {
+                                    Button[][] grid = getGridArray();
+                                    playMove(grid[r][c], sym);
+                                });
+                            }
+                        }
                     }
                 }
+
                 Thread.sleep(1500);
                 Platform.runLater(() -> {
                     showResultOverlay("🎬", "REPLAY ENDED");
@@ -277,6 +294,10 @@ public class BoardController implements Initializable {
                 });
             } catch (Exception e) {
                 e.printStackTrace();
+                Platform.runLater(() -> {
+                    showResultOverlay("❌", "REPLAY ERROR");
+                    GameSession.isReplay = false;
+                });
             }
         }).start();
     }
@@ -305,7 +326,7 @@ public class BoardController implements Initializable {
 
                     int r = GridPane.getRowIndex(clickedButton) == null ? 0 : GridPane.getRowIndex(clickedButton);
                     int c = GridPane.getColumnIndex(clickedButton) == null ? 0 : GridPane.getColumnIndex(clickedButton);
-                    com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendGameMove(r, c);
+                    ServerConnection.getInstance().sendGameMove(r, c);
 
                     if (checkWinner(mySymbol)) {
                         if (mySymbol.equals("X"))
@@ -504,14 +525,29 @@ public class BoardController implements Initializable {
                 dir.mkdir();
 
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-            String filename = "history/game_" + timestamp + ".txt";
-            try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
-                out.println(playerX + " vs " + playerO);
-                out.println("Date: " + LocalDateTime.now().toString());
-                for (String move : recordedMoves) {
-                    out.println(move);
+            String gameId = "GAME_" + timestamp;
+            String filename = "history/game_" + timestamp + ".json";
+
+            String winner = "-";
+            if (gameFinishMessage != null) {
+                if (gameFinishMessage.contains("X Wins")) {
+                    winner = playerX;
+                } else if (gameFinishMessage.contains("O Wins")) {
+                    winner = playerO;
+                } else if (gameFinishMessage.contains("Draw")) {
+                    winner = "Draw";
                 }
             }
+
+            GameRecord gameRecord = new GameRecord(
+                    gameId, playerX, playerO, winner,
+                    LocalDateTime.now().toString(), recordedMoves);
+
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            try (FileWriter writer = new FileWriter(filename)) {
+                gson.toJson(gameRecord, writer);
+            }
+
             System.out.println("Game recorded to: " + filename);
         } catch (IOException e) {
             e.printStackTrace();
@@ -531,14 +567,19 @@ public class BoardController implements Initializable {
         if (msgLower.contains("win")) {
             boolean showWinnerVideo = true;
             if (GameSession.isOnline) {
-                if (message.contains("X Wins") && !"X".equals(GameSession.playerSymbol)) showWinnerVideo = false;
-                else if (message.contains("O Wins") && !"O".equals(GameSession.playerSymbol)) showWinnerVideo = false;
+                if (message.contains("X Wins") && !"X".equals(GameSession.playerSymbol))
+                    showWinnerVideo = false;
+                else if (message.contains("O Wins") && !"O".equals(GameSession.playerSymbol))
+                    showWinnerVideo = false;
             } else if (GameSession.vsComputer) {
-                if (message.contains("O Wins")) showWinnerVideo = false;
+                if (message.contains("O Wins"))
+                    showWinnerVideo = false;
             }
-            
-            if (showWinnerVideo) playVideo("/videos/winner.mp4");
-            else playVideo("/videos/loser.mp4");
+
+            if (showWinnerVideo)
+                playVideo("/videos/winner.mp4");
+            else
+                playVideo("/videos/loser.mp4");
         } else {
             showRematchAlert();
         }
@@ -554,28 +595,36 @@ public class BoardController implements Initializable {
     }
 
     private void showRematchAlert() {
-        if (gameFinishMessage == null) return;
-        
+        if (gameFinishMessage == null)
+            return;
+
         String icon = "🤝";
-        if (gameFinishMessage.contains("Wins")) icon = "🏆";
-        
-        alertHandler.showConfirmation(gameFinishMessage.toUpperCase(), "Want to play again?", new CustomAlertHandler.ConfirmationCallback() {
-            @Override
-            public void onYes() {
-                if (GameSession.isOnline) sendOnlinePlayAgainRequest();
-                else resetBoard();
-            }
-            @Override
-            public void onNo() {
-                handleBack(null);
-            }
-        });
+        if (gameFinishMessage.contains("Wins"))
+            icon = "🏆";
+
+        alertHandler.showConfirmation(gameFinishMessage.toUpperCase(), "Want to play again?",
+                new CustomAlertHandler.ConfirmationCallback() {
+                    @Override
+                    public void onYes() {
+                        if (GameSession.isOnline)
+                            sendOnlinePlayAgainRequest();
+                        else
+                            resetBoard();
+                    }
+
+                    @Override
+                    public void onNo() {
+                        handleBack(null);
+                    }
+                });
         alertIcon.setText(icon);
     }
+
     private void showResultOverlay(String icon, String title) {
         alertHandler.showSuccess(title, "");
         alertIcon.setText(icon);
     }
+
     @FXML
     private void handlePlayAgainFromOverlay(ActionEvent event) {
         if (GameSession.isOnline) {
@@ -640,16 +689,18 @@ public class BoardController implements Initializable {
                     btn.getStyleClass().add("cell-button-empty");
             }
         }
-        recordedMoves.clear(); gameOver = false;
+        recordedMoves.clear();
+        gameOver = false;
         gameFinishMessage = null;
         isXTurn = true;
-        opponentNameLabel.setStyle(""); 
+        opponentNameLabel.setStyle("");
         updateTurnLabel();
         updateBoardHoverState();
     }
 
     private void updateBoardHoverState() {
-        if (gameGrid == null) return;
+        if (gameGrid == null)
+            return;
         if (gameOver) {
             if (!gameGrid.getStyleClass().contains("not-my-turn"))
                 gameGrid.getStyleClass().add("not-my-turn");
@@ -658,9 +709,10 @@ public class BoardController implements Initializable {
 
         if (GameSession.isOnline) {
             String mySymbol = GameSession.playerSymbol;
-            if (mySymbol == null) return;
+            if (mySymbol == null)
+                return;
             boolean isMyTurn = (isXTurn && "X".equals(mySymbol)) || (!isXTurn && "O".equals(mySymbol));
-           if (isMyTurn) {
+            if (isMyTurn) {
                 gameGrid.getStyleClass().remove("not-my-turn");
             } else {
                 if (!gameGrid.getStyleClass().contains("not-my-turn"))
@@ -674,12 +726,12 @@ public class BoardController implements Initializable {
     }
 
     private void sendOnlinePlayAgainRequest() {
-        com.mycompany.finalprojectclient.models.RequestData req = new com.mycompany.finalprojectclient.models.RequestData();
-        req.key = com.mycompany.finalprojectclient.models.RequestType.PLAY_AGAIN;
-        req.username = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
+        RequestData req = new RequestData();
+        req.key = RequestType.PLAY_AGAIN;
+        req.username = AuthManager.getInstance().getCurrentUsername();
         req.targetUsername = GameSession.opponentName;
         try {
-            com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendRequest(req);
+            ServerConnection.getInstance().sendRequest(req);
             alertHandler.showSuccess("SENT", "Waiting for opponent...");
         } catch (java.io.IOException e) {
             e.printStackTrace();
@@ -687,25 +739,25 @@ public class BoardController implements Initializable {
     }
 
     private void acceptOnlineRematch() {
-        com.mycompany.finalprojectclient.models.RequestData req = new com.mycompany.finalprojectclient.models.RequestData();
-        req.key = com.mycompany.finalprojectclient.models.RequestType.ACCEPT_INVITE;
-        req.username = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
+        RequestData req = new RequestData();
+        req.key = RequestType.ACCEPT_INVITE;
+        req.username = AuthManager.getInstance().getCurrentUsername();
         req.targetUsername = GameSession.opponentName;
         try {
-            com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendRequest(req);
+            ServerConnection.getInstance().sendRequest(req);
             alertHandler.showSuccess("SENT", "Waiting for opponent...");
         } catch (java.io.IOException e) {
-           e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
     private void rejectOnlineRematch() {
-        com.mycompany.finalprojectclient.models.RequestData req = new com.mycompany.finalprojectclient.models.RequestData();
-        req.key = com.mycompany.finalprojectclient.models.RequestType.REJECT_INVITE;
-        req.username = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
+        RequestData req = new RequestData();
+        req.key = RequestType.REJECT_INVITE;
+        req.username = AuthManager.getInstance().getCurrentUsername();
         req.targetUsername = GameSession.opponentName;
         try {
-            com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendRequest(req);
+            ServerConnection.getInstance().sendRequest(req);
             alertHandler.hide();
         } catch (java.io.IOException e) {
             e.printStackTrace();
@@ -714,7 +766,7 @@ public class BoardController implements Initializable {
 
     private void updateTurnLabel() {
         if (GameSession.isOnline) {
-            String myName = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
+            String myName = AuthManager.getInstance().getCurrentUsername();
             if (isXTurn) {
                 opponentNameLabel.setText(playerX + "'s Turn (X)");
             } else {
@@ -742,24 +794,28 @@ public class BoardController implements Initializable {
     private void handleBack(ActionEvent event) {
         try {
             if (GameSession.isOnline) {
-                updateUserStatus(com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername(), "online");
-                
-                com.mycompany.finalprojectclient.models.RequestData req = new com.mycompany.finalprojectclient.models.RequestData();
-                req.key = com.mycompany.finalprojectclient.models.RequestType.WITHDRAW;
-                req.username = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
+                updateUserStatus(AuthManager.getInstance().getCurrentUsername(), "online");
+
+                RequestData req = new RequestData();
+                req.key = RequestType.WITHDRAW;
+                req.username = AuthManager.getInstance().getCurrentUsername();
                 req.targetUsername = GameSession.opponentName;
-                com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendRequest(req);
-                com.mycompany.finalprojectclient.network.ServerConnection.getInstance().setGameMoveListener(null);
+                ServerConnection.getInstance().sendRequest(req);
+                ServerConnection.getInstance().setGameMoveListener(null);
 
                 GameSession.isOnline = false;
-                com.mycompany.finalprojectclient.utils.NavigationManager.switchSceneUsingNode(gameGrid, AppConstants.PATH_GAME_LOBBY);
+                NavigationManager.switchSceneUsingNode(gameGrid,
+                        AppConstants.PATH_GAME_LOBBY);
             } else if (GameSession.vsComputer) {
-               com.mycompany.finalprojectclient.utils.NavigationManager.switchSceneUsingNode(gameGrid, "/com/mycompany/finalprojectclient/vsComputer.fxml");
+                NavigationManager.switchSceneUsingNode(gameGrid,
+                        "/com/mycompany/finalprojectclient/vsComputer.fxml");
             } else if (GameSession.isReplay) {
                 GameSession.isReplay = false;
-                com.mycompany.finalprojectclient.utils.NavigationManager.switchSceneUsingNode(gameGrid, AppConstants.PATH_GAME_HISTORY);
+                NavigationManager.switchSceneUsingNode(gameGrid,
+                        AppConstants.PATH_GAME_HISTORY);
             } else {
-                com.mycompany.finalprojectclient.utils.NavigationManager.switchSceneUsingNode(gameGrid, AppConstants.PATH_ON_OFF);
+                NavigationManager.switchSceneUsingNode(gameGrid,
+                        AppConstants.PATH_ON_OFF);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -771,13 +827,6 @@ public class BoardController implements Initializable {
         scoreO.setText(playerO + " (O): " + countO);
     }
 
-    private void switchScene(String fxml, ActionEvent e) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/com/mycompany/finalprojectclient/" + fxml));
-        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.show();
-    }
-
     private void playVideo(String videoPath) {
         if (videoMediaView == null || videoOverlay == null) {
             System.err.println("Video components not found. Skipping video.");
@@ -785,7 +834,7 @@ public class BoardController implements Initializable {
         }
         try {
             System.out.println("Attempting to play video: " + videoPath);
-            URL videoUrl = com.mycompany.finalprojectclient.MainApp.class.getResource(videoPath);
+            URL videoUrl = MainApp.class.getResource(videoPath);
             if (videoUrl == null) {
                 System.err.println("Video file not found: " + videoPath);
                 return;
@@ -798,17 +847,17 @@ public class BoardController implements Initializable {
             }
 
             Media media = new Media(videoUrl.toExternalForm());
-            
+
             media.setOnError(() -> {
                 System.err.println("Media Load Error: " + media.getError().getMessage());
-                handleCloseVideo(null); 
+                handleCloseVideo(null);
             });
 
             mediaPlayer = new MediaPlayer(media);
-            
+
             mediaPlayer.setOnError(() -> {
                 System.err.println("MediaPlayer Playback Error: " + mediaPlayer.getError().getMessage());
-                handleCloseVideo(null); 
+                handleCloseVideo(null);
             });
 
             videoMediaView.setMediaPlayer(mediaPlayer);
@@ -822,14 +871,14 @@ public class BoardController implements Initializable {
             ft.play();
 
             mediaPlayer.play();
-            
+
             mediaPlayer.setOnEndOfMedia(() -> {
             });
-            
+
         } catch (Exception e) {
             System.err.println("Exception in playVideo: " + e.getMessage());
             e.printStackTrace();
-            handleCloseVideo(null); 
+            handleCloseVideo(null);
         }
     }
 
@@ -847,20 +896,21 @@ public class BoardController implements Initializable {
             videoOverlay.setVisible(false);
             videoOverlay.setManaged(false);
         });
-       ft.play();
+        ft.play();
     }
 
     private void updateUserStatus(String username, String status) {
         try {
-            com.mycompany.finalprojectclient.models.RequestData request = new com.mycompany.finalprojectclient.models.RequestData();
-            request.key = com.mycompany.finalprojectclient.models.RequestType.UPDATE_STATUS;
+            RequestData request = new RequestData();
+            request.key = RequestType.UPDATE_STATUS;
             request.username = username;
             request.status = status;
-            com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendRequest(request);
+            ServerConnection.getInstance().sendRequest(request);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     private boolean takeCenter() {
         Button[][] grid = getGridArray();
         if (grid[1][1].getText().isEmpty()) {
@@ -886,7 +936,3 @@ public class BoardController implements Initializable {
         return false;
     }
 }
-
-
-
-

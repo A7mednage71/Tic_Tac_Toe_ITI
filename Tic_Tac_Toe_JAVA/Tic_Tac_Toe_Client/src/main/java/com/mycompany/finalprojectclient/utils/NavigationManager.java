@@ -21,10 +21,9 @@ public class NavigationManager {
             Parent root = loader.load();
 
             Stage stage = (Stage) node.getScene().getWindow();
+            Scene scene = stage.getScene();
 
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.show();
+            scene.setRoot(root);
 
         } catch (IOException e) {
             System.err.println("Navigation Error: Could not load " + fxmlPath);

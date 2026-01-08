@@ -11,7 +11,6 @@ com\mycompany\finalprojectclient\controllers\TicTacToeLobbyController$1$1.class
 com\mycompany\finalprojectclient\AppLauncher.class
 com\mycompany\finalprojectclient\controllers\TicTacToeLobbyController$2.class
 com\mycompany\finalprojectclient\network\ServerConnection$GameMoveListener.class
-com\mycompany\finalprojectclient\controllers\GameHistoryController$GameRecord.class
 com\mycompany\finalprojectclient\utils\AppConstants.class
 com\mycompany\finalprojectclient\controllers\TicTacToeLobbyController.class
 com\mycompany\finalprojectclient\models\ResponseData.class
