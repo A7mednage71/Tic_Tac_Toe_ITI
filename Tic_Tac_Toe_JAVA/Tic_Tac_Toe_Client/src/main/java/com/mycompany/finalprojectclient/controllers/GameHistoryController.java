@@ -9,45 +9,30 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import java.io.File;
-import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.URL;
 import java.util.ResourceBundle;
 import com.mycompany.finalprojectclient.utils.NavigationManager;
 import com.mycompany.finalprojectclient.utils.AppConstants;
 import com.mycompany.finalprojectclient.models.GameSession;
+import com.google.gson.Gson;
+import com.mycompany.finalprojectclient.models.GameRecord;
 import com.mycompany.finalprojectclient.utils.AuthManager;
 
 public class GameHistoryController implements Initializable {
-    
-    public static class GameRecord {
-        private String fileName;
-        private String player1;
-        private String player2;
-        private String winner;
-        private String date;
-
-        public GameRecord(String fileName, String player1, String player2, String winner, String date) {
-            this.fileName = fileName;
-            this.player1 = player1;
-            this.player2 = player2;
-            this.winner = winner;
-            this.date = date;
-        }
-
-        public String getFileName() { return fileName; }
-        public String getPlayer1() { return player1; }
-        public String getPlayer2() { return player2; }
-        public String getWinner() { return winner; }
-        public String getDate() { return date; }
-    }
 
     @FXML
     private TableView<GameRecord> historyTable;
     @FXML
+    private TableColumn<GameRecord, String> colGameId;
+    @FXML
     private TableColumn<GameRecord, String> colPlayer1;
     @FXML
+    private TableColumn<GameRecord, String> colMove1;
+    @FXML
     private TableColumn<GameRecord, String> colPlayer2;
+    @FXML
+    private TableColumn<GameRecord, String> colMove2;
     @FXML
     private TableColumn<GameRecord, String> colWinner;
     @FXML
@@ -57,8 +42,11 @@ public class GameHistoryController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        colGameId.setCellValueFactory(new PropertyValueFactory<>("gameId"));
         colPlayer1.setCellValueFactory(new PropertyValueFactory<>("player1"));
+        colMove1.setCellValueFactory(new PropertyValueFactory<>("move1"));
         colPlayer2.setCellValueFactory(new PropertyValueFactory<>("player2"));
+        colMove2.setCellValueFactory(new PropertyValueFactory<>("move2"));
         colWinner.setCellValueFactory(new PropertyValueFactory<>("winner"));
         colDateTime.setCellValueFactory(new PropertyValueFactory<>("date"));
         loadHistory();
@@ -66,47 +54,32 @@ public class GameHistoryController implements Initializable {
 
     private void loadHistory() {
         File folder = new File("history");
-        if (!folder.exists()) return;
+        if (!folder.exists())
+            return;
 
-        File[] files = folder.listFiles((dir, name) -> name.endsWith(".txt"));
-        if (files == null) return;
+        File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
+        if (files == null)
+            return;
+
+        Gson gson = new Gson();
 
         for (File file : files) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                String playersLine = reader.readLine(); 
-                String dateLine = reader.readLine();
-                String resultLine = reader.readLine();
+            try (FileReader reader = new FileReader(file)) {
+                GameRecord gameRecord = gson.fromJson(reader, GameRecord.class);
 
-                String player1 = "?";
-                String player2 = "?";
-                String winner = "-";
-                String date = "";
-
-                if (playersLine != null && playersLine.contains(" vs ")) {
-                    String[] parts = playersLine.split(" vs ");
-                    if (parts.length >= 2) {
-                        player1 = parts[0];
-                        player2 = parts[1];
-                    }
-                }
-                
+                if (gameRecord == null)
+                    continue;
+                gameRecord.setFileName(file.getAbsolutePath());
                 String currentUser = AuthManager.getInstance().getCurrentUsername();
                 if (currentUser != null && !currentUser.isEmpty()) {
-                     boolean isMyMatch = (player1.contains(currentUser) || player2.contains(currentUser));
-                     boolean isGeneric = player1.contains("You") || player1.contains("Player 1");
-                     if (!isMyMatch && !isGeneric) continue;
+                    boolean isMyMatch = (gameRecord.getPlayerX().contains(currentUser) ||
+                            gameRecord.getPlayerO().contains(currentUser));
+                    boolean isGeneric = gameRecord.getPlayerX().contains("You") ||
+                            gameRecord.getPlayerX().contains("Player 1");
+                    if (!isMyMatch && !isGeneric)
+                        continue;
                 }
-
-                if (dateLine != null && dateLine.startsWith("Date: ")) {
-                    date = dateLine.substring(6);
-                }
-                
-                if (resultLine != null && resultLine.startsWith("Result: ")) {
-                    winner = resultLine.substring(8);
-                } else if (resultLine != null && !resultLine.startsWith("Result:")) {
-                }
-
-                gameRecords.add(new GameRecord(file.getAbsolutePath(), player1, player2, winner, date));
+                gameRecords.add(gameRecord);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -117,7 +90,9 @@ public class GameHistoryController implements Initializable {
     @FXML
     private void handleBack(ActionEvent event) {
         try {
-            NavigationManager.switchScene(event, AppConstants.PATH_GAME_LOBBY);
+            String targetPath = GameSession.previousScreen.isEmpty() ? AppConstants.PATH_GAME_LOBBY
+                    : GameSession.previousScreen;
+            NavigationManager.switchScene(event, targetPath);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

@@ -4,6 +4,7 @@ module com.mycompany.finalprojectclient {
     requires java.base;
     requires javafx.media;
     requires com.google.gson;
+    requires javafx.graphics;
 
     opens com.mycompany.finalprojectclient to javafx.fxml, com.google.gson;
     opens com.mycompany.finalprojectclient.controllers to javafx.fxml;

@@ -22,7 +22,7 @@ public class MainApp extends Application {
         }
         Parent root = FXMLLoader.load(
                 getClass().getResource("/com/mycompany/finalprojectclient/Home.fxml"));
-        Scene scene = new Scene(root);
+        Scene scene = new Scene(root, 800, 600);
         stage.setScene(scene);
         stage.setTitle("Tic Tac Toe");
         stage.setOnCloseRequest(e -> {

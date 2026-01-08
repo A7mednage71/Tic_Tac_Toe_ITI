@@ -10,6 +10,8 @@ import com.mycompany.finalprojectclient.models.RequestType;
 import com.mycompany.finalprojectclient.models.ResponseData;
 import com.mycompany.finalprojectclient.models.ResponseStatus;
 import com.mycompany.finalprojectclient.models.GameSession;
+
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -26,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import javafx.event.ActionEvent;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -56,7 +57,7 @@ public class TicTacToeLobbyController implements Initializable {
         Label statusLabel;
         Button inviteButton;
         String username;
-        String status; 
+        String status;
 
         UserRow(HBox row, Circle dot, Label statusLabel, Button inviteButton, String username) {
             this.row = row;
@@ -71,37 +72,40 @@ public class TicTacToeLobbyController implements Initializable {
             this.status = newStatus;
             boolean isInGame = "in_game".equalsIgnoreCase(newStatus) || "busy".equalsIgnoreCase(newStatus);
             if (isInGame) {
-               statusLabel.setText("In Game");
+                statusLabel.setText("In Game");
                 statusLabel.setStyle("-fx-text-fill: #f39c12;");
                 dot.setStyle("-fx-fill: #f39c12;");
                 inviteButton.setText("Busy");
                 inviteButton.setDisable(true);
-                inviteButton.setStyle("-fx-background-color: rgba(74, 93, 35, 0.3); -fx-text-fill: #888; -fx-background-radius: 10; -fx-opacity: 0.6;");
+                inviteButton.setStyle(
+                        "-fx-background-color: rgba(74, 93, 35, 0.3); -fx-text-fill: #888; -fx-background-radius: 10; -fx-opacity: 0.6;");
             } else {
                 statusLabel.setText("Online");
                 statusLabel.setStyle("-fx-text-fill: #888888;");
                 dot.setStyle("-fx-fill: #50C878;");
                 inviteButton.setText("Invite");
                 inviteButton.setDisable(false);
-                inviteButton.setStyle("-fx-background-color: #4A5D23; -fx-text-fill: white; -fx-background-radius: 10; -fx-cursor: hand;");
+                inviteButton.setStyle(
+                        "-fx-background-color: #4A5D23; -fx-text-fill: white; -fx-background-radius: 10; -fx-cursor: hand;");
             }
         }
     }
 
     @FXML
-    private void handleBack(ActionEvent event) {
+    private void handleBack() {
         try {
             closeConnection();
-            NavigationManager.switchScene(event, AppConstants.PATH_ON_OFF);
+            NavigationManager.switchSceneUsingNode(backButton, AppConstants.PATH_ON_OFF);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     @FXML
-    private void handleGameHistory(ActionEvent event) {
+    private void handleGameHistory() {
         try {
-            NavigationManager.switchScene(event, AppConstants.PATH_GAME_HISTORY);
+            GameSession.previousScreen = AppConstants.PATH_GAME_LOBBY;
+            NavigationManager.switchSceneUsingNode(backButton, AppConstants.PATH_GAME_HISTORY);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -120,61 +124,55 @@ public class TicTacToeLobbyController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         alertHandler = new CustomAlertHandler(alertOverlay, alertBox, alertTitle, alertMessage, alertIcon);
-        
+
         loadOnlineUsers();
 
         ServerConnection.getInstance().setNotificationListener(() -> {
-            javafx.application.Platform.runLater(() -> loadOnlineUsers());
+            Platform.runLater(() -> loadOnlineUsers());
         });
 
         ServerConnection.getInstance().setInviteListener(new ServerConnection.InviteListener() {
             @Override
             public void onInviteReceived(String fromUsername) {
-                javafx.application.Platform.runLater(() -> {
+                Platform.runLater(() -> {
                     alertHandler.showConfirmation(
-                        "Game Invitation",
-                        fromUsername + " wants to play with you!",
-                        new CustomAlertHandler.ConfirmationCallback() {
-                            @Override
-                            public void onYes() {
-                                acceptInvite(fromUsername);
-                            }
+                            "Game Invitation",
+                            fromUsername + " wants to play with you!",
+                            new CustomAlertHandler.ConfirmationCallback() {
+                                @Override
+                                public void onYes() {
+                                    acceptInvite(fromUsername);
+                                }
 
-                            @Override
-                            public void onNo() {
-                                rejectInvite(fromUsername);
-                            }
-                        }
-                    );
+                                @Override
+                                public void onNo() {
+                                    rejectInvite(fromUsername);
+                                }
+                            });
                 });
             }
 
             @Override
             public void onInviteAccepted(String username) {
-                javafx.application.Platform.runLater(() -> {
-                    alertHandler.hide(); 
-                    
-                    
+                Platform.runLater(() -> {
+                    alertHandler.hide();
+
                     updateUserStatus(username, "in_game");
                     updateUserStatus(AuthManager.getInstance().getCurrentUsername(), "in_game");
-                    
-                    
+
                     GameSession.isOnline = true;
                     GameSession.vsComputer = false;
                     GameSession.opponentName = username;
-                    GameSession.playerSymbol = "X"; 
-                    
-                    
-                    
-                    
+                    GameSession.playerSymbol = "X";
+
                     NavigationManager.switchSceneUsingNode(usersContainer, AppConstants.PATH_GAME_BOARD);
                 });
             }
 
             @Override
             public void onInviteRejected(String username) {
-                javafx.application.Platform.runLater(() -> {
-                    alertHandler.hide(); 
+                Platform.runLater(() -> {
+                    alertHandler.hide();
                     alertHandler.showError("Invitation Rejected", username + " rejected your invitation.");
                 });
             }
@@ -192,6 +190,7 @@ public class TicTacToeLobbyController implements Initializable {
             }
         });
     }
+
     private void loadOnlineUsers() {
         try {
             RequestData request = new RequestData();
@@ -200,17 +199,18 @@ public class TicTacToeLobbyController implements Initializable {
             String response = ServerConnection.getInstance().sendRequest(request);
             ResponseData responseData = new Gson().fromJson(response, ResponseData.class);
             if (responseData.status == ResponseStatus.SUCCESS) {
-                Type mapType = new TypeToken<Map<String, String>>() {}.getType();
+                Type mapType = new TypeToken<Map<String, String>>() {
+                }.getType();
                 Map<String, String> onlineUsersMap = new Gson().fromJson(responseData.message, mapType);
-                
+
                 usersContainer.getChildren().clear();
                 userRowMap.clear();
-                
+
                 String currentUser = AuthManager.getInstance().getCurrentUsername();
                 for (Map.Entry<String, String> entry : onlineUsersMap.entrySet()) {
                     String username = entry.getKey();
                     String status = entry.getValue();
-                    
+
                     if (currentUser != null && username.equalsIgnoreCase(currentUser)) {
                         continue;
                     }
@@ -229,7 +229,7 @@ public class TicTacToeLobbyController implements Initializable {
 
     private void addUser(String username, String status) {
         boolean isInGame = "in_game".equalsIgnoreCase(status) || "busy".equalsIgnoreCase(status);
-       
+
         HBox userRow = new HBox(15);
         userRow.setPadding(new Insets(10));
         userRow.setStyle("-fx-border-color: transparent transparent #4A443F transparent;");
@@ -250,16 +250,16 @@ public class TicTacToeLobbyController implements Initializable {
         Button invite = new Button(isInGame ? "Busy" : "Invite");
         if (isInGame) {
             invite.setDisable(true);
-            invite.setStyle("-fx-background-color: rgba(74, 93, 35, 0.3); -fx-text-fill: #888; -fx-background-radius: 10; -fx-opacity: 0.6;");
+            invite.setStyle(
+                    "-fx-background-color: rgba(74, 93, 35, 0.3); -fx-text-fill: #888; -fx-background-radius: 10; -fx-opacity: 0.6;");
         } else {
-            invite.setStyle("-fx-background-color: #4A5D23; -fx-text-fill: white; -fx-background-radius: 10; -fx-cursor: hand;");
+            invite.setStyle(
+                    "-fx-background-color: #4A5D23; -fx-text-fill: white; -fx-background-radius: 10; -fx-cursor: hand;");
             invite.setOnAction(e -> sendInvite(username));
         }
- 
+
         userRow.getChildren().addAll(info, dot, invite);
         usersContainer.getChildren().add(userRow);
-
-        // Store reference
         UserRow rowObj = new UserRow(userRow, dot, statusLabel, invite, username);
         rowObj.status = status;
         userRowMap.put(username, rowObj);
@@ -271,7 +271,6 @@ public class TicTacToeLobbyController implements Initializable {
             request.key = RequestType.SEND_INVITE;
             request.username = AuthManager.getInstance().getCurrentUsername();
             request.targetUsername = targetUsername;
-
             ServerConnection.getInstance().sendRequest(request);
             alertHandler.showLoading("Waiting", "Waiting for " + targetUsername + " to respond...");
             System.out.println("Invite sent to: " + targetUsername);
@@ -287,21 +286,15 @@ public class TicTacToeLobbyController implements Initializable {
             request.key = RequestType.ACCEPT_INVITE;
             request.username = AuthManager.getInstance().getCurrentUsername();
             request.targetUsername = fromUsername;
-
             ServerConnection.getInstance().sendRequest(request);
-            
             GameSession.isOnline = true;
             GameSession.vsComputer = false;
             GameSession.opponentName = fromUsername;
-            GameSession.playerSymbol = "O"; 
-            
+            GameSession.playerSymbol = "O";
             updateUserStatus(fromUsername, "in_game");
             updateUserStatus(AuthManager.getInstance().getCurrentUsername(), "in_game");
-            
             System.out.println("Invite accepted from: " + fromUsername);
-            
             NavigationManager.switchSceneUsingNode(usersContainer, AppConstants.PATH_GAME_BOARD);
-            
         } catch (Exception e) {
             e.printStackTrace();
             alertHandler.showError("Error", "Failed to accept invitation");
@@ -314,7 +307,6 @@ public class TicTacToeLobbyController implements Initializable {
             request.key = RequestType.REJECT_INVITE;
             request.username = AuthManager.getInstance().getCurrentUsername();
             request.targetUsername = fromUsername;
-
             ServerConnection.getInstance().sendRequest(request);
             System.out.println("Invite rejected from: " + fromUsername);
         } catch (Exception e) {
@@ -329,4 +321,3 @@ public class TicTacToeLobbyController implements Initializable {
         }
     }
 }
-

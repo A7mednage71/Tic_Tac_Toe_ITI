@@ -8,6 +8,10 @@
 <?import javafx.geometry.Insets?>
 
 <VBox alignment="TOP_CENTER"
+      prefWidth="800.0"
+      prefHeight="600.0"
+      minWidth="800.0"
+      minHeight="600.0"
       spacing="30.0"
       stylesheets="/home_screen_style.css"
       xmlns="http://javafx.com/javafx/13"
