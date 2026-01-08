@@ -16,7 +16,7 @@
             prefHeight="600.0"
             prefWidth="800.0"
             stylesheets="game_history_style.css"
-            xmlns="http://javafx.com/javafx/17"
+            xmlns="http://javafx.com/javafx/13"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.mycompany.finalprojectclient.controllers.GameHistoryController">
 

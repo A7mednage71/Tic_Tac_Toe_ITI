@@ -56,7 +56,7 @@ public class TicTacToeLobbyController implements Initializable {
         Label statusLabel;
         Button inviteButton;
         String username;
-        String status; // "online", "in_game"
+        String status; 
 
         UserRow(HBox row, Circle dot, Label statusLabel, Button inviteButton, String username) {
             this.row = row;
@@ -69,18 +69,21 @@ public class TicTacToeLobbyController implements Initializable {
 
         void updateStatus(String newStatus) {
             this.status = newStatus;
-            if ("in_game".equals(newStatus)) {
-                statusLabel.setText("In Game");
+            boolean isInGame = "in_game".equalsIgnoreCase(newStatus) || "busy".equalsIgnoreCase(newStatus);
+            if (isInGame) {
+               statusLabel.setText("In Game");
                 statusLabel.setStyle("-fx-text-fill: #f39c12;");
                 dot.setStyle("-fx-fill: #f39c12;");
+                inviteButton.setText("Busy");
                 inviteButton.setDisable(true);
-                inviteButton.setStyle("-fx-background-color: #666; -fx-text-fill: #999; -fx-background-radius: 5;");
+                inviteButton.setStyle("-fx-background-color: rgba(74, 93, 35, 0.3); -fx-text-fill: #888; -fx-background-radius: 10; -fx-opacity: 0.6;");
             } else {
                 statusLabel.setText("Online");
                 statusLabel.setStyle("-fx-text-fill: #888888;");
                 dot.setStyle("-fx-fill: #50C878;");
+                inviteButton.setText("Invite");
                 inviteButton.setDisable(false);
-                inviteButton.setStyle("-fx-background-color: #4A5D23; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;");
+                inviteButton.setStyle("-fx-background-color: #4A5D23; -fx-text-fill: white; -fx-background-radius: 10; -fx-cursor: hand;");
             }
         }
     }
@@ -89,7 +92,16 @@ public class TicTacToeLobbyController implements Initializable {
     private void handleBack(ActionEvent event) {
         try {
             closeConnection();
-            NavigationManager.switchScene(event, AppConstants.PATH_HOME);
+            NavigationManager.switchScene(event, AppConstants.PATH_ON_OFF);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleGameHistory(ActionEvent event) {
+        try {
+            NavigationManager.switchScene(event, AppConstants.PATH_GAME_HISTORY);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -140,21 +152,21 @@ public class TicTacToeLobbyController implements Initializable {
             @Override
             public void onInviteAccepted(String username) {
                 javafx.application.Platform.runLater(() -> {
-                    alertHandler.hide(); // Hide "Waiting" alert
+                    alertHandler.hide(); 
                     
-                    // Update both players to "In Game" status
+                    
                     updateUserStatus(username, "in_game");
                     updateUserStatus(AuthManager.getInstance().getCurrentUsername(), "in_game");
                     
-                    // Set Game Session
+                    
                     GameSession.isOnline = true;
                     GameSession.vsComputer = false;
                     GameSession.opponentName = username;
-                    GameSession.playerSymbol = "X"; // Inviter is X
+                    GameSession.playerSymbol = "X"; 
                     
-                    alertHandler.showSuccess("Invitation Accepted", username + " accepted your invitation!");
                     
-                    // Navigate to board
+                    
+                    
                     NavigationManager.switchSceneUsingNode(usersContainer, AppConstants.PATH_GAME_BOARD);
                 });
             }
@@ -162,18 +174,24 @@ public class TicTacToeLobbyController implements Initializable {
             @Override
             public void onInviteRejected(String username) {
                 javafx.application.Platform.runLater(() -> {
-                    alertHandler.hide(); // Hide any "Waiting" alert
+                    alertHandler.hide(); 
                     alertHandler.showError("Invitation Rejected", username + " rejected your invitation.");
                 });
             }
 
             @Override
             public void onOpponentWithdrew(String username) {
-                // Not used in lobby currently, handled in Board
+            }
+
+            @Override
+            public void onPlayAgainRequested(String username) {
+            }
+
+            @Override
+            public void onGameStart(String symbol, String opponent) {
             }
         });
     }
-
     private void loadOnlineUsers() {
         try {
             RequestData request = new RequestData();
@@ -210,8 +228,8 @@ public class TicTacToeLobbyController implements Initializable {
     }
 
     private void addUser(String username, String status) {
-        boolean isInGame = "in_game".equals(status);
-        
+        boolean isInGame = "in_game".equalsIgnoreCase(status) || "busy".equalsIgnoreCase(status);
+       
         HBox userRow = new HBox(15);
         userRow.setPadding(new Insets(10));
         userRow.setStyle("-fx-border-color: transparent transparent #4A443F transparent;");
@@ -229,15 +247,15 @@ public class TicTacToeLobbyController implements Initializable {
         Circle dot = new Circle(4);
         dot.setStyle(isInGame ? "-fx-fill: #f39c12;" : "-fx-fill: #50C878;");
 
-        Button invite = new Button("Invite");
+        Button invite = new Button(isInGame ? "Busy" : "Invite");
         if (isInGame) {
             invite.setDisable(true);
-            invite.setStyle("-fx-background-color: #666; -fx-text-fill: #999; -fx-background-radius: 5;");
+            invite.setStyle("-fx-background-color: rgba(74, 93, 35, 0.3); -fx-text-fill: #888; -fx-background-radius: 10; -fx-opacity: 0.6;");
         } else {
-            invite.setStyle("-fx-background-color: #4A5D23; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;");
+            invite.setStyle("-fx-background-color: #4A5D23; -fx-text-fill: white; -fx-background-radius: 10; -fx-cursor: hand;");
             invite.setOnAction(e -> sendInvite(username));
         }
-
+ 
         userRow.getChildren().addAll(info, dot, invite);
         usersContainer.getChildren().add(userRow);
 
@@ -272,19 +290,16 @@ public class TicTacToeLobbyController implements Initializable {
 
             ServerConnection.getInstance().sendRequest(request);
             
-            // Set Game Session
             GameSession.isOnline = true;
             GameSession.vsComputer = false;
             GameSession.opponentName = fromUsername;
-            GameSession.playerSymbol = "O"; // Invitee is O
+            GameSession.playerSymbol = "O"; 
             
-            // Update both players to "In Game" status
             updateUserStatus(fromUsername, "in_game");
             updateUserStatus(AuthManager.getInstance().getCurrentUsername(), "in_game");
             
             System.out.println("Invite accepted from: " + fromUsername);
             
-            // Navigate to board
             NavigationManager.switchSceneUsingNode(usersContainer, AppConstants.PATH_GAME_BOARD);
             
         } catch (Exception e) {
@@ -314,3 +329,4 @@ public class TicTacToeLobbyController implements Initializable {
         }
     }
 }
+

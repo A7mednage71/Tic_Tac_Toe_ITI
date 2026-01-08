@@ -18,7 +18,6 @@ public class ClientHandler extends Thread {
     private final Gson gson = new Gson();
     private RequestManager requestManager;
 
-    // Game Logic Fields
     private ClientHandler opponent; 
     private boolean isInGame = false;
     
@@ -29,26 +28,26 @@ public class ClientHandler extends Thread {
         this.socket = socket;
     }
     
-    // for matchmaking
     public void setStatus(String status) {
         this.status = status;
     }
     public String getStatus() {
         return status;
     }
-    // --------------------
     
     // --- Game Logic Methods ---
 
     public void setOpponent(ClientHandler opp) {
         this.opponent = opp;
         this.isInGame = (opp != null);
-        this.status = (opp != null) ? "busy" : "active"; // Update status if in game
+        if (opp != null) {
+            this.status = "in_game";
+        }
     }
 
-    /**
-     * Helper to send strings safely to this specific client
-     */
+    public ClientHandler getOpponent() {
+        return opponent;
+    }
     public void sendMessage(String message) {
         try {
             if (dos != null) {
@@ -60,17 +59,11 @@ public class ClientHandler extends Thread {
         }
     }
 
-    /**
-     * Processes game-specific raw strings (e.g., MOVE|row|col)
-     */
     private void handleGameData(String data) {
         if (data.startsWith("MOVE|") && isInGame && opponent != null) {
-            // Forward the move directly to the opponent's device
             opponent.sendMessage(data);
             System.out.println("Forwarding move from " + username + " to " + opponent.getUsername());
         } 
-        // Note: INVITE logic is likely handled via JSON in your RequestManager, 
-        // but if you want it here as a string, you can add it.
     }
 
     // --- Core Logic ---
@@ -85,18 +78,15 @@ public class ClientHandler extends Thread {
             while (isRunning) {
                 String input = dis.readUTF();
                 
-                // DECIDE: Is this a Game Move (String) or a System Request (JSON)?
                 if (input.startsWith("MOVE|")) {
                     handleGameData(input);
                 } else {
-                    // Try to process as JSON for Login, Registration, User Lists, etc.
                     try {
                         RequestData request = gson.fromJson(input, RequestData.class);
                         if (request != null && request.key != null) {
                             requestManager.processRequest(request);
                         }
                     } catch (JsonSyntaxException e) {
-                        // If it's not valid JSON and not a MOVE, it's an unknown protocol
                         System.err.println("Unknown protocol received from " + username + ": " + input);
                     }
                 }
@@ -144,10 +134,9 @@ public class ClientHandler extends Thread {
             ServerThread.onlineUsers.remove(this);
             UserDAO.getInstance().updateUserStatus(username, "Disactive");
             
-            // Notify opponent if this user leaves mid-game
             if (opponent != null) {
                 opponent.sendMessage("OPPONENT_DISCONNECTED");
-                opponent.setOpponent(null); // Free the opponent to play again
+                opponent.setOpponent(null);
             }
 
             ServerThread.broadcastUserListUpdate();

@@ -5,4 +5,5 @@ public class RequestData {
     public String username;
     public String password;
     public String targetUsername;
+    public String status;
 }

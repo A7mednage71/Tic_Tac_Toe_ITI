@@ -54,7 +54,6 @@
                     <children>
                         <Button fx:id="onlineButton" styleClass="main-button" text="Online Multiplayer" onAction="#handleOnlinePlay"/>
                         <Button fx:id="offlineButton" styleClass="main-button" text="Offline Modes" onAction="#handleOfflinePlay"/>
-                        <Button fx:id="historyButton" styleClass="main-button" text="Game History" onAction="#gameHistory"/>
                     </children>
                 </VBox>
             </children>

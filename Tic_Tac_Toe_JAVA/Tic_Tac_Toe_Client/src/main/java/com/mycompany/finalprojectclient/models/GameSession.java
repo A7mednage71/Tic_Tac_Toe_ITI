@@ -6,8 +6,10 @@ public class GameSession {
     public static boolean vsComputer = false;
     public static Difficulty difficulty = Difficulty.EASY;
     
-    // Online Play Fields
     public static boolean isOnline = false;
     public static String opponentName = "";
-    public static String playerSymbol = "X"; // Default
+    public static String playerSymbol = "X"; 
+
+    public static boolean isReplay = false;
+    public static String replayFilePath = "";
 }
