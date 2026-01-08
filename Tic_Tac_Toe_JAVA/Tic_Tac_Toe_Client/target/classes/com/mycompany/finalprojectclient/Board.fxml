@@ -26,17 +26,17 @@
                 <Insets bottom="20.0" left="20.0" right="20.0" top="15.0" />
             </padding>
             <children>
-                <HBox alignment="CENTER_LEFT" prefWidth="410.0">
+                <HBox alignment="CENTER" prefWidth="410.0">
                     <children>
-                        <Button onAction="#handleBack" styleClass="back-arrow-button" text="←" />
-                        <Region HBox.hgrow="ALWAYS" /> 
-                        <HBox alignment="CENTER" spacing="10">
+                        <HBox alignment="CENTER_LEFT" spacing="10" minWidth="150" HBox.hgrow="ALWAYS">
                             <children>
+                                <Button onAction="#handleBack" styleClass="back-arrow-button" text="←" />
                                 <Circle fx:id="recordingIndicator" radius="6" fill="#e74c3c" visible="false" />
-                                <Text styleClass="title-text" text="Tic Tac Toe" />
+                                <Label fx:id="timerLabel" text="00:00" visible="false" style="-fx-text-fill: #e74c3c; -fx-font-size: 16px; -fx-font-weight: bold;" />
                             </children>
                         </HBox>
-                        <Region HBox.hgrow="ALWAYS" /> 
+                        <Text styleClass="title-text" text="Tic Tac Toe" />
+                        <HBox minWidth="150" HBox.hgrow="ALWAYS" />
                     </children>
                 </HBox>
 
