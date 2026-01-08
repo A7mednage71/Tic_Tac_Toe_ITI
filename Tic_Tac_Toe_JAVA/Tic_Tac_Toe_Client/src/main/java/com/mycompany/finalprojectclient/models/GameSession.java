@@ -14,6 +14,7 @@ public class GameSession {
 
     public static boolean isReplay = false;
     public static String replayFilePath = "";
+    public static boolean isHistoryReplay = false;  
 
     public static String previousScreen = "";
 }

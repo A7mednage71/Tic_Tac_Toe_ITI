@@ -320,4 +320,26 @@ public class TicTacToeLobbyController implements Initializable {
             userRow.updateStatus(status);
         }
     }
+
+    private void disableAllInvites() {
+        for (UserRow userRow : userRowMap.values()) {
+            userRow.inviteButton.setDisable(true);
+            userRow.inviteButton.setText("Disabled");
+            userRow.inviteButton.setStyle(
+                    "-fx-background-color: rgba(74, 93, 35, 0.3); -fx-text-fill: #888; -fx-background-radius: 10; -fx-opacity: 0.6;");
+        }
+    }
+
+    private void enableAllInvites() {
+        for (UserRow userRow : userRowMap.values()) {
+            if (!userRow.status.equalsIgnoreCase("in_game") && !userRow.status.equalsIgnoreCase("busy")) {
+                userRow.inviteButton.setDisable(false);
+                userRow.inviteButton.setText("Invite");
+                userRow.inviteButton.setStyle(
+                        "-fx-background-color: #4A5D23; -fx-text-fill: white; -fx-background-radius: 10; -fx-cursor: hand;");
+                final String username = userRow.username;
+                userRow.inviteButton.setOnAction(e -> sendInvite(username));
+            }
+        }
+    }
 }

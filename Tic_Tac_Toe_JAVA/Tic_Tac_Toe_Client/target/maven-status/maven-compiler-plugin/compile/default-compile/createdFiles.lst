@@ -1,5 +1,6 @@
 com\mycompany\finalprojectclient\models\RequestType.class
 com\mycompany\finalprojectclient\utils\CustomAlertHandler$ConfirmationCallback.class
+com\mycompany\finalprojectclient\models\GameRecord.class
 com\mycompany\finalprojectclient\network\ServerConnection$InviteListener.class
 com\mycompany\finalprojectclient\utils\CustomAlertHandler.class
 com\mycompany\finalprojectclient\models\ResponseStatus.class
