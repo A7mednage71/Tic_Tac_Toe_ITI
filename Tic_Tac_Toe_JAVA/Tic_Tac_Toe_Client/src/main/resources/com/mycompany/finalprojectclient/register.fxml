@@ -55,7 +55,7 @@
             <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" HBox.hgrow="ALWAYS" styleClass="custom-text-field" />
         </HBox>
 
-        <Button fx:id="registerButton" onAction="#handleRegister" text="Register" maxWidth="Infinity" styleClass="login-button" />
+        <Button fx:id="registerButton" onAction="#handleRegister" text="Register" maxWidth="Infinity" styleClass="login-button" defaultButton="true" />
 
     </VBox>
 

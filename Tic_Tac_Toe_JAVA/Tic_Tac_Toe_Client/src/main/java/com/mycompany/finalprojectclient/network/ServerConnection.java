@@ -10,6 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import com.google.gson.Gson;
 import com.mycompany.finalprojectclient.models.RequestData;
 import com.mycompany.finalprojectclient.models.RequestType;
+import com.mycompany.finalprojectclient.utils.AppConstants;
 
 public class ServerConnection {
 
@@ -36,6 +37,9 @@ public class ServerConnection {
         void onInviteRejected(String username);
 
         void onOpponentWithdrew(String username);
+
+        void onPlayAgainRequested(String username);
+        void onGameStart(String symbol, String opponent);
     }
 
     private ServerConnection() {
@@ -52,6 +56,10 @@ public class ServerConnection {
         return socket;
     }
 
+    public boolean isConnected() {
+        return socket != null && !socket.isClosed() && socket.isConnected();
+    }
+
     public void setNotificationListener(NotificationListener listener) {
         this.notificationListener = listener;
     }
@@ -63,11 +71,13 @@ public class ServerConnection {
     private boolean connect() {
         try {
             if (socket == null || socket.isClosed()) {
-                socket = new Socket("localhost", 5002);
+                socket = new Socket(AppConstants.SERVER_HOST, AppConstants.SERVER_PORT);
                 dis = new DataInputStream(socket.getInputStream());
                 dos = new DataOutputStream(socket.getOutputStream());
+                
+                responseQueue.clear(); // Clear any stale responses
                 startMessageRouter();
-                System.out.println("Connected to server");
+                System.out.println("Connected to server: " + AppConstants.SERVER_HOST);
             }
             return true;
         } catch (IOException e) {
@@ -110,6 +120,11 @@ public class ServerConnection {
                         if (inviteListener != null) {
                             inviteListener.onOpponentWithdrew(username);
                         }
+                    } else if (message.startsWith("PLAY_AGAIN_REQUESTED:")) {
+                        String username = message.substring("PLAY_AGAIN_REQUESTED:".length());
+                        if (inviteListener != null) {
+                            inviteListener.onPlayAgainRequested(username);
+                        }
                     } else if (message.startsWith("MOVE|")) {
                         String[] parts = message.split("\\|");
                         if (parts.length == 3 && gameMoveListener != null) {
@@ -118,10 +133,12 @@ public class ServerConnection {
                             gameMoveListener.onMoveReceived(r, c);
                         }
                     } else if (message.startsWith("GAME_START|")) {
-                        // Ignore or handle if needed, but don't put in responseQueue
-                        System.out.println("Game started: " + message);
+                        String[] parts = message.split("\\|");
+                        if (parts.length == 3 && inviteListener != null) {
+                            inviteListener.onGameStart(parts[1], parts[2]);
+                        }
                     } else {
-                        responseQueue.put(message);
+                       responseQueue.put(message);
                     }
                 }
             } catch (Exception e) {

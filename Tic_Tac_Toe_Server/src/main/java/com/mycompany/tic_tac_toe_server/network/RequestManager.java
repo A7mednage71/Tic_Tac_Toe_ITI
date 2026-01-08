@@ -59,6 +59,9 @@ public class RequestManager {
             case WITHDRAW:
                 handleWithdraw(request);
                 break;
+            case PLAY_AGAIN:
+                handlePlayAgain(request);
+                break;
         }
     }
 
@@ -147,11 +150,11 @@ public class RequestManager {
         }
 
         if ("in_game".equalsIgnoreCase(inviterClient.getStatus())) {
-            sendResponse(new ResponseData(ResponseStatus.FAILURE, "Inviter is already in a game"));
-            return;
+            if (this.clientHandler.getOpponent() != inviterClient) {
+                sendResponse(new ResponseData(ResponseStatus.FAILURE, "Inviter is already in a game"));
+                return;
+            }
         }
-
-        // NEW STATEMENTS: Pairing the clients for raw data forwarding
         this.clientHandler.setOpponent(inviterClient);
         inviterClient.setOpponent(this.clientHandler);
 
@@ -163,7 +166,6 @@ public class RequestManager {
 
         ServerThread.broadcastUserListUpdate();
 
-        // NEW STATEMENTS: Sending Game Start signals with tokens (X and O)
         inviterClient.sendInviteAccepted(acceptingUsername); 
         inviterClient.sendMessage("GAME_START|X|" + acceptingUsername);
         this.clientHandler.sendMessage("GAME_START|O|" + inviterUsername);
@@ -187,7 +189,7 @@ public class RequestManager {
     }
 
     private void handleUpdateStatus(RequestData req) throws IOException {
-        String newStatus = req.password; 
+        String newStatus = req.status; 
         if (newStatus == null) {
             return;
         }
@@ -209,7 +211,6 @@ public class RequestManager {
 
         System.out.println(fromUser + " withdrew from game against " + targetUser);
 
-        // NEW STATEMENTS: Unlinking the players
         clientHandler.setOpponent(null);
         clientHandler.setStatus("active");
         UserDAO.getInstance().updateUserStatus(fromUser, "active");
@@ -217,16 +218,27 @@ public class RequestManager {
         ClientHandler targetClient = findClientByUsername(targetUser);
 
         if (targetClient != null) {
-            // NEW STATEMENTS: Unlinking the target player
             targetClient.setOpponent(null);
-            targetClient.setStatus("active");
-            UserDAO.getInstance().updateUserStatus(targetUser, "active");
             targetClient.sendWithdrawNotification(fromUser);
         }
 
         ServerThread.broadcastUserListUpdate();
         ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Withdrawn");
         sendResponse(response);
+    }
+
+    private void handlePlayAgain(RequestData req) throws IOException {
+        String fromUser = req.username;
+        String targetUser = req.targetUsername;
+        System.out.println(fromUser + " wants to play again with " + targetUser);
+
+        ClientHandler targetClient = findClientByUsername(targetUser);
+        if (targetClient != null) {
+            targetClient.sendMessage("PLAY_AGAIN_REQUESTED:" + fromUser);
+            sendResponse(new ResponseData(ResponseStatus.SUCCESS, "Request sent"));
+        } else {
+            sendResponse(new ResponseData(ResponseStatus.FAILURE, "User offline"));
+        }
     }
 
     private ClientHandler findClientByUsername(String username) {

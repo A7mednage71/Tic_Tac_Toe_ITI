@@ -26,6 +26,22 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.scene.shape.Circle;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.animation.Animation;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import javafx.scene.layout.VBox;
+import com.mycompany.finalprojectclient.utils.CustomAlertHandler;
+import com.mycompany.finalprojectclient.utils.AppConstants;
+import com.mycompany.finalprojectclient.utils.NavigationManager;
 
 public class BoardController implements Initializable {
 
@@ -40,13 +56,31 @@ public class BoardController implements Initializable {
     @FXML
     private Label opponentNameLabel;
     @FXML
-    private StackPane drawOverlay;
-    @FXML
     private StackPane videoOverlay;
     @FXML
     private MediaView videoMediaView;
+    @FXML
+    private StackPane customAlertOverlay;
+    @FXML
+    private VBox alertBox;
+    @FXML
+    private Label alertTitle;
+    @FXML
+    private Label alertMessage;
+    @FXML
+    private Label alertIcon;
 
+    private CustomAlertHandler alertHandler;
     private MediaPlayer mediaPlayer;
+    private String gameFinishMessage;
+    @FXML
+    private Circle recordingIndicator;
+    @FXML
+    private Button recordBtn;
+
+    private boolean isRecording = false;
+    private List<String> recordedMoves = new ArrayList<>();
+    private FadeTransition blinkingAnimation;
 
     private String playerX = "You";
     private String playerO = "Opponent";
@@ -57,6 +91,15 @@ public class BoardController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        System.out.println("BoardController Initializing...");
+        System.out.println("videoOverlay injected: " + (videoOverlay != null));
+        System.out.println("videoMediaView injected: " + (videoMediaView != null));
+        
+        com.mycompany.finalprojectclient.network.ServerConnection.getInstance().setNotificationListener(null);
+        
+        alertHandler = new CustomAlertHandler(customAlertOverlay, alertBox, alertTitle, alertMessage, alertIcon);
+        updateBoardHoverState();
+
         if (GameSession.isOnline) {
             String myName = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
             if ("X".equals(GameSession.playerSymbol)) {
@@ -71,7 +114,6 @@ public class BoardController implements Initializable {
                 opponentNameLabel.setText(playerX + " (X)");
             }
 
-            // Setup listener for opponent withdrawal
             com.mycompany.finalprojectclient.network.ServerConnection.getInstance()
                     .setInviteListener(new com.mycompany.finalprojectclient.network.ServerConnection.InviteListener() {
                         @Override
@@ -80,27 +122,67 @@ public class BoardController implements Initializable {
 
                         @Override
                         public void onInviteAccepted(String user) {
+                            javafx.application.Platform.runLater(() -> {
+                                alertHandler.hide();
+                            });
                         }
 
                         @Override
                         public void onInviteRejected(String user) {
+                            javafx.application.Platform.runLater(() -> {
+                                alertHandler.showError("DECLINED", user + " doesn't want to play again.");
+                            });
+                        }
+                        @Override
+                        public void onPlayAgainRequested(String username) {
+                            javafx.application.Platform.runLater(() -> {
+                                alertHandler.showConfirmation("REMATCH CHALLENGE", username + " wants a rematch! Accept?", new CustomAlertHandler.ConfirmationCallback() {
+                                    @Override
+                                    public void onYes() {
+                                        acceptOnlineRematch();
+                                    }
+                                    @Override
+                                    public void onNo() {
+                                        rejectOnlineRematch();
+                                    }
+                                });
+                            });
                         }
 
                         @Override
                         public void onOpponentWithdrew(String username) {
-                            Platform.runLater(() -> {
-                                if (!gameOver) {
-                                    // Update score for the winner who stayed
-                                    if ("X".equals(GameSession.playerSymbol))
-                                        countX++;
-                                    else
-                                        countO++;
-                                    updateScoreLabels();
-                                    finishGame("Opponent Left. You Win!");
+                            javafx.application.Platform.runLater(() -> {
+                                if (gameOver) {
+                                    alertHandler.showError("LEFT", username + " has left.");
+                                    return;
                                 }
+                                if ("X".equals(GameSession.playerSymbol))
+                                    countX++;
+                                else
+                                    countO++;
+                                finishGame("Opponent Left. You Win!");
                             });
                         }
-                    });
+
+                        @Override
+                        public void onGameStart(String symbol, String opponent) {
+                            javafx.application.Platform.runLater(() -> {
+                                GameSession.playerSymbol = symbol;
+                                alertHandler.hide();
+                                updateUserStatus(com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername(), "in_game");
+                                resetBoard();
+                                updateScoreLabels();
+        
+        if (!GameSession.isOnline) {
+            recordBtn.setVisible(false);
+            recordBtn.setManaged(false);
+        } else {
+            recordBtn.setVisible(true);
+            recordBtn.setManaged(true);
+        }
+    });
+                        }
+                   });
 
             com.mycompany.finalprojectclient.network.ServerConnection.getInstance().setGameMoveListener((r, c) -> {
                 Platform.runLater(() -> {
@@ -118,6 +200,7 @@ public class BoardController implements Initializable {
                             finishGame("Draw!");
                         } else {
                             isXTurn = !isXTurn;
+                            updateBoardHoverState();
                         }
                     }
                 });
@@ -128,6 +211,8 @@ public class BoardController implements Initializable {
             playerO = "Computer";
             playerNameLabel.setText("You (X)");
             opponentNameLabel.setText("Computer 💻");
+        } else if (GameSession.isReplay) {
+            loadReplay(GameSession.replayFilePath);
         } else {
             playerX = "Player 1";
             playerO = "Player 2";
@@ -135,6 +220,65 @@ public class BoardController implements Initializable {
             opponentNameLabel.setText("Player 2 (O)");
         }
         updateScoreLabels();
+        
+        if (!GameSession.isOnline) {
+            recordBtn.setVisible(false);
+            recordBtn.setManaged(false);
+        } else {
+            recordBtn.setVisible(true);
+            recordBtn.setManaged(true);
+        }
+    }
+
+    private void loadReplay(String path) {
+        gameOver = true;
+        new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+                String playersLine = reader.readLine();
+                String dateLine = reader.readLine();
+                if (playersLine != null && playersLine.contains(" vs ")) {
+                    String[] p = playersLine.split(" vs ");
+                    Platform.runLater(() -> {
+                        playerX = p[0];
+                        playerO = p[1];
+                        playerNameLabel.setText(playerX);
+                        opponentNameLabel.setText(playerO);
+                        updateScoreLabels();
+        
+        if (!GameSession.isOnline) {
+            recordBtn.setVisible(false);
+            recordBtn.setManaged(false);
+        } else {
+            recordBtn.setVisible(true);
+            recordBtn.setManaged(true);
+        }
+    });
+                }
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.contains(",")) {
+                        String[] parts = line.split(",");
+                        int r = Integer.parseInt(parts[0]);
+                        int c = Integer.parseInt(parts[1]);
+                        String sym = parts[2];
+
+                        Thread.sleep(800);
+                        Platform.runLater(() -> {
+                            Button[][] grid = getGridArray();
+                            playMove(grid[r][c], sym);
+                        });
+                    }
+                }
+                Thread.sleep(1500);
+                Platform.runLater(() -> {
+                    showResultOverlay("🎬", "REPLAY ENDED");
+                    GameSession.isReplay = false;
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     @FXML
@@ -153,14 +297,12 @@ public class BoardController implements Initializable {
                     playComputerTurn();
                 }
             } else if (GameSession.isOnline) {
-                // Online Logic
                 String mySymbol = GameSession.playerSymbol;
                 boolean isMyTurn = (isXTurn && "X".equals(mySymbol)) || (!isXTurn && "O".equals(mySymbol));
 
                 if (isMyTurn) {
                     playMove(clickedButton, mySymbol);
 
-                    // Send move
                     int r = GridPane.getRowIndex(clickedButton) == null ? 0 : GridPane.getRowIndex(clickedButton);
                     int c = GridPane.getColumnIndex(clickedButton) == null ? 0 : GridPane.getColumnIndex(clickedButton);
                     com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendGameMove(r, c);
@@ -175,6 +317,7 @@ public class BoardController implements Initializable {
                         finishGame("Draw!");
                     } else {
                         isXTurn = !isXTurn;
+                        updateBoardHoverState();
                     }
                 }
             } else {
@@ -191,6 +334,7 @@ public class BoardController implements Initializable {
                 } else {
                     isXTurn = !isXTurn;
                     opponentNameLabel.setText(isXTurn ? "Player 1's Turn (X)" : "Player 2's Turn (O)");
+                    updateBoardHoverState();
                 }
             }
         }
@@ -211,6 +355,9 @@ public class BoardController implements Initializable {
                         finishGame("O Wins!");
                     } else if (isBoardFull()) {
                         finishGame("Draw!");
+                    } else {
+                        isXTurn = !isXTurn;
+                        updateBoardHoverState();
                     }
                 }
             });
@@ -297,6 +444,13 @@ public class BoardController implements Initializable {
     }
 
     private void playMove(Button btn, String symbol) {
+        int r = GridPane.getRowIndex(btn) == null ? 0 : GridPane.getRowIndex(btn);
+        int c = GridPane.getColumnIndex(btn) == null ? 0 : GridPane.getColumnIndex(btn);
+
+        if (isRecording) {
+            recordedMoves.add(r + "," + c + "," + symbol);
+        }
+
         btn.setText(symbol);
         btn.getStyleClass().removeAll("cell-button-empty");
         btn.getStyleClass().add(symbol.equals("X") ? "cell-button-x" : "cell-button-o");
@@ -310,59 +464,130 @@ public class BoardController implements Initializable {
         }).start();
     }
 
+    @FXML
+    private void handleRecord(ActionEvent event) {
+        isRecording = !isRecording;
+        if (isRecording) {
+            recordBtn.setText("Stop Rec");
+            recordBtn.setStyle("-fx-background-color: #c0392b;");
+            recordingIndicator.setVisible(true);
+            blinkingAnimation = new FadeTransition(Duration.millis(500), recordingIndicator);
+            blinkingAnimation.setFromValue(1.0);
+            blinkingAnimation.setToValue(0.1);
+            blinkingAnimation.setCycleCount(Animation.INDEFINITE);
+            blinkingAnimation.setAutoReverse(true);
+            blinkingAnimation.play();
+        } else {
+            stopRecording();
+        }
+    }
+
+    private void stopRecording() {
+        if (!isRecording)
+            return;
+        isRecording = false;
+        recordBtn.setText("Record");
+        recordBtn.setStyle("-fx-background-color: #e74c3c;");
+        recordingIndicator.setVisible(false);
+        if (blinkingAnimation != null) {
+            blinkingAnimation.stop();
+        }
+        saveGameHistory();
+    }
+
+    private void saveGameHistory() {
+        if (recordedMoves.isEmpty())
+            return;
+        try {
+            File dir = new File("history");
+            if (!dir.exists())
+                dir.mkdir();
+
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String filename = "history/game_" + timestamp + ".txt";
+            try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
+                out.println(playerX + " vs " + playerO);
+                out.println("Date: " + LocalDateTime.now().toString());
+                for (String move : recordedMoves) {
+                    out.println(move);
+                }
+            }
+            System.out.println("Game recorded to: " + filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void finishGame(String message) {
         gameOver = true;
+        gameFinishMessage = message;
+        updateBoardHoverState();
         updateScoreLabels();
-        Platform.runLater(() -> {
-            String msgLower = message.toLowerCase();
-            if (msgLower.contains("win")) {
-                boolean showWinnerVideo = true;
 
-                if (GameSession.isOnline) {
-                    // In online mode, check if the winning symbol matches our symbol
-                    // message could be "X Wins!", "O Wins!", or "Opponent Left. You Win!"
-                    if (message.contains("X Wins") && !"X".equals(GameSession.playerSymbol)) {
-                        showWinnerVideo = false;
-                    } else if (message.contains("O Wins") && !"O".equals(GameSession.playerSymbol)) {
-                        showWinnerVideo = false;
-                    }
-                    // If message contains "You Win" (from withdrawal), showWinnerVideo stays true
-                } else if (GameSession.vsComputer) {
-                    // In vsComputer, player is always X
-                    if (message.contains("O Wins")) {
-                        showWinnerVideo = false;
-                    }
-                }
-                // For Local PVP, we'll keep showing winner video as both players are at the
-                // same screen
+        if (GameSession.isOnline) {
+        }
 
-                if (showWinnerVideo) {
-                    playVideo("/videos/winner.mp4");
-                } else {
-                    playVideo("/videos/loser.mp4");
-                }
-            } else if (msgLower.contains("draw")) {
-                showDrawAlert();
-            } else {
-                showDrawAlert();
+        String msgLower = message.toLowerCase();
+        if (msgLower.contains("win")) {
+            boolean showWinnerVideo = true;
+            if (GameSession.isOnline) {
+                if (message.contains("X Wins") && !"X".equals(GameSession.playerSymbol)) showWinnerVideo = false;
+                else if (message.contains("O Wins") && !"O".equals(GameSession.playerSymbol)) showWinnerVideo = false;
+            } else if (GameSession.vsComputer) {
+                if (message.contains("O Wins")) showWinnerVideo = false;
+            }
+            
+            if (showWinnerVideo) playVideo("/videos/winner.mp4");
+            else playVideo("/videos/loser.mp4");
+        } else {
+            showRematchAlert();
+        }
+
+        javafx.application.Platform.runLater(() -> {
+            opponentNameLabel.setText("GAME OVER: " + message.toUpperCase());
+            opponentNameLabel.setStyle("-fx-text-fill: #f1c40f; -fx-font-weight: bold; -fx-font-size: 18px;");
+        });
+
+        if (isRecording) {
+            stopRecording();
+        }
+    }
+
+    private void showRematchAlert() {
+        if (gameFinishMessage == null) return;
+        
+        String icon = "🤝";
+        if (gameFinishMessage.contains("Wins")) icon = "🏆";
+        
+        alertHandler.showConfirmation(gameFinishMessage.toUpperCase(), "Want to play again?", new CustomAlertHandler.ConfirmationCallback() {
+            @Override
+            public void onYes() {
+                if (GameSession.isOnline) sendOnlinePlayAgainRequest();
+                else resetBoard();
+            }
+            @Override
+            public void onNo() {
+                handleBack(null);
             }
         });
+        alertIcon.setText(icon);
     }
-
-    private void showDrawAlert() {
-        drawOverlay.setVisible(true);
-        drawOverlay.setManaged(true);
-        drawOverlay.setOpacity(0);
-        FadeTransition ft = new FadeTransition(Duration.millis(500), drawOverlay);
-        ft.setToValue(1.0);
-        ft.play();
+    private void showResultOverlay(String icon, String title) {
+        alertHandler.showSuccess(title, "");
+        alertIcon.setText(icon);
     }
-
     @FXML
     private void handlePlayAgainFromOverlay(ActionEvent event) {
-        drawOverlay.setVisible(false);
-        drawOverlay.setManaged(false);
-        handlePlayAgain(event);
+        if (GameSession.isOnline) {
+            if (alertTitle.getText().contains("WANTS A REMATCH")) {
+                acceptOnlineRematch();
+            } else {
+                sendOnlinePlayAgainRequest();
+            }
+        } else {
+            alertHandler.hide();
+            handlePlayAgain(event);
+        }
     }
 
     private void highlightWinningButtons(Button... buttons) {
@@ -405,9 +630,8 @@ public class BoardController implements Initializable {
         return true;
     }
 
-    @FXML
-    private void handlePlayAgain(ActionEvent event) {
-        for (Node node : gameGrid.getChildren()) {
+    private void resetBoard() {
+        for (javafx.scene.Node node : gameGrid.getChildren()) {
             if (node instanceof Button) {
                 Button btn = (Button) node;
                 btn.setText("");
@@ -416,29 +640,126 @@ public class BoardController implements Initializable {
                     btn.getStyleClass().add("cell-button-empty");
             }
         }
-        gameOver = false;
+        recordedMoves.clear(); gameOver = false;
+        gameFinishMessage = null;
         isXTurn = true;
-        if (!GameSession.vsComputer)
+        opponentNameLabel.setStyle(""); 
+        updateTurnLabel();
+        updateBoardHoverState();
+    }
+
+    private void updateBoardHoverState() {
+        if (gameGrid == null) return;
+        if (gameOver) {
+            if (!gameGrid.getStyleClass().contains("not-my-turn"))
+                gameGrid.getStyleClass().add("not-my-turn");
+            return;
+        }
+
+        if (GameSession.isOnline) {
+            String mySymbol = GameSession.playerSymbol;
+            if (mySymbol == null) return;
+            boolean isMyTurn = (isXTurn && "X".equals(mySymbol)) || (!isXTurn && "O".equals(mySymbol));
+           if (isMyTurn) {
+                gameGrid.getStyleClass().remove("not-my-turn");
+            } else {
+                if (!gameGrid.getStyleClass().contains("not-my-turn"))
+                    gameGrid.getStyleClass().add("not-my-turn");
+            }
+        } else if (GameSession.vsComputer) {
+            gameGrid.getStyleClass().remove("not-my-turn");
+        } else {
+            gameGrid.getStyleClass().remove("not-my-turn");
+        }
+    }
+
+    private void sendOnlinePlayAgainRequest() {
+        com.mycompany.finalprojectclient.models.RequestData req = new com.mycompany.finalprojectclient.models.RequestData();
+        req.key = com.mycompany.finalprojectclient.models.RequestType.PLAY_AGAIN;
+        req.username = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
+        req.targetUsername = GameSession.opponentName;
+        try {
+            com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendRequest(req);
+            alertHandler.showSuccess("SENT", "Waiting for opponent...");
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void acceptOnlineRematch() {
+        com.mycompany.finalprojectclient.models.RequestData req = new com.mycompany.finalprojectclient.models.RequestData();
+        req.key = com.mycompany.finalprojectclient.models.RequestType.ACCEPT_INVITE;
+        req.username = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
+        req.targetUsername = GameSession.opponentName;
+        try {
+            com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendRequest(req);
+            alertHandler.showSuccess("SENT", "Waiting for opponent...");
+        } catch (java.io.IOException e) {
+           e.printStackTrace();
+        }
+    }
+
+    private void rejectOnlineRematch() {
+        com.mycompany.finalprojectclient.models.RequestData req = new com.mycompany.finalprojectclient.models.RequestData();
+        req.key = com.mycompany.finalprojectclient.models.RequestType.REJECT_INVITE;
+        req.username = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
+        req.targetUsername = GameSession.opponentName;
+        try {
+            com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendRequest(req);
+            alertHandler.hide();
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateTurnLabel() {
+        if (GameSession.isOnline) {
+            String myName = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
+            if (isXTurn) {
+                opponentNameLabel.setText(playerX + "'s Turn (X)");
+            } else {
+                opponentNameLabel.setText(playerO + "'s Turn (O)");
+            }
+        } else if (!GameSession.vsComputer) {
             opponentNameLabel.setText("Player 1's Turn (X)");
+        }
+    }
+
+    @FXML
+    private void handlePlayAgain(ActionEvent event) {
+        if (GameSession.isOnline) {
+            if (gameOver) {
+                sendOnlinePlayAgainRequest();
+            } else {
+                alertHandler.showError("WAIT!", "Finish the current game first.");
+            }
+        } else {
+            resetBoard();
+        }
     }
 
     @FXML
     private void handleBack(ActionEvent event) {
         try {
             if (GameSession.isOnline) {
-                // Send WITHDRAW to server
+                updateUserStatus(com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername(), "online");
+                
                 com.mycompany.finalprojectclient.models.RequestData req = new com.mycompany.finalprojectclient.models.RequestData();
                 req.key = com.mycompany.finalprojectclient.models.RequestType.WITHDRAW;
                 req.username = com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername();
-                req.targetUsername = GameSession.opponentName;
                 req.targetUsername = GameSession.opponentName;
                 com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendRequest(req);
                 com.mycompany.finalprojectclient.network.ServerConnection.getInstance().setGameMoveListener(null);
 
                 GameSession.isOnline = false;
-                switchScene("TicTacToeLobby.fxml", event);
+                com.mycompany.finalprojectclient.utils.NavigationManager.switchSceneUsingNode(gameGrid, AppConstants.PATH_GAME_LOBBY);
+            } else if (GameSession.vsComputer) {
+               com.mycompany.finalprojectclient.utils.NavigationManager.switchSceneUsingNode(gameGrid, "/com/mycompany/finalprojectclient/vsComputer.fxml");
+            } else if (GameSession.isReplay) {
+                GameSession.isReplay = false;
+                com.mycompany.finalprojectclient.utils.NavigationManager.switchSceneUsingNode(gameGrid, AppConstants.PATH_GAME_HISTORY);
             } else {
-                switchScene(GameSession.vsComputer ? "vsComputer.fxml" : "Home.fxml", event);
+                com.mycompany.finalprojectclient.utils.NavigationManager.switchSceneUsingNode(gameGrid, AppConstants.PATH_ON_OFF);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -458,10 +779,18 @@ public class BoardController implements Initializable {
     }
 
     private void playVideo(String videoPath) {
+        if (videoMediaView == null || videoOverlay == null) {
+            System.err.println("Video components not found. Skipping video.");
+            return;
+        }
         try {
-            URL videoUrl = getClass().getResource(videoPath);
-            if (videoUrl == null)
+            System.out.println("Attempting to play video: " + videoPath);
+            URL videoUrl = com.mycompany.finalprojectclient.MainApp.class.getResource(videoPath);
+            if (videoUrl == null) {
+                System.err.println("Video file not found: " + videoPath);
                 return;
+            }
+            System.out.println("Video URL: " + videoUrl.toExternalForm());
 
             if (mediaPlayer != null) {
                 mediaPlayer.stop();
@@ -469,7 +798,19 @@ public class BoardController implements Initializable {
             }
 
             Media media = new Media(videoUrl.toExternalForm());
+            
+            media.setOnError(() -> {
+                System.err.println("Media Load Error: " + media.getError().getMessage());
+                handleCloseVideo(null); 
+            });
+
             mediaPlayer = new MediaPlayer(media);
+            
+            mediaPlayer.setOnError(() -> {
+                System.err.println("MediaPlayer Playback Error: " + mediaPlayer.getError().getMessage());
+                handleCloseVideo(null); 
+            });
+
             videoMediaView.setMediaPlayer(mediaPlayer);
 
             videoOverlay.setVisible(true);
@@ -481,11 +822,14 @@ public class BoardController implements Initializable {
             ft.play();
 
             mediaPlayer.play();
+            
             mediaPlayer.setOnEndOfMedia(() -> {
-                // Keep the last frame or show button
             });
+            
         } catch (Exception e) {
+            System.err.println("Exception in playVideo: " + e.getMessage());
             e.printStackTrace();
+            handleCloseVideo(null); 
         }
     }
 
@@ -503,9 +847,20 @@ public class BoardController implements Initializable {
             videoOverlay.setVisible(false);
             videoOverlay.setManaged(false);
         });
-        ft.play();
+       ft.play();
     }
 
+    private void updateUserStatus(String username, String status) {
+        try {
+            com.mycompany.finalprojectclient.models.RequestData request = new com.mycompany.finalprojectclient.models.RequestData();
+            request.key = com.mycompany.finalprojectclient.models.RequestType.UPDATE_STATUS;
+            request.username = username;
+            request.status = status;
+            com.mycompany.finalprojectclient.network.ServerConnection.getInstance().sendRequest(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     private boolean takeCenter() {
         Button[][] grid = getGridArray();
         if (grid[1][1].getText().isEmpty()) {
@@ -531,3 +886,7 @@ public class BoardController implements Initializable {
         return false;
     }
 }
+
+
+
+

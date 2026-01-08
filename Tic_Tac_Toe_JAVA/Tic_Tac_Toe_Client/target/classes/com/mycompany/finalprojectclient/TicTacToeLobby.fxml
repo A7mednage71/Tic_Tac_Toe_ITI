@@ -5,13 +5,14 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
 <StackPane prefHeight="600.0"
            prefWidth="400.0"
-           xmlns="http://javafx.com/javafx/17"
+           xmlns="http://javafx.com/javafx/13"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.mycompany.finalprojectclient.controllers.TicTacToeLobbyController">
 
@@ -66,19 +67,36 @@
                 </ScrollPane>
 
              
-                <Button fx:id="backButton"
-                        text="Back"
-                        onAction="#handleBack"
-                        prefWidth="160"
-                        pickOnBounds="true"
-                        style="-fx-background-color: #4A5D23;
-                               -fx-text-fill: white;
-                               -fx-font-size: 15;
-                               -fx-background-radius: 8;">
-                    <padding>
-                        <Insets top="12" bottom="12"/>
-                    </padding>
-                </Button>
+                <HBox spacing="10" alignment="CENTER">
+                    <children>
+                        <Button fx:id="backButton"
+                                text="Back"
+                                onAction="#handleBack"
+                                prefWidth="160"
+                                pickOnBounds="true"
+                                style="-fx-background-color: #4A5D23;
+                                       -fx-text-fill: white;
+                                       -fx-font-size: 15;
+                                       -fx-background-radius: 8;">
+                            <padding>
+                                <Insets top="12" bottom="12"/>
+                            </padding>
+                        </Button>
+                        <Button fx:id="historyButton"
+                                text="Game History"
+                                onAction="#handleGameHistory"
+                                prefWidth="160"
+                                pickOnBounds="true"
+                                style="-fx-background-color: #88a050;
+                                       -fx-text-fill: white;
+                                       -fx-font-size: 15;
+                                       -fx-background-radius: 8;">
+                            <padding>
+                                <Insets top="12" bottom="12"/>
+                            </padding>
+                        </Button>
+                    </children>
+                </HBox>
 
             </VBox>
 

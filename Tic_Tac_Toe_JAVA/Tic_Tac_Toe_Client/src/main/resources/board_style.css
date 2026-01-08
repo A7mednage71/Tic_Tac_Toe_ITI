@@ -181,3 +181,13 @@
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
 }
+
+.not-my-turn {
+    -fx-cursor: default;
+}
+
+.not-my-turn .cell-button-empty:hover {
+    -fx-background-color: #4A4242; /* Same as cell-button-empty default */
+    -fx-effect: none;
+    -fx-cursor: default;
+}

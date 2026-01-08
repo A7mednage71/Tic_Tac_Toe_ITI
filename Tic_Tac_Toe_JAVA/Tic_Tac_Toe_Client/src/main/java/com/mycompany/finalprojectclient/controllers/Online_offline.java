@@ -34,11 +34,15 @@ public class Online_offline implements Initializable {
     @FXML
     private void handleOnlinePlay(ActionEvent event) {
         try {
-            NavigationManager.switchScene(event, AppConstants.PATH_LOGIN);
+            if (com.mycompany.finalprojectclient.network.ServerConnection.getInstance().isConnected() && 
+                com.mycompany.finalprojectclient.utils.AuthManager.getInstance().getCurrentUsername() != null) {
+                NavigationManager.switchScene(event, AppConstants.PATH_GAME_LOBBY);
+            } else {
+                NavigationManager.switchScene(event, AppConstants.PATH_LOGIN);
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
     }
 
     @FXML
@@ -65,10 +69,12 @@ public class Online_offline implements Initializable {
     @FXML
     private void handleBack(ActionEvent event) {
         try {
+            if (com.mycompany.finalprojectclient.network.ServerConnection.getInstance().isConnected()) {
+                com.mycompany.finalprojectclient.network.ServerConnection.getInstance().disconnect();
+            }
             NavigationManager.switchScene(event, AppConstants.PATH_HOME);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
     }
 }

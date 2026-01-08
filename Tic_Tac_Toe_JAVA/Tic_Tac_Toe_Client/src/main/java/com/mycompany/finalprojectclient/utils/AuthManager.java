@@ -42,27 +42,27 @@ public class AuthManager {
                 return new ResponseData(ResponseStatus.FAILURE, "No response from server");
             }
 
-            if (!jsonResponse.trim().startsWith("{")) {
-                String upperResponse = jsonResponse.toUpperCase();
-
+            // Simple check to see if it's JSON
+            String trimmed = jsonResponse.trim();
+            if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+                ResponseData response = gson.fromJson(jsonResponse, ResponseData.class);
+                if (response.status == ResponseStatus.SUCCESS) {
+                    this.currentUsername = username.trim().toLowerCase();
+                }
+                return response;
+            } else {
+                // Fallback for raw status messages
+                String upperResponse = trimmed.toUpperCase();
                 if (upperResponse.contains("ALREADY")) {
                     return new ResponseData(ResponseStatus.FAILURE, "ALREADY_LOGGED_IN");
                 }
-
                 if (upperResponse.contains("SUCCESS")) {
                     this.currentUsername = username.trim().toLowerCase();
                     return new ResponseData(ResponseStatus.SUCCESS, "Login successful");
-                } else {
-                    return new ResponseData(ResponseStatus.FAILURE, jsonResponse);
                 }
+                return new ResponseData(ResponseStatus.FAILURE, jsonResponse);
             }
-
-            ResponseData response = gson.fromJson(jsonResponse, ResponseData.class);
-            if (response.status == ResponseStatus.SUCCESS) {
-                this.currentUsername = username.trim().toLowerCase();
-            }
-            return response;
-        } catch (IOException | JsonSyntaxException e) {
+        } catch (Exception e) {
             return new ResponseData(ResponseStatus.FAILURE, "Error: " + e.getMessage());
         }
     }
