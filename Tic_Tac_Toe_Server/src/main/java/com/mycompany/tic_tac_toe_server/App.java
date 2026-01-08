@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
 
 /**
  * JavaFX App
@@ -17,8 +18,10 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        Image icon = new Image(getClass().getResourceAsStream("/images/app_icon.png"));
         scene = new Scene(loadFXML("server_home"), 640, 480);
         stage.setScene(scene);
+        stage.getIcons().add(icon);
         stage.show();
     }
 
