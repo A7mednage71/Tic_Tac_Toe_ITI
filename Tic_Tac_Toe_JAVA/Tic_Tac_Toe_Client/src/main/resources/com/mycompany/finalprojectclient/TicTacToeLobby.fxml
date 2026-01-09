@@ -41,6 +41,20 @@
                     </font>
                 </Label>
 
+                <!-- Current User Info -->
+                <HBox fx:id="currentUserBox" alignment="CENTER" spacing="10" 
+                      style="-fx-background-color: #3B3631; -fx-background-radius: 10; -fx-padding: 10;" 
+                      maxWidth="300">
+                    <children>
+                        <Label fx:id="currentUserNameLabel" text="" 
+                               textFill="WHITE" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+                        <Label fx:id="currentUserScoreLabel" text="0" 
+                               textFill="#88a050" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+                        <javafx.scene.shape.Circle fx:id="currentUserDot" radius="4" 
+                                                   style="-fx-fill: #50C878;"/>
+                    </children>
+                </HBox>
+
                 <Label text="Choose an Online Player to Invite"
                        textFill="#88a050">
                     <font>

@@ -48,29 +48,59 @@
 }
 
 .cell-button-empty {
-    -fx-background-color: #4A4242;
+    -fx-background-color: #2d3436;
     -fx-background-radius: 10;
+    -fx-border-color: #636e72;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
     -fx-cursor: hand;
-    -fx-transition: 0.3s;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 5, 0, 0, 2);
 }
 
-.cell-button-empty:hover {
-    -fx-background-color: #554D4D;
+.game-cell:hover {
+    /* تفتيح بسيط للون الخلفية */
+    -fx-background-color: #353b48;
+
+    /* وهج أبيض ناعم وخفيف */
+    /* القيم: color, radius, spread, offset-x, offset-y */
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 255, 255, 0.3), 15, 0.3, 0, 0);
+
+    /* تكبير بسيط جداً بيدي إحساس بالحركة */
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
 }
 
 
 .cell-button-x,
 .cell-button-o {
-    -fx-background-color: #E5E1DA;
-    -fx-text-fill: #3D3636;
     -fx-font-size: 40px;
     -fx-font-weight: bold;
     -fx-background-radius: 10;
 }
 
+.cell-button-x {
+    -fx-text-fill: #00d2d3 !important;
+    -fx-background-color: rgba(0, 210, 211, 0.15);
+    -fx-border-color: #00d2d3;
+    -fx-border-radius: 10;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 210, 211, 0.7), 10, 0, 0, 0);
+}
+
+.cell-button-o {
+    -fx-text-fill: #ff4757 !important;
+    -fx-background-color: rgba(255, 71, 87, 0.15);
+    -fx-border-color: #ff4757;
+    -fx-border-radius: 10;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 71, 87, 0.7), 10, 0, 0, 0);
+}
+
 .winning-button {
-    -fx-background-color: #5C7A33 !important;
-    -fx-text-fill: white !important;
+    -fx-border-color: #2ed573 !important;
+    -fx-border-width: 3 !important;
+    -fx-background-color: rgba(46, 213, 115, 0.3) !important;
+    -fx-effect: dropshadow(three-pass-box, #2ed573, 20, 0.5, 0, 0) !important;
 }
 
 .action-button {
@@ -187,7 +217,8 @@
 }
 
 .not-my-turn .cell-button-empty:hover {
-    -fx-background-color: #4A4242; /* Same as cell-button-empty default */
+    -fx-background-color: #4A4242;
+    /* Same as cell-button-empty default */
     -fx-effect: none;
     -fx-cursor: default;
 }
