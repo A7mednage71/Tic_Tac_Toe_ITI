@@ -1,12 +1,14 @@
 package com.mycompany.tic_tac_toe_server.network;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import com.google.gson.Gson;
+import com.mycompany.tic_tac_toe_server.database.DatabaseConstants;
 import com.mycompany.tic_tac_toe_server.database.UserDAO;
 import com.mycompany.tic_tac_toe_server.models.RequestData;
 import com.mycompany.tic_tac_toe_server.models.ResponseData;
 import com.mycompany.tic_tac_toe_server.models.ResponseStatus;
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 public class RequestManager {
 
@@ -61,6 +63,12 @@ public class RequestManager {
                 break;
             case PLAY_AGAIN:
                 handlePlayAgain(request);
+                break;
+            case GAME_END:
+                handleGameEnd(request);
+                break;
+            case GET_SCORE:
+                handleGetScore(request);
                 break;
         }
     }
@@ -166,7 +174,7 @@ public class RequestManager {
 
         ServerThread.broadcastUserListUpdate();
 
-        inviterClient.sendInviteAccepted(acceptingUsername); 
+        inviterClient.sendInviteAccepted(acceptingUsername);
         inviterClient.sendMessage("GAME_START|X|" + acceptingUsername);
         this.clientHandler.sendMessage("GAME_START|O|" + inviterUsername);
 
@@ -189,7 +197,7 @@ public class RequestManager {
     }
 
     private void handleUpdateStatus(RequestData req) throws IOException {
-        String newStatus = req.status; 
+        String newStatus = req.status;
         if (newStatus == null) {
             return;
         }
@@ -238,6 +246,83 @@ public class RequestManager {
             sendResponse(new ResponseData(ResponseStatus.SUCCESS, "Request sent"));
         } else {
             sendResponse(new ResponseData(ResponseStatus.FAILURE, "User offline"));
+        }
+    }
+
+    private void handleGameEnd(RequestData req) throws IOException {
+        String winner = req.username;
+        String loser = req.targetUsername;
+        String result = req.status;
+
+        System.out.println("Game ended: " + winner + " vs " + loser + " - Result: " + result);
+
+        UserDAO userDAO = UserDAO.getInstance();
+
+        if ("WIN".equals(result)) {
+            userDAO.updateUserScore(winner, DatabaseConstants.SCORE_WIN);
+            userDAO.updateUserScore(loser, DatabaseConstants.SCORE_LOSE);
+
+        } else if ("DRAW".equals(result)) {
+            userDAO.updateUserScore(winner, DatabaseConstants.SCORE_DRAW);
+            userDAO.updateUserScore(loser, DatabaseConstants.SCORE_DRAW);
+
+        } else if ("WITHDRAW".equals(result)) {
+            userDAO.updateUserScore(winner, DatabaseConstants.SCORE_WIN);
+            userDAO.updateUserScore(loser, DatabaseConstants.SCORE_WITHDRAW);
+        }
+
+        broadcastScoreUpdates(winner, loser);
+
+        sendResponse(new ResponseData(ResponseStatus.SUCCESS, "Scores updated"));
+    }
+
+    private void broadcastScoreUpdates(String player1, String player2) {
+        try {
+            UserDAO userDAO = UserDAO.getInstance();
+            int score1 = userDAO.getUserScore(player1);
+            int score2 = userDAO.getUserScore(player2);
+
+            // إرسال للاعبين المعنيين فقط (اللي في اللعبة دي)
+            ClientHandler client1 = findClientByUsername(player1);
+            ClientHandler client2 = findClientByUsername(player2);
+
+            if (client1 != null) {
+                client1.sendMessage("SCORE_UPDATE:" + player1 + ":" + score1);
+                client1.sendMessage("SCORE_UPDATE:" + player2 + ":" + score2);
+            }
+
+            if (client2 != null) {
+                client2.sendMessage("SCORE_UPDATE:" + player1 + ":" + score1);
+                client2.sendMessage("SCORE_UPDATE:" + player2 + ":" + score2);
+            }
+        } catch (Exception e) {
+            System.err.println("Error broadcasting scores: " + e.getMessage());
+        }
+    }
+
+    private void handleGetScore(RequestData req) throws IOException {
+        System.out.println("=== handleGetScore ===");
+        System.out.println("Requesting client: " + this.clientHandler.getUsername());
+        System.out.println("Requested username: " + req.username);
+
+        try {
+            String username = req.username;
+            int score = UserDAO.getInstance().getUserScore(username);
+
+            System.out.println("Retrieved score for " + username + ": " + score);
+
+            // إرسال الـ score للـ client اللي طلبه (مش للـ client صاحب الـ username)
+            String message = "SCORE_UPDATE:" + username + ":" + score;
+            System.out.println("Sending to client " + this.clientHandler.getUsername() + ": " + message);
+            this.clientHandler.sendMessage(message);
+
+            ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Score retrieved");
+            sendResponse(response);
+        } catch (Exception e) {
+            System.err.println("Error in handleGetScore: " + e.getMessage());
+            e.printStackTrace();
+            ResponseData response = new ResponseData(ResponseStatus.FAILURE, "Error getting score: " + e.getMessage());
+            sendResponse(response);
         }
     }
 
