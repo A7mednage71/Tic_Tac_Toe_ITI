@@ -41,10 +41,12 @@ public class UserDAO {
 
     // ===================== Register Function =================================
     public boolean register(String username, String password) {
-        if (con == null) return false;
+        if (con == null)
+            return false;
 
         try {
-            if (isUserExists(username)) return false;
+            if (isUserExists(username))
+                return false;
 
             try (PreparedStatement ps = con.prepareStatement(DatabaseConstants.REGISTER_USER_QUERY)) {
                 ps.setString(1, username.toLowerCase());
@@ -73,7 +75,8 @@ public class UserDAO {
 
     // ===================== Login Function =====================
     public boolean login(String username, String password) {
-        if (con == null) return false;
+        if (con == null)
+            return false;
 
         try (PreparedStatement ps = con.prepareStatement(DatabaseConstants.LOGIN_USER_QUERY)) {
             ps.setString(1, username.toLowerCase());
@@ -91,7 +94,8 @@ public class UserDAO {
     // ===================== Update status in database ============
     // This is called by RequestManager during Invites and Withdraws
     public void updateUserStatus(String username, String status) {
-        if (con == null || username == null) return;
+        if (con == null || username == null)
+            return;
 
         try (PreparedStatement pstmt = con.prepareStatement(DatabaseConstants.UPDATE_USER_STATUS)) {
             pstmt.setString(1, status.toLowerCase());
@@ -110,19 +114,51 @@ public class UserDAO {
     // ===================== Update Score (New Method) ============
     // You can call this from RequestManager when a "MOVE" results in a win
     public void incrementUserScore(String username) {
-        String query = "UPDATE APP.USERS SET SCORE = SCORE + 10 WHERE LOWER(TRIM(USERNAME)) = ?";
-        try (PreparedStatement pstmt = con.prepareStatement(query)) {
-            pstmt.setString(1, username.toLowerCase());
-            pstmt.executeUpdate();
+        updateUserScore(username, DatabaseConstants.SCORE_WIN);
+    }
+
+    // ===================== Update User Score with specific value ============
+    public void updateUserScore(String username, int scoreChange) {
+        if (con == null || username == null)
+            return;
+
+        try (PreparedStatement pstmt = con.prepareStatement(DatabaseConstants.UPDATE_USER_SCORE)) {
+            pstmt.setInt(1, scoreChange);
+            pstmt.setString(2, username.toLowerCase());
+            int rowsAffected = pstmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Score updated: " + username + " " +
+                        (scoreChange >= 0 ? "+" : "") + scoreChange);
+            }
         } catch (SQLException e) {
             System.err.println("Failed to update score: " + e.getMessage());
         }
     }
 
+    // ===================== Get User Score ============
+    public int getUserScore(String username) {
+        if (con == null || username == null)
+            return 0;
+
+        try (PreparedStatement pstmt = con.prepareStatement(DatabaseConstants.GET_USER_SCORE)) {
+            pstmt.setString(1, username.toLowerCase());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("SCORE");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Failed to get score: " + e.getMessage());
+        }
+        return 0;
+    }
+
     // ================ Get All Players From database ================
     public List<PlayerModel> getAllPlayers() throws SQLException {
         List<PlayerModel> players = new ArrayList<>();
-        if (con == null) return players;
+        if (con == null)
+            return players;
 
         try (PreparedStatement ps = con.prepareStatement(DatabaseConstants.GET_ALL_PLAYERS)) {
             ResultSet rs = ps.executeQuery();

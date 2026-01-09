@@ -10,5 +10,7 @@ public enum RequestType {
     ACCEPT_INVITE,
     REJECT_INVITE,
     UPDATE_STATUS,
-    WITHDRAW
+    WITHDRAW,
+    GAME_END,
+    GET_SCORE // لطلب score لاعب معين من السيرفر
 }

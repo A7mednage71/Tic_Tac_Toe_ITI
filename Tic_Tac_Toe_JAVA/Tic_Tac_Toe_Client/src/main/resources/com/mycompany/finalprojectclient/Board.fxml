@@ -43,7 +43,7 @@
                 <HBox alignment="CENTER" spacing="30.0" styleClass="players-header-box">
                     <children>
                         <HBox spacing="10.0" alignment="CENTER">
-                            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#5C7A33" height="35.0" width="35.0" />
+                            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#00d2d3" height="35.0" width="35.0" />
                             <VBox alignment="CENTER_LEFT">
                                 <Label fx:id="playerNameLabel" styleClass="player-name-label" text="You (X)" />
                                 <Label fx:id="scoreX" styleClass="score-label" text="Score: 0" />
@@ -51,7 +51,7 @@
                         </HBox>
 
                         <HBox spacing="10.0" alignment="CENTER">
-                            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#3D3636" height="35.0" width="35.0" />
+                            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#ff4757" height="35.0" width="35.0" />
                             <VBox alignment="CENTER_LEFT">
                                 <Label fx:id="opponentNameLabel" styleClass="player-name-label" text="Opponent 💻" />
                                 <Label fx:id="scoreO" styleClass="score-label" text="Score: 0" />
@@ -113,15 +113,52 @@
             </children>
         </StackPane>
        <StackPane fx:id="videoOverlay" visible="false" managed="false" 
-                   style="-fx-background-color: rgba(0, 0, 0, 0.9);">
+                   style="-fx-background-color: rgba(0, 0, 0, 0.85);">
             <children>
-                <VBox alignment="CENTER" spacing="15">
-                    <children>
-                        <MediaView fx:id="videoMediaView" fitWidth="380" preserveRatio="true" />
-                       <Button text="CLOSE" onAction="#handleCloseVideo" 
-                                style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 30; -fx-background-radius: 10; -fx-cursor: hand;" />
-                    </children>
-                </VBox>
+                <!-- Container بنص العرض والارتفاع على قد المحتوى -->
+                <StackPane maxWidth="450">
+                    <VBox alignment="CENTER" spacing="5"
+                          style="-fx-background-color: rgba(44, 62, 80, 0.85); 
+                                 -fx-border-color: white; 
+                                 -fx-border-width: 3; 
+                                 -fx-border-radius: 10; 
+                                 -fx-background-radius: 10; 
+                                 -fx-padding: 15 20 15 20;">
+                        <children>
+                            <!-- الفيديو -->
+                            <MediaView fx:id="videoMediaView" fitWidth="380" fitHeight="240" preserveRatio="true" />
+                            
+                            <!-- النتيجة تحت الفيديو -->
+                            <Label fx:id="gameResultLabel" text="" textAlignment="CENTER" wrapText="true"
+                                   style="-fx-font-size: 18px; 
+                                          -fx-font-weight: bold; 
+                                          -fx-text-fill: #f1c40f; 
+                                          -fx-padding: 10 10 5 10;" />
+                        </children>
+                    </VBox>
+                    
+                    <!-- زرار X في دايرة على طرف الديلوج -->
+                    <Button text="✕" onAction="#handleCloseVideo"
+                            style="-fx-background-color: white; 
+                                   -fx-text-fill: #e74c3c; 
+                                   -fx-font-size: 16px; 
+                                   -fx-font-weight: bold;
+                                   -fx-min-width: 30px; 
+                                   -fx-min-height: 30px; 
+                                   -fx-max-width: 30px; 
+                                   -fx-max-height: 30px;
+                                   -fx-background-radius: 50%;
+                                   -fx-border-color: #e74c3c;
+                                   -fx-border-width: 2;
+                                   -fx-border-radius: 50%; 
+                                   -fx-cursor: hand;
+                                   -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 4, 0.3, 0, 1);"
+                            StackPane.alignment="TOP_RIGHT">
+                        <StackPane.margin>
+                            <Insets top="-5" right="-5" />
+                        </StackPane.margin>
+                    </Button>
+                </StackPane>
             </children>
         </StackPane>
     </children>
