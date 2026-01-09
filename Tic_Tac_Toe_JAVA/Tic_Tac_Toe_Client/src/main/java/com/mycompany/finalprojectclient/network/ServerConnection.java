@@ -23,6 +23,7 @@ public class ServerConnection {
     private NotificationListener notificationListener;
     private InviteListener inviteListener;
     private GameMoveListener gameMoveListener;
+    private ScoreListener scoreListener;
     private Thread messageRouter;
 
     public interface NotificationListener {
@@ -39,6 +40,7 @@ public class ServerConnection {
         void onOpponentWithdrew(String username);
 
         void onPlayAgainRequested(String username);
+
         void onGameStart(String symbol, String opponent);
     }
 
@@ -74,7 +76,7 @@ public class ServerConnection {
                 socket = new Socket(AppConstants.SERVER_HOST, AppConstants.SERVER_PORT);
                 dis = new DataInputStream(socket.getInputStream());
                 dos = new DataOutputStream(socket.getOutputStream());
-                
+
                 responseQueue.clear(); // Clear any stale responses
                 startMessageRouter();
                 System.out.println("Connected to server: " + AppConstants.SERVER_HOST);
@@ -137,8 +139,26 @@ public class ServerConnection {
                         if (parts.length == 3 && inviteListener != null) {
                             inviteListener.onGameStart(parts[1], parts[2]);
                         }
+                    } else if (message.startsWith("SCORE_UPDATE:")) {
+                        System.out.println("=== SCORE_UPDATE received ===");
+                        System.out.println("Raw message: " + message);
+                        // Format: SCORE_UPDATE:username:score
+                        String[] parts = message.substring("SCORE_UPDATE:".length()).split(":");
+                        System.out.println("Parsed parts length: " + parts.length);
+                        if (parts.length >= 2) {
+                            System.out.println("Username: " + parts[0] + ", Score: " + parts[1]);
+                        }
+                        if (parts.length == 2 && scoreListener != null) {
+                            String username = parts[0];
+                            int score = Integer.parseInt(parts[1]);
+                            System.out.println("Calling scoreListener.onScoreUpdate(" + username + ", " + score + ")");
+                            scoreListener.onScoreUpdate(username, score);
+                        } else {
+                            System.out.println(
+                                    "ERROR: parts.length=" + parts.length + ", scoreListener=" + scoreListener);
+                        }
                     } else {
-                       responseQueue.put(message);
+                        responseQueue.put(message);
                     }
                 }
             } catch (Exception e) {
@@ -166,8 +186,19 @@ public class ServerConnection {
         void onMoveReceived(int r, int c);
     }
 
+    /**
+     * Listener للاستماع لتحديثات الـ scores من السيرفر
+     */
+    public interface ScoreListener {
+        void onScoreUpdate(String username, int newScore);
+    }
+
     public void setGameMoveListener(GameMoveListener listener) {
         this.gameMoveListener = listener;
+    }
+
+    public void setScoreListener(ScoreListener listener) {
+        this.scoreListener = listener;
     }
 
     public void sendGameMove(int r, int c) {
@@ -178,6 +209,44 @@ public class ServerConnection {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * إرسال نتيجة اللعبة للسيرفر لتحديث الـ scores
+     * 
+     * @param winner اسم الفائز
+     * @param loser  اسم الخاسر
+     * @param result نوع النتيجة: WIN, DRAW, WITHDRAW
+     */
+    public void sendGameEnd(String winner, String loser, String result) {
+        try {
+            RequestData req = new RequestData();
+            req.key = RequestType.GAME_END;
+            req.username = winner;
+            req.targetUsername = loser;
+            req.status = result;
+            sendRequest(req);
+            System.out.println("Game result sent: " + winner + " vs " + loser + " - " + result);
+        } catch (IOException e) {
+            System.err.println("Failed to send game end: " + e.getMessage());
+        }
+    }
+
+    /**
+     * طلب score لاعب معين من السيرفر
+     * السيرفر هيرد بـ SCORE_UPDATE message
+     * 
+     * @param username اسم اللاعب
+     */
+    public void requestUserScore(String username) {
+        try {
+            RequestData req = new RequestData();
+            req.key = RequestType.GET_SCORE;
+            req.username = username;
+            sendRequest(req);
+        } catch (IOException e) {
+            System.err.println("Failed to request score for " + username + ": " + e.getMessage());
         }
     }
 
