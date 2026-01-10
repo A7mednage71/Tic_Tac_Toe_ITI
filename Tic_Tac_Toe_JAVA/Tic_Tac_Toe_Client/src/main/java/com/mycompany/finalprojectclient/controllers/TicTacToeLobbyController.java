@@ -152,7 +152,7 @@ public class TicTacToeLobbyController implements Initializable {
                 request.key = RequestType.UPDATE_STATUS;
                 request.username = username;
                 request.status = "viewing_history";
-                
+
                 try {
                     ServerConnection.getInstance().sendRequest(request);
                     System.out.println("Status update sent to server: viewing_history");
@@ -166,7 +166,8 @@ public class TicTacToeLobbyController implements Initializable {
     }
 
     private void updateCurrentUserStatusDisplay(String status) {
-        boolean isInGame = "in_game".equalsIgnoreCase(status) || "busy".equalsIgnoreCase(status) || "viewing_history".equalsIgnoreCase(status);
+        boolean isInGame = "in_game".equalsIgnoreCase(status) || "busy".equalsIgnoreCase(status)
+                || "viewing_history".equalsIgnoreCase(status);
         if (isInGame) {
             currentUserDot.setStyle("-fx-fill: #f39c12;");
         } else {
@@ -313,9 +314,17 @@ public class TicTacToeLobbyController implements Initializable {
                     addUser(username, status);
                 }
                 if (onlineUsersMap.isEmpty() || (onlineUsersMap.size() == 1 && currentUser != null)) {
-                    Label noUsersLabel = new Label("No online users available");
-                    noUsersLabel.setStyle("-fx-text-fill: #888888; -fx-font-size: 14;");
-                    usersContainer.getChildren().add(noUsersLabel);
+                    Label emptyTitleLabel = new Label("No Players Online");
+                    emptyTitleLabel.setStyle("-fx-text-fill: #999999; -fx-font-size: 16px; -fx-font-weight: bold;");
+
+                    Label emptyHintLabel = new Label("Waiting for players to come online...");
+                    emptyHintLabel.setStyle("-fx-text-fill: #666666; -fx-font-size: 12px;");
+
+                    VBox emptyContainer = new VBox(5, emptyTitleLabel, emptyHintLabel);
+                    emptyContainer.setAlignment(javafx.geometry.Pos.CENTER);
+                    emptyContainer.setPadding(new Insets(30, 10, 30, 10));
+
+                    usersContainer.getChildren().add(emptyContainer);
                 }
             }
         } catch (Exception e) {
@@ -329,7 +338,8 @@ public class TicTacToeLobbyController implements Initializable {
 
         HBox userRow = new HBox(15);
         userRow.setPadding(new Insets(10));
-        userRow.setStyle("-fx-border-color: transparent transparent #4A443F transparent;");
+        userRow.setStyle(
+                "-fx-background-color: #3B3631; -fx-border-color: transparent transparent #4A443F transparent;");
         userRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
         Label name = new Label(username);
@@ -339,7 +349,8 @@ public class TicTacToeLobbyController implements Initializable {
         scoreLabel.setStyle("-fx-text-fill: #88a050; -fx-font-weight: bold;");
 
         Label statusLabel = new Label(isInGame ? "In Game" : (isViewingHistory ? "Game History" : "Online"));
-        statusLabel.setStyle(isInGame ? "-fx-text-fill: #f39c12;" : (isViewingHistory ? "-fx-text-fill: #3498db;" : "-fx-text-fill: #888888;"));
+        statusLabel.setStyle(isInGame ? "-fx-text-fill: #f39c12;"
+                : (isViewingHistory ? "-fx-text-fill: #3498db;" : "-fx-text-fill: #888888;"));
 
         HBox statusRow = new HBox(8, scoreLabel, statusLabel);
         statusRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -348,7 +359,8 @@ public class TicTacToeLobbyController implements Initializable {
         HBox.setHgrow(info, javafx.scene.layout.Priority.ALWAYS);
 
         Circle dot = new Circle(4);
-        dot.setStyle(isInGame ? "-fx-fill: #f39c12;" : (isViewingHistory ? "-fx-fill: #3498db;" : "-fx-fill: #50C878;"));
+        dot.setStyle(
+                isInGame ? "-fx-fill: #f39c12;" : (isViewingHistory ? "-fx-fill: #3498db;" : "-fx-fill: #50C878;"));
 
         Button invite = new Button(isInGame || isViewingHistory ? "Busy" : "Invite");
         if (isInGame || isViewingHistory) {
@@ -447,9 +459,9 @@ public class TicTacToeLobbyController implements Initializable {
 
     private void enableAllInvites() {
         for (UserRow userRow : userRowMap.values()) {
-            if (!userRow.status.equalsIgnoreCase("in_game") && 
-                !userRow.status.equalsIgnoreCase("busy") && 
-                !userRow.status.equalsIgnoreCase("viewing_history")) {
+            if (!userRow.status.equalsIgnoreCase("in_game") &&
+                    !userRow.status.equalsIgnoreCase("busy") &&
+                    !userRow.status.equalsIgnoreCase("viewing_history")) {
                 userRow.inviteButton.setDisable(false);
                 userRow.inviteButton.setText("Invite");
                 userRow.inviteButton.setStyle(
