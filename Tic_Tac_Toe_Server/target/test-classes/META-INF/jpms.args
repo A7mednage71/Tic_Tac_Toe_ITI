@@ -1,0 +1,4 @@
+--patch-module
+com.mycompany.tic_tac_toe_server=_
+--add-reads
+com.mycompany.tic_tac_toe_server=ALL-UNNAMED
