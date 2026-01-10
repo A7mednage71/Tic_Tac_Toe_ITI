@@ -13,19 +13,19 @@
 .icon-container {
     -fx-background-color: #2c2522;
     -fx-background-radius: 15;
-    -fx-padding: 10;
+    -fx-padding: 15;
 }
 
 .icon-cell {
     -fx-background-color: #6a8c3d;
     -fx-background-radius: 5;
-    -fx-min-width: 45;
-    -fx-min-height: 45;
+    -fx-min-width: 65;
+    -fx-min-height: 65;
     -fx-alignment: center;
 }
 
 .icon-text {
-    -fx-font-size: 30px;
+    -fx-font-size: 45px;
     -fx-font-weight: bold;
     -fx-fill: #f5f2e9;
 }
@@ -37,7 +37,7 @@
     -fx-font-weight: bold;
     -fx-background-radius: 15;
     -fx-min-width: 280;
-    -fx-padding: 18 40;
+    -fx-padding: 12 40;
     -fx-cursor: hand;
     -fx-border-color: #88a050;
     -fx-border-radius: 15;

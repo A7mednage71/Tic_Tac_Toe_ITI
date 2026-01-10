@@ -344,9 +344,17 @@ public class TicTacToeLobbyController implements Initializable {
                     addUser(username, status);
                 }
                 if (onlineUsersMap.isEmpty() || (onlineUsersMap.size() == 1 && currentUser != null)) {
-                    Label noUsersLabel = new Label("No online users available");
-                    noUsersLabel.setStyle("-fx-text-fill: #888888; -fx-font-size: 14;");
-                    usersContainer.getChildren().add(noUsersLabel);
+                    Label emptyTitleLabel = new Label("No Players Online");
+                    emptyTitleLabel.setStyle("-fx-text-fill: #999999; -fx-font-size: 16px; -fx-font-weight: bold;");
+
+                    Label emptyHintLabel = new Label("Waiting for players to come online...");
+                    emptyHintLabel.setStyle("-fx-text-fill: #666666; -fx-font-size: 12px;");
+
+                    VBox emptyContainer = new VBox(5, emptyTitleLabel, emptyHintLabel);
+                    emptyContainer.setAlignment(javafx.geometry.Pos.CENTER);
+                    emptyContainer.setPadding(new Insets(30, 10, 30, 10));
+
+                    usersContainer.getChildren().add(emptyContainer);
                 }
             }
         } catch (Exception e) {
@@ -360,7 +368,8 @@ public class TicTacToeLobbyController implements Initializable {
 
         HBox userRow = new HBox(15);
         userRow.setPadding(new Insets(10));
-        userRow.setStyle("-fx-border-color: transparent transparent #4A443F transparent;");
+        userRow.setStyle(
+                "-fx-background-color: #3B3631; -fx-border-color: transparent transparent #4A443F transparent;");
         userRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
         Label name = new Label(username);

@@ -77,7 +77,6 @@
                     <Label fx:id="alertIcon" style="-fx-font-size: 30;" />
                     <Label fx:id="alertTitle" styleClass="alert-title" text="Error" />
                     <Label fx:id="alertMessage" styleClass="alert-msg" textAlignment="CENTER" wrapText="true" />
-                    <Button onAction="#closeCustomAlert" styleClass="alert-button" text="OK" />
                 </children>
             </VBox>
         </children>
