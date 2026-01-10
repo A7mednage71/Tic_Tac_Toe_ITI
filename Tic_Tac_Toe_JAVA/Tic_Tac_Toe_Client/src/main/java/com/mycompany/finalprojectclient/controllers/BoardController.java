@@ -259,6 +259,43 @@ public class BoardController implements Initializable {
                 });
             });
 
+            ServerConnection.getInstance().setDisconnectionListener(() -> {
+                Platform.runLater(() -> {
+                    System.out.println("Server disconnected during game!");
+
+                    if (gameTimer != null) {
+                        gameTimer.stop();
+                    }
+
+                    if (isRecording) {
+                        stopRecording();
+                    }
+
+                    alertHandler.showError("SERVER DISCONNECTED",
+                            "Connection to server lost. Returning to menu...");
+
+                    GameSession.isOnline = false;
+                    gameOver = true;
+
+                    ServerConnection.getInstance().setGameMoveListener(null);
+                    ServerConnection.getInstance().setInviteListener(null);
+                    ServerConnection.getInstance().setScoreListener(null);
+                    ServerConnection.getInstance().setDisconnectionListener(null);
+
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(2500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        Platform.runLater(() -> {
+                            NavigationManager.switchSceneUsingNode(gameGrid,
+                                    AppConstants.PATH_ON_OFF);
+                        });
+                    }).start();
+                });
+            });
+
         } else if (GameSession.vsComputer) {
             playerX = "You";
             playerO = "Computer";
