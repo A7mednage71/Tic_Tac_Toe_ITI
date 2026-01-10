@@ -8,7 +8,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.mycompany.tic_tac_toe_server.database.UserDAO;
 import com.mycompany.tic_tac_toe_server.models.RequestData;
-
 public class ClientHandler extends Thread {
 
     private final Socket socket;
@@ -18,23 +17,24 @@ public class ClientHandler extends Thread {
     private final Gson gson = new Gson();
     private RequestManager requestManager;
 
-    private ClientHandler opponent; 
+    private ClientHandler opponent;
     private boolean isInGame = false;
-    
+
     private String username;
     private String status = "active";
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
     }
-    
+
     public void setStatus(String status) {
         this.status = status;
     }
+
     public String getStatus() {
         return status;
     }
-    
+
     // --- Game Logic Methods ---
 
     public void setOpponent(ClientHandler opp) {
@@ -48,6 +48,7 @@ public class ClientHandler extends Thread {
     public ClientHandler getOpponent() {
         return opponent;
     }
+
     public void sendMessage(String message) {
         try {
             if (dos != null) {
@@ -63,7 +64,7 @@ public class ClientHandler extends Thread {
         if (data.startsWith("MOVE|") && isInGame && opponent != null) {
             opponent.sendMessage(data);
             System.out.println("Forwarding move from " + username + " to " + opponent.getUsername());
-        } 
+        }
     }
 
     // --- Core Logic ---
@@ -77,7 +78,7 @@ public class ClientHandler extends Thread {
 
             while (isRunning) {
                 String input = dis.readUTF();
-                
+
                 if (input.startsWith("MOVE|")) {
                     handleGameData(input);
                 } else {
@@ -107,7 +108,9 @@ public class ClientHandler extends Thread {
         ServerThread.onlineUsers.add(this);
     }
 
-    public String getUsername() { return username; }
+    public String getUsername() {
+        return username;
+    }
 
     public void sendUserListUpdate() {
         sendMessage("USER_LIST_UPDATED");
@@ -125,6 +128,10 @@ public class ClientHandler extends Thread {
         sendMessage("INVITE_REJECTED:" + rejectingUsername);
     }
 
+    public void sendInviteCancelled(String cancellingUsername) {
+        sendMessage("INVITE_CANCELLED:" + cancellingUsername);
+    }
+
     public void sendWithdrawNotification(String fromUsername) {
         sendMessage("OPPONENT_WITHDREW:" + fromUsername);
     }
@@ -133,7 +140,7 @@ public class ClientHandler extends Thread {
         if (username != null) {
             ServerThread.onlineUsers.remove(this);
             UserDAO.getInstance().updateUserStatus(username, "Disactive");
-            
+
             if (opponent != null) {
                 opponent.sendMessage("OPPONENT_DISCONNECTED");
                 opponent.setOpponent(null);
@@ -146,9 +153,12 @@ public class ClientHandler extends Thread {
     public void closeConnection() {
         isRunning = false;
         try {
-            if (dis != null) dis.close();
-            if (dos != null) dos.close();
-            if (socket != null && !socket.isClosed()) socket.close();
+            if (dis != null)
+                dis.close();
+            if (dos != null)
+                dos.close();
+            if (socket != null && !socket.isClosed())
+                socket.close();
         } catch (IOException e) {
             System.out.println("Error closing connection for " + username);
         }

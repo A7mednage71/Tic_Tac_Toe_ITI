@@ -55,6 +55,10 @@ public class RequestManager {
                 handleRejectInvite(request);
                 break;
 
+            case CANCEL_INVITE:
+                handleCancelInvite(request);
+                break;
+
             case UPDATE_STATUS:
                 handleUpdateStatus(request);
                 break;
@@ -197,6 +201,21 @@ public class RequestManager {
         sendResponse(response);
     }
 
+    private void handleCancelInvite(RequestData req) throws IOException {
+        String cancellingUsername = req.username;
+        String targetUsername = req.targetUsername;
+
+        System.out.println(cancellingUsername + " cancelled invite to " + targetUsername);
+
+        ClientHandler targetClient = findClientByUsername(targetUsername);
+        if (targetClient != null) {
+            targetClient.sendInviteCancelled(cancellingUsername);
+        }
+
+        ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Invite cancelled");
+        sendResponse(response);
+    }
+
     private void handleUpdateStatus(RequestData req) throws IOException {
         String newStatus = req.status;
         if (newStatus == null) {
@@ -283,11 +302,12 @@ public class RequestManager {
             userDAO.updateUserScore(loser, DatabaseConstants.SCORE_DRAW);
 
         } else if ("WITHDRAW".equals(result)) {
-            // When a player withdraws, the "winner" is actually the player who withdrew (should be penalized)
+            // When a player withdraws, the "winner" is actually the player who withdrew
+            // (should be penalized)
             // and the "loser" is the player who stayed (should be rewarded)
             // This naming is counter-intuitive, so we need to reverse it
             userDAO.updateUserScore(winner, DatabaseConstants.SCORE_WITHDRAW); // Player who withdrew gets penalty
-            userDAO.updateUserScore(loser, DatabaseConstants.SCORE_WIN);      // Player who stayed gets win bonus
+            userDAO.updateUserScore(loser, DatabaseConstants.SCORE_WIN); // Player who stayed gets win bonus
         }
 
         broadcastScoreUpdates(winner, loser);
@@ -322,7 +342,8 @@ public class RequestManager {
                 client2.sendMessage(scoreUpdate2);
             }
 
-            System.out.println("Broadcasted scores (seq=" + currentSequence + "): " + player1 + "=" + score1 + ", " + player2 + "=" + score2);
+            System.out.println("Broadcasted scores (seq=" + currentSequence + "): " + player1 + "=" + score1 + ", "
+                    + player2 + "=" + score2);
         } catch (Exception e) {
             System.err.println("Error broadcasting scores: " + e.getMessage());
         }

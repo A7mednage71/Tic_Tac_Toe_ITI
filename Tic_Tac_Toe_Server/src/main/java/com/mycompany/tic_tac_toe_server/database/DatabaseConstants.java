@@ -8,9 +8,9 @@ public final class DatabaseConstants {
     // ==========================================================
     // Connection Config
     // ==========================================================
-    public static final String DB_URL = "jdbc:derby://localhost:1527/Tic_Tac_Toe_DB;create = true;";
-    public static final String DB_USER = "root";
-    public static final String DB_PASSWORD = "root";
+    public static final String DB_URL = "jdbc:derby://localhost:1527/TicTacToeDB;create = true;";
+    public static final String DB_USER = "app";
+    public static final String DB_PASSWORD = "app";
     // ==========================================================
     // SQL Queries
     // ==========================================================
@@ -21,7 +21,7 @@ public final class DatabaseConstants {
     public static final String GET_ALL_PLAYERS = "SELECT USERNAME, SCORE, STATUS FROM APP.USERS";
     public static final String UPDATE_USER_SCORE = "UPDATE APP.USERS SET SCORE = CASE WHEN (SCORE + ?) < 0 THEN 0 ELSE (SCORE + ?) END WHERE LOWER(TRIM(USERNAME)) = ?";
     public static final String GET_USER_SCORE = "SELECT SCORE FROM APP.USERS WHERE LOWER(TRIM(USERNAME)) = ?";
-    
+
     // ==========================================================
     // Score System Constants
     // ==========================================================

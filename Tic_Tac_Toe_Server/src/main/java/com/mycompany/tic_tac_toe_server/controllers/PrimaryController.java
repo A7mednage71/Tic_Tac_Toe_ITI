@@ -116,14 +116,19 @@ public class PrimaryController implements Initializable {
 
     private void stopServer() {
         if (serverThread != null) {
-            serverThread.stopServer();
+            Platform.runLater(() -> {
+                startServer.setText("🚀 Start Server");
+                startServer.setStyle("-fx-background-color: #2ed573;");
+                started = false;
+            });
+            final ServerThread threadToStop = serverThread;
             serverThread = null;
-
-            startServer.setText("🚀 Start Server");
-            startServer.setStyle("-fx-background-color: #2ed573;");
-            started = false;
-
-            CustomAlert.show(getWindow(), Alert.AlertType.INFORMATION, "Success", "Server stopped");
+            new Thread(() -> {
+                threadToStop.stopServer();
+                Platform.runLater(() -> {
+                    CustomAlert.show(getWindow(), Alert.AlertType.INFORMATION, "Success", "Server stopped");
+                });
+            }).start();
         }
     }
 
