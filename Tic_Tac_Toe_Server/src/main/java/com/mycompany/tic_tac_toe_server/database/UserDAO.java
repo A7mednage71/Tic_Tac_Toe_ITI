@@ -92,8 +92,7 @@ public class UserDAO {
     }
 
     // ===================== Update status in database ============
-    // This is called by RequestManager during Invites and Withdraws
-    public void updateUserStatus(String username, String status) {
+  public void updateUserStatus(String username, String status) {
         if (con == null || username == null)
             return;
 
@@ -102,7 +101,6 @@ public class UserDAO {
             pstmt.setString(2, username.toLowerCase());
 
             int rowsAffected = pstmt.executeUpdate();
-            // return 1 if user found
             if (rowsAffected > 0) {
                 System.out.println("DB Success: " + username + " is now " + status);
             }
@@ -112,7 +110,6 @@ public class UserDAO {
     }
 
     // ===================== Update Score (New Method) ============
-    // You can call this from RequestManager when a "MOVE" results in a win
     public void incrementUserScore(String username) {
         updateUserScore(username, DatabaseConstants.SCORE_WIN);
     }
@@ -124,7 +121,8 @@ public class UserDAO {
 
         try (PreparedStatement pstmt = con.prepareStatement(DatabaseConstants.UPDATE_USER_SCORE)) {
             pstmt.setInt(1, scoreChange);
-            pstmt.setString(2, username.toLowerCase());
+            pstmt.setInt(2, scoreChange);
+            pstmt.setString(3, username.toLowerCase());
             int rowsAffected = pstmt.executeUpdate();
 
             if (rowsAffected > 0) {

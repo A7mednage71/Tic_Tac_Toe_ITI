@@ -12,5 +12,5 @@ public enum RequestType {
     UPDATE_STATUS,
     WITHDRAW,
     GAME_END,
-    GET_SCORE // لطلب score لاعب معين من السيرفر
+    GET_SCORE 
 }

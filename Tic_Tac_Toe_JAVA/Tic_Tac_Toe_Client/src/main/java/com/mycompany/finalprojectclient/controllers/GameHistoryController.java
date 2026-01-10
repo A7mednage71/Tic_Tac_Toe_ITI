@@ -8,6 +8,9 @@ import java.util.ResourceBundle;
 import com.google.gson.Gson;
 import com.mycompany.finalprojectclient.models.GameRecord;
 import com.mycompany.finalprojectclient.models.GameSession;
+import com.mycompany.finalprojectclient.models.RequestData;
+import com.mycompany.finalprojectclient.models.RequestType;
+import com.mycompany.finalprojectclient.network.ServerConnection;
 import com.mycompany.finalprojectclient.utils.AppConstants;
 import com.mycompany.finalprojectclient.utils.AuthManager;
 import com.mycompany.finalprojectclient.utils.NavigationManager;
@@ -54,6 +57,8 @@ public class GameHistoryController implements Initializable {
         colWinner.setCellValueFactory(new PropertyValueFactory<>("winner"));
         colDuration.setCellValueFactory(new PropertyValueFactory<>("formattedDuration"));
         colDateTime.setCellValueFactory(new PropertyValueFactory<>("date"));
+        
+        updatePlayerStatusToViewingHistory();
         loadHistory();
     }
 
@@ -95,6 +100,8 @@ public class GameHistoryController implements Initializable {
     @FXML
     private void handleBack(ActionEvent event) {
         try {
+            updatePlayerStatusToOnline();
+            
             String targetPath = GameSession.previousScreen.isEmpty() ? AppConstants.PATH_GAME_LOBBY
                     : GameSession.previousScreen;
             NavigationManager.switchScene(event, targetPath);
@@ -117,6 +124,48 @@ public class GameHistoryController implements Initializable {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+        }
+    }
+
+    private void updatePlayerStatusToViewingHistory() {
+        try {
+            String username = AuthManager.getInstance().getCurrentUsername();
+            if (username != null && !username.isEmpty()) {
+                RequestData request = new RequestData();
+                request.key = RequestType.UPDATE_STATUS;
+                request.username = username;
+                request.status = "viewing_history";
+                
+                try {
+                    ServerConnection.getInstance().sendRequest(request);
+                    System.out.println("Status update sent to server: viewing_history");
+                } catch (Exception e) {
+                    System.err.println("Error updating status to viewing_history: " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error in updatePlayerStatusToViewingHistory: " + e.getMessage());
+        }
+    }
+
+    private void updatePlayerStatusToOnline() {
+        try {
+            String username = AuthManager.getInstance().getCurrentUsername();
+            if (username != null && !username.isEmpty()) {
+                RequestData request = new RequestData();
+                request.key = RequestType.UPDATE_STATUS;
+                request.username = username;
+                request.status = "online";
+                
+                try {
+                    ServerConnection.getInstance().sendRequest(request);
+                    System.out.println("Status update sent to server: online");
+                } catch (Exception e) {
+                    System.err.println("Error updating status to online: " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error in updatePlayerStatusToOnline: " + e.getMessage());
         }
     }
 }

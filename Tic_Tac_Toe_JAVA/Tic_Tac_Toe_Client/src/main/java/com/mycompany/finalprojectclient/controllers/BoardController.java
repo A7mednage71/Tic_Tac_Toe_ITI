@@ -81,6 +81,8 @@ public class BoardController implements Initializable {
     private Button recordBtn;
     @FXML
     private Label timerLabel;
+    @FXML
+    private Button disableInviteBtn;
 
     private boolean isRecording = false;
     private javafx.animation.Timeline gameTimer;
@@ -91,12 +93,13 @@ public class BoardController implements Initializable {
 
     private String playerX = "You";
     private String playerO = "Opponent";
-    private String leftPlayer = null; // اللاعب على الشمال (playerNameLabel)
-    private String rightPlayer = null; // اللاعب على اليمين (opponentNameLabel)
-    private int countX = 0;
-    private int countO = 0;
+    private String leftPlayer = null;
+    private String rightPlayer = null;
     private boolean isXTurn = true;
     private boolean gameOver = false;
+    private int currentUserScore = 0;
+    private int lastProcessedSequence = -1;
+    
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -109,12 +112,23 @@ public class BoardController implements Initializable {
         alertHandler = new CustomAlertHandler(customAlertOverlay, alertBox, alertTitle, alertMessage, alertIcon);
         updateBoardHoverState();
 
-        // Listener للاستماع لتحديثات الـ scores من السيرفر
         ServerConnection.getInstance().setScoreListener((username, newScore) -> {
             Platform.runLater(() -> {
                 updatePlayerScore(username, newScore);
             });
         });
+
+        class ScoreUpdate {
+            int sequence;
+            String username;
+            int score;
+            
+            ScoreUpdate(int sequence, String username, int score) {
+                this.sequence = sequence;
+                this.username = username;
+                this.score = score;
+            }
+        }
 
         if (GameSession.isOnline) {
             String myName = AuthManager.getInstance().getCurrentUsername();
@@ -128,17 +142,15 @@ public class BoardController implements Initializable {
                 playerO = GameSession.opponentName;
                 playerNameLabel.setText(playerX + " (X)");
                 opponentNameLabel.setText(playerO + " (O)");
-                // playerX على الشمال، playerO على اليمين
-                leftPlayer = playerX;
-                rightPlayer = playerO;
+                leftPlayer = myName; 
+                rightPlayer = GameSession.opponentName; // O player (opponent) is on right
             } else {
                 playerX = GameSession.opponentName;
                 playerO = myName;
                 playerNameLabel.setText(playerO + " (O)");
                 opponentNameLabel.setText(playerX + " (X)");
-                // playerO على الشمال، playerX على اليمين
-                leftPlayer = playerO;
-                rightPlayer = playerX;
+                leftPlayer = GameSession.opponentName; 
+                rightPlayer = myName;  
             }
 
             System.out.println("leftPlayer (scoreX position): " + leftPlayer);
@@ -190,10 +202,6 @@ public class BoardController implements Initializable {
                                     alertHandler.showError("LEFT", username + " has left.");
                                     return;
                                 }
-                                if ("X".equals(GameSession.playerSymbol))
-                                    countX++;
-                                else
-                                    countO++;
                                 finishGame("Opponent Left. You Win!");
                             });
                         }
@@ -226,10 +234,6 @@ public class BoardController implements Initializable {
                         String oppSymbol = "X".equals(GameSession.playerSymbol) ? "O" : "X";
                         playMove(grid[r][c], oppSymbol);
                         if (checkWinner(oppSymbol)) {
-                            if (oppSymbol.equals("X"))
-                                countX++;
-                            else
-                                countO++;
                             finishGame(oppSymbol + " Wins!");
                         } else if (isBoardFull()) {
                             finishGame("Draw!");
@@ -259,9 +263,13 @@ public class BoardController implements Initializable {
         if (!GameSession.isOnline) {
             recordBtn.setVisible(false);
             recordBtn.setManaged(false);
+            disableInviteBtn.setVisible(false);
+            disableInviteBtn.setManaged(false);
         } else {
             recordBtn.setVisible(true);
             recordBtn.setManaged(true);
+            disableInviteBtn.setVisible(false);
+            disableInviteBtn.setManaged(false);
         }
     }
 
@@ -283,7 +291,6 @@ public class BoardController implements Initializable {
                 Platform.runLater(() -> {
                     playerX = gameRecord.getPlayerX();
                     playerO = gameRecord.getPlayerO();
-                    // في الـ replay، نعرض الأسماء مع الـ symbols بشكل ثابت
                     playerNameLabel.setText(playerX + " (X)");
                     opponentNameLabel.setText(playerO + " (O)");
                     updateScoreLabels();
@@ -339,7 +346,7 @@ public class BoardController implements Initializable {
             if (GameSession.vsComputer) {
                 playMove(clickedButton, "X");
                 if (checkWinner("X")) {
-                    countX++;
+                    
                     finishGame("X Wins!");
                 } else if (isBoardFull()) {
                     finishGame("Draw!");
@@ -359,10 +366,6 @@ public class BoardController implements Initializable {
                     ServerConnection.getInstance().sendGameMove(r, c);
 
                     if (checkWinner(mySymbol)) {
-                        if (mySymbol.equals("X"))
-                            countX++;
-                        else
-                            countO++;
                         finishGame(mySymbol + " Wins!");
                     } else if (isBoardFull()) {
                         finishGame("Draw!");
@@ -375,10 +378,6 @@ public class BoardController implements Initializable {
                 String currentSymbol = isXTurn ? "X" : "O";
                 playMove(clickedButton, currentSymbol);
                 if (checkWinner(currentSymbol)) {
-                    if (isXTurn)
-                        countX++;
-                    else
-                        countO++;
                     finishGame(currentSymbol + " Wins!");
                 } else if (isBoardFull()) {
                     finishGame("Draw!");
@@ -401,7 +400,6 @@ public class BoardController implements Initializable {
                 if (!gameOver) {
                     makeAiMove();
                     if (checkWinner("O")) {
-                        countO++;
                         finishGame("O Wins!");
                     } else if (isBoardFull()) {
                         finishGame("Draw!");
@@ -497,7 +495,6 @@ public class BoardController implements Initializable {
         int r = GridPane.getRowIndex(btn) == null ? 0 : GridPane.getRowIndex(btn);
         int c = GridPane.getColumnIndex(btn) == null ? 0 : GridPane.getColumnIndex(btn);
 
-        // إخفاء زرار Record نهائياً عند أول move إذا لم يكن التسجيل مفعل وبدء التايمر
         if (!gameStarted) {
             gameStarted = true;
             startGameTimer();
@@ -525,13 +522,11 @@ public class BoardController implements Initializable {
 
     @FXML
     private void handleRecord(ActionEvent event) {
-        // لو التسجيل شغال، نوقفه
         if (isRecording) {
             stopRecording();
             return;
         }
 
-        // بدء التسجيل
         isRecording = true;
         recordBtn.setText("Stop Rec");
         recordBtn.setStyle("-fx-background-color: #c0392b;");
@@ -557,6 +552,44 @@ public class BoardController implements Initializable {
         saveGameHistory();
     }
 
+    @FXML
+    private void handleDisableInvite(ActionEvent event) {
+        if (disableInviteBtn == null) return;
+        
+        if ("Invites Enabled".equals(disableInviteBtn.getText())) {
+            disableInviteBtn.setText("Invites Disabled");
+            disableInviteBtn.setStyle("-fx-background-color: #e74c3c;");
+            
+            if (GameSession.isOnline) {
+                ServerConnection.getInstance().setInviteListener(null);
+            }
+        } else {
+            disableInviteBtn.setText("Invites Enabled");
+            disableInviteBtn.setStyle("-fx-background-color: #95a5a6;");
+            
+            if (GameSession.isOnline) {
+                ServerConnection.getInstance().setInviteListener(new ServerConnection.InviteListener() {
+                    @Override
+                    public void onInviteReceived(String from) {}
+                    @Override
+                    public void onInviteAccepted(String user) {
+                        Platform.runLater(() -> alertHandler.hide());
+                    }
+                    @Override
+                    public void onInviteRejected(String user) {
+                        Platform.runLater(() -> alertHandler.showError("DECLINED", user + " doesn't want to play again."));
+                    }
+                    @Override
+                    public void onOpponentWithdrew(String username) {}
+                    @Override
+                    public void onPlayAgainRequested(String username) {}
+                    @Override
+                    public void onGameStart(String symbol, String opponent) {}
+                });
+            }
+        }
+    }
+
     private void saveGameHistory() {
         if (recordedMoves.isEmpty())
             return;
@@ -578,16 +611,12 @@ public class BoardController implements Initializable {
                 } else if (gameFinishMessage.contains("Draw")) {
                     winner = "Draw";
                 } else if (gameFinishMessage.contains("You Win")) {
-                    // في حالة الفوز بسبب انسحاب الخصم
                     String myName = AuthManager.getInstance().getCurrentUsername();
                     winner = myName;
                 } else if (gameFinishMessage.contains("Opponent Left") || gameFinishMessage.contains("Opponent Wins")) {
-                    // في حالة انسحاب الخصم (أنت فزت) أو انسحابك أنت (الخصم فاز)
                     if (gameFinishMessage.contains("Opponent Wins") || gameFinishMessage.contains("You Left")) {
-                        // أنت انسحبت، الخصم فاز
                         winner = GameSession.opponentName;
                     } else {
-                        // الخصم انسحب، أنت فزت
                         String myName = AuthManager.getInstance().getCurrentUsername();
                         winner = myName;
                     }
@@ -616,25 +645,23 @@ public class BoardController implements Initializable {
         updateBoardHoverState();
         updateScoreLabels();
 
-        // إرسال نتيجة اللعبة للسيرفر لتحديث الـ scores
         if (GameSession.isOnline) {
             sendGameEndToServer(message);
         }
 
-        // تحويل الرسالة لرسالة واضحة وشخصية للاعب
         final String displayMessage;
         if (GameSession.isOnline) {
             if (message.contains("X Wins")) {
                 if ("X".equals(GameSession.playerSymbol)) {
                     displayMessage = "You Won! 🎉 (+10 points)";
                 } else {
-                    displayMessage = "You Lost! 😔 (-5 points)";
+                    displayMessage = currentUserScore > 0 ? "You Lost! 😔 (-5 points)" : "You Lost! 😔";
                 }
             } else if (message.contains("O Wins")) {
                 if ("O".equals(GameSession.playerSymbol)) {
                     displayMessage = "You Won! 🎉 (+10 points)";
                 } else {
-                    displayMessage = "You Lost! 😔 (-5 points)";
+                    displayMessage = currentUserScore > 0 ? "You Lost! 😔 (-5 points)" : "You Lost! 😔";
                 }
             } else if (message.toLowerCase().contains("draw")) {
                 displayMessage = "Draw! 🤝 (+3 points)";
@@ -648,7 +675,9 @@ public class BoardController implements Initializable {
         }
 
         String msgLower = message.toLowerCase();
-        if (msgLower.contains("win")) {
+        if (msgLower.contains("draw")) {
+            showDrawAlert();
+        } else if (msgLower.contains("win")) {
             boolean showWinnerVideo = true;
             if (GameSession.isOnline) {
                 if (message.contains("X Wins") && !"X".equals(GameSession.playerSymbol))
@@ -660,7 +689,6 @@ public class BoardController implements Initializable {
                     showWinnerVideo = false;
             }
 
-            // عرض النتيجة في label الفيديو
             if (gameResultLabel != null) {
                 gameResultLabel.setText(displayMessage);
             }
@@ -673,10 +701,6 @@ public class BoardController implements Initializable {
             showRematchAlert();
         }
 
-        // الأسماء تبقى ثابتة - مش بنغيرها!
-        // opponentNameLabel بتبقى كما هي
-
-        // إيقاف وإخفاء زرار Record بعد انتهاء اللعبة
         if (isRecording) {
             stopRecording();
         }
@@ -684,6 +708,21 @@ public class BoardController implements Initializable {
             recordBtn.setVisible(false);
             recordBtn.setManaged(false);
         }
+    }
+
+    private void showDrawAlert() {
+        alertHandler.showSuccess("DRAW! 🤝", "Game ended in a draw! (+3 points)");
+        
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000); 
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Platform.runLater(() -> {
+                alertHandler.hide();
+            });
+        }).start();
     }
 
     private void showRematchAlert() {
@@ -706,7 +745,15 @@ public class BoardController implements Initializable {
 
                     @Override
                     public void onNo() {
-                        handleBack(null);
+                        if (GameSession.isOnline) {
+                            GameSession.isOnline = false;
+                            updateUserStatus(AuthManager.getInstance().getCurrentUsername(), "online");
+                            ServerConnection.getInstance().setGameMoveListener(null);
+                            NavigationManager.switchSceneUsingNode(gameGrid,
+                                    AppConstants.PATH_GAME_LOBBY);
+                        } else {
+                            handleBack(null);
+                        }
                     }
                 });
         alertIcon.setText(icon);
@@ -785,34 +832,54 @@ public class BoardController implements Initializable {
         gameOver = false;
         gameFinishMessage = null;
         isXTurn = true;
-        gameStarted = false; // إعادة تعيين حالة بداية اللعبة
+        gameStarted = false; 
 
-        // إيقاف وإخفاء التايمر
         stopGameTimer();
         if (timerLabel != null) {
             timerLabel.setVisible(false);
         }
 
-        // إعادة إظهار زرار Record للعبة الجديدة (في وضع Online فقط)
-        if (GameSession.isOnline && recordBtn != null) {
-            recordBtn.setVisible(true);
-            recordBtn.setManaged(true);
-            recordBtn.setText("Record");
-            recordBtn.setStyle("-fx-background-color: #e74c3c;");
-
-            // إعادة ضبط أسماء اللاعبين للشكل الثابت (مش Turn)
+        if (GameSession.isOnline) {
             String myName = AuthManager.getInstance().getCurrentUsername();
+            String opponent = GameSession.opponentName;
+            
             if ("X".equals(GameSession.playerSymbol)) {
-                playerNameLabel.setText(playerX + " (X)");
-                opponentNameLabel.setText(playerO + " (O)");
+                playerX = myName;
+                playerO = opponent;
+                leftPlayer = myName;  
+                rightPlayer = opponent; 
             } else {
-                playerNameLabel.setText(playerO + " (O)");
-                opponentNameLabel.setText(playerX + " (X)");
+                playerX = opponent;
+                playerO = myName;
+                leftPlayer = opponent; 
+                rightPlayer = myName;  
             }
+            
+            if (recordBtn != null) {
+                recordBtn.setVisible(true);
+                recordBtn.setManaged(true);
+                recordBtn.setText("Record");
+                recordBtn.setStyle("-fx-background-color: #e74c3c;");
+            }
+            
+            playerNameLabel.setText(playerX + " (X)");
+            opponentNameLabel.setText(playerO + " (O)");
+            
+           
+            updateScoreLabels();
+        } else if (GameSession.vsComputer) {
+            playerX = "You";
+            playerO = "Computer";
+            playerNameLabel.setText("You (X)");
+            opponentNameLabel.setText("Computer 💻");
+        } else {
+            playerX = "Player 1";
+            playerO = "Player 2";
+            playerNameLabel.setText("Player 1 (X)");
+            opponentNameLabel.setText("Player 2 (O)");
         }
 
         opponentNameLabel.setStyle("");
-        // الأسماء ثابتة - مش محتاجين updateTurnLabel
         updateBoardHoverState();
     }
 
@@ -820,7 +887,6 @@ public class BoardController implements Initializable {
         if (gameGrid == null)
             return;
 
-        // في حالة الـ replay أو اللعبة منتهية، نمنع الـ hover
         if (gameOver || GameSession.isReplay) {
             if (!gameGrid.getStyleClass().contains("not-my-turn"))
                 gameGrid.getStyleClass().add("not-my-turn");
@@ -885,7 +951,6 @@ public class BoardController implements Initializable {
     }
 
     private void updateTurnLabel() {
-        // في الـ replay mode، الأسماء ثابتة ومابتتغيرش
         if (GameSession.isReplay) {
             return;
         }
@@ -922,7 +987,6 @@ public class BoardController implements Initializable {
     private void handleBack(ActionEvent event) {
         try {
             if (GameSession.isOnline) {
-                // حفظ الـ recording قبل الانسحاب إذا كان مفعل
                 if (isRecording && !recordedMoves.isEmpty()) {
                     gameFinishMessage = "You Left. Opponent Wins!";
                     stopRecording();
@@ -943,8 +1007,9 @@ public class BoardController implements Initializable {
             } else if (GameSession.vsComputer) {
                 NavigationManager.switchSceneUsingNode(gameGrid,
                         "/com/mycompany/finalprojectclient/vsComputer.fxml");
-            } else if (GameSession.isReplay) {
+            } else if (GameSession.isReplay || GameSession.isHistoryReplay) {
                 GameSession.isReplay = false;
+                GameSession.isHistoryReplay = false;
                 NavigationManager.switchSceneUsingNode(gameGrid,
                         AppConstants.PATH_GAME_HISTORY);
             } else {
@@ -959,14 +1024,10 @@ public class BoardController implements Initializable {
     private void updateScoreLabels() {
         if (GameSession.isOnline) {
             System.out.println("=== updateScoreLabels called ===");
-            // Online game: نطلب الـ scores من السيرفر
             if (scoreX != null && scoreO != null) {
-                // نعرض 0 كـ default (المستخدمين الجدد بيبدأوا بـ 0)
                 scoreX.setText("Score: 0");
                 scoreO.setText("Score: 0");
 
-                // نطلب الـ scores الحقيقية من السيرفر (هتيجي عن طريق ScoreListener)
-                // leftPlayer على الشمال (scoreX)، rightPlayer على اليمين (scoreO)
                 if (leftPlayer != null && !leftPlayer.isEmpty()) {
                     System.out.println("Requesting score for left player (scoreX): " + leftPlayer);
                     ServerConnection.getInstance().requestUserScore(leftPlayer);
@@ -982,9 +1043,9 @@ public class BoardController implements Initializable {
                 }
             }
         } else {
-            // Local game: نعرض match wins
-            scoreX.setText(playerX + " (X): " + countX);
-            scoreO.setText(playerO + " (O): " + countO);
+           
+            scoreX.setText(playerX + " (X)");
+            scoreO.setText(playerO + " (O)");
         }
     }
 
@@ -1144,13 +1205,9 @@ public class BoardController implements Initializable {
         }
     }
 
-    /**
-     * إرسال نتيجة اللعبة للسيرفر لتحديث الـ scores
-     * يحلل رسالة نهاية اللعبة ويحدد الفائز والخاسر والنتيجة
-     */
     private void sendGameEndToServer(String gameMessage) {
         if (!GameSession.isOnline) {
-            return; // مش online game
+            return; 
         }
 
         String currentUser = AuthManager.getInstance().getCurrentUsername();
@@ -1165,24 +1222,18 @@ public class BoardController implements Initializable {
         System.out.println("Current user: " + currentUser + ", Symbol: " + GameSession.playerSymbol);
         System.out.println("Opponent: " + opponent);
 
-        // تحديد نوع النتيجة بناءً على الرسالة
         if (gameMessage.toLowerCase().contains("draw")) {
-            // تعادل
             ServerConnection.getInstance().sendGameEnd(currentUser, opponent, "DRAW");
 
         } else if (gameMessage.toLowerCase().contains("withdraw") ||
                 gameMessage.toLowerCase().contains("left")) {
-            // انسحاب - اللي انسحب هو اللي خسر
             if (gameMessage.toLowerCase().contains("you")) {
-                // You withdrew
                 ServerConnection.getInstance().sendGameEnd(opponent, currentUser, "WITHDRAW");
             } else {
-                // Opponent withdrew
                 ServerConnection.getInstance().sendGameEnd(currentUser, opponent, "WITHDRAW");
             }
 
         } else if (gameMessage.toLowerCase().contains("win")) {
-            // فوز - نحدد الفائز بناءً على الـ symbol
             String winningSymbol = null;
             if (gameMessage.contains("X Wins")) {
                 winningSymbol = "X";
@@ -1191,41 +1242,62 @@ public class BoardController implements Initializable {
             }
 
             if (winningSymbol != null) {
-                // نشوف مين الفائز بناءً على الـ symbol
                 if (winningSymbol.equals(GameSession.playerSymbol)) {
-                    // أنا الفائز - أنا بس اللي هبلغ السيرفر
                     ServerConnection.getInstance().sendGameEnd(currentUser, opponent, "WIN");
                 }
-                // الخاسر مايبلغش السيرفر عشان ميبقاش duplicate
             }
         }
     }
 
-    /**
-     * تحديث عرض الـ score في الـ UI
-     * يتم استدعاؤها من ScoreListener لما يجي SCORE_UPDATE من السيرفر
-     */
     private void updatePlayerScore(String username, int newScore) {
-        System.out.println("=== updatePlayerScore called ===");
-        System.out.println("Username: " + username + ", newScore: " + newScore);
+        processScoreUpdate(-1, username, newScore);
+    }
+
+    private void processScoreUpdate(int sequence, String username, int newScore) {
+        System.out.println("=== processScoreUpdate called ===");
+        System.out.println("Sequence: " + sequence + ", Username: " + username + ", newScore: " + newScore);
         System.out.println("leftPlayer: " + leftPlayer + ", rightPlayer: " + rightPlayer);
+        
+        String currentUser = AuthManager.getInstance().getCurrentUsername();
+        if (currentUser != null && currentUser.equalsIgnoreCase(username)) {
+            currentUserScore = newScore;
+            System.out.println("Current user score updated to: " + currentUserScore);
+        }
 
         if (scoreX == null || scoreO == null) {
             System.out.println("ERROR: scoreX or scoreO is null!");
-            return; // Labels مش initialized بعد
+            return;
         }
 
-        // scoreX دايماً على الشمال جنب playerNameLabel
-        // scoreO دايماً على اليمين جنب opponentNameLabel
-        // نحدث بناءً على الموقع (left/right) مش الـ symbol (X/O)
-        if (username.equalsIgnoreCase(leftPlayer)) {
-            System.out.println("Updating scoreX (left) to: " + newScore);
-            scoreX.setText("Score: " + newScore); // على الشمال
-        } else if (username.equalsIgnoreCase(rightPlayer)) {
-            System.out.println("Updating scoreO (right) to: " + newScore);
-            scoreO.setText("Score: " + newScore); // على اليمين
+        String myName = AuthManager.getInstance().getCurrentUsername();
+        String opponentName = GameSession.opponentName;
+        
+        if (myName != null && opponentName != null) {
+            if (username.equalsIgnoreCase(myName)) {
+                if ("X".equals(GameSession.playerSymbol)) {
+                    System.out.println("Updating scoreX (my score as X) to: " + newScore);
+                    scoreX.setText("Score: " + newScore);
+                } else {
+                    System.out.println("Updating scoreO (my score as O) to: " + newScore);
+                    scoreO.setText("Score: " + newScore);
+                }
+            } else if (username.equalsIgnoreCase(opponentName)) {
+                if ("X".equals(GameSession.playerSymbol)) {
+                    System.out.println("Updating scoreO (opponent score as O) to: " + newScore);
+                    scoreO.setText("Score: " + newScore);
+                } else {
+                    System.out.println("Updating scoreX (opponent score as X) to: " + newScore);
+                    scoreX.setText("Score: " + newScore);
+                }
+            }
+        }
+        
+        if ("X".equals(GameSession.playerSymbol)) {
+            leftPlayer = myName;
+            rightPlayer = opponentName;
         } else {
-            System.out.println("WARNING: username '" + username + "' doesn't match leftPlayer or rightPlayer!");
+            leftPlayer = opponentName;
+            rightPlayer = myName;
         }
     }
 }

@@ -2,7 +2,7 @@ package com.mycompany.finalprojectclient.models;
 
 public class ResponseData {
 
-    public ResponseStatus status;   //  "SUCCESS" ,"FAILURE
+    public ResponseStatus status;   
     public String message;
 
     public ResponseData() {

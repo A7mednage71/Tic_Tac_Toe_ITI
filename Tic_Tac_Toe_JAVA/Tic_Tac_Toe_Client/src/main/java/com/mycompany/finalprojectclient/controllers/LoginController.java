@@ -9,18 +9,21 @@ import com.mycompany.finalprojectclient.utils.AppConstants;
 import com.mycompany.finalprojectclient.utils.AuthManager;
 import com.mycompany.finalprojectclient.utils.CustomAlertHandler;
 import com.mycompany.finalprojectclient.utils.NavigationManager;
+import com.mycompany.finalprojectclient.utils.UIAnimations;
 
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 public class LoginController implements Initializable {
@@ -31,6 +34,8 @@ public class LoginController implements Initializable {
     private PasswordField passwordField;
     @FXML
     private Button loginButton;
+    @FXML
+    private VBox rootVBox;
 
     @FXML
     private StackPane customAlertOverlay;
@@ -48,6 +53,24 @@ public class LoginController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         alertHandler = new CustomAlertHandler(customAlertOverlay, alertBox, alertTitle, alertMessage, alertIcon);
+        
+        if (rootVBox != null) {
+            animateLoginElements();
+        }
+    }
+
+    private void animateLoginElements() {
+        for (Node child : rootVBox.getChildren()) {
+            child.setOpacity(0);
+        }
+
+        double delayMs = 0;
+        for (Node child : rootVBox.getChildren()) {
+            PauseTransition pause = new PauseTransition(Duration.millis(delayMs));
+            pause.setOnFinished(e -> UIAnimations.fadeIn(child, Duration.millis(500)));
+            pause.play();
+            delayMs += 150; 
+        }
     }
 
     @FXML

@@ -2,6 +2,8 @@ package com.mycompany.finalprojectclient.utils;
 
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
+import javafx.animation.FadeTransition;
+import javafx.animation.SequentialTransition;
 import javafx.scene.Node;
 import javafx.util.Duration;
 
@@ -34,5 +36,29 @@ public class UIAnimations {
             }
         });
         st.play();
+    }
+
+    public static void fadeIn(Node node, Duration duration) {
+        FadeTransition ft = new FadeTransition(duration, node);
+        ft.setFromValue(0);
+        ft.setToValue(1);
+        ft.play();
+    }
+
+    public static void fadeIn(Node node) {
+        fadeIn(node, Duration.millis(800));
+    }
+
+    public static void bounce(Node node) {
+        ScaleTransition scaleUp = new ScaleTransition(Duration.millis(200), node);
+        scaleUp.setToX(1.1);
+        scaleUp.setToY(1.1);
+
+        ScaleTransition scaleDown = new ScaleTransition(Duration.millis(200), node);
+        scaleDown.setToX(1);
+        scaleDown.setToY(1);
+
+        SequentialTransition sequential = new SequentialTransition(scaleUp, scaleDown);
+        sequential.play();
     }
 }

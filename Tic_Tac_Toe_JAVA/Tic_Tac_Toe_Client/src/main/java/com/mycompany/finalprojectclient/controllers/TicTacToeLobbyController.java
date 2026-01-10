@@ -78,10 +78,19 @@ public class TicTacToeLobbyController implements Initializable {
         void updateStatus(String newStatus) {
             this.status = newStatus;
             boolean isInGame = "in_game".equalsIgnoreCase(newStatus) || "busy".equalsIgnoreCase(newStatus);
+            boolean isViewingHistory = "viewing_history".equalsIgnoreCase(newStatus);
             if (isInGame) {
                 statusLabel.setText("In Game");
                 statusLabel.setStyle("-fx-text-fill: #f39c12;");
                 dot.setStyle("-fx-fill: #f39c12;");
+                inviteButton.setText("Busy");
+                inviteButton.setDisable(true);
+                inviteButton.setStyle(
+                        "-fx-background-color: rgba(74, 93, 35, 0.3); -fx-text-fill: #888; -fx-background-radius: 10; -fx-opacity: 0.6;");
+            } else if (isViewingHistory) {
+                statusLabel.setText("Game History");
+                statusLabel.setStyle("-fx-text-fill: #3498db;");
+                dot.setStyle("-fx-fill: #3498db;");
                 inviteButton.setText("Busy");
                 inviteButton.setDisable(true);
                 inviteButton.setStyle(
@@ -118,6 +127,7 @@ public class TicTacToeLobbyController implements Initializable {
     private void handleGameHistory() {
         try {
             GameSession.previousScreen = AppConstants.PATH_GAME_LOBBY;
+            updatePlayerStatusToViewingHistory();
             NavigationManager.switchSceneUsingNode(backButton, AppConstants.PATH_GAME_HISTORY);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -134,20 +144,47 @@ public class TicTacToeLobbyController implements Initializable {
         }
     }
 
+    private void updatePlayerStatusToViewingHistory() {
+        try {
+            String username = AuthManager.getInstance().getCurrentUsername();
+            if (username != null && !username.isEmpty()) {
+                RequestData request = new RequestData();
+                request.key = RequestType.UPDATE_STATUS;
+                request.username = username;
+                request.status = "viewing_history";
+                
+                try {
+                    ServerConnection.getInstance().sendRequest(request);
+                    System.out.println("Status update sent to server: viewing_history");
+                } catch (Exception e) {
+                    System.err.println("Error updating status to viewing_history: " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error in updatePlayerStatusToViewingHistory: " + e.getMessage());
+        }
+    }
+
+    private void updateCurrentUserStatusDisplay(String status) {
+        boolean isInGame = "in_game".equalsIgnoreCase(status) || "busy".equalsIgnoreCase(status) || "viewing_history".equalsIgnoreCase(status);
+        if (isInGame) {
+            currentUserDot.setStyle("-fx-fill: #f39c12;");
+        } else {
+            currentUserDot.setStyle("-fx-fill: #50C878;");
+        }
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         alertHandler = new CustomAlertHandler(alertOverlay, alertBox, alertTitle, alertMessage, alertIcon);
 
-        // Listener لاستقبال الـ score (يتعمل الأول قبل طلب الـ score)
         ServerConnection.getInstance().setScoreListener((username, newScore) -> {
             Platform.runLater(() -> {
                 String currentUser = AuthManager.getInstance().getCurrentUsername();
-                // تحديث الـ score للـ current user
                 if (currentUser != null && currentUser.equals(username)) {
                     currentUserScoreLabel.setText(String.valueOf(newScore));
                 }
 
-                // تحديث الـ score للـ users في الـ list
                 UserRow userRow = userRowMap.get(username);
                 if (userRow != null) {
                     userRow.updateScore(newScore);
@@ -155,11 +192,22 @@ public class TicTacToeLobbyController implements Initializable {
             });
         });
 
-        // عرض بيانات اليوزر الحالي
+        ServerConnection.getInstance().setStatusListener((username, newStatus) -> {
+            Platform.runLater(() -> {
+                String currentUser = AuthManager.getInstance().getCurrentUsername();
+                if (currentUser != null && currentUser.equals(username)) {
+                    updateCurrentUserStatusDisplay(newStatus);
+                }
+
+                UserRow userRow = userRowMap.get(username);
+                if (userRow != null) {
+                    userRow.updateStatus(newStatus);
+                }
+            });
+        });
         String currentUsername = AuthManager.getInstance().getCurrentUsername();
         if (currentUsername != null) {
             currentUserNameLabel.setText(currentUsername);
-            // طلب الـ score من السيرفر
             new Thread(() -> {
                 try {
                     RequestData request = new RequestData();
@@ -277,6 +325,7 @@ public class TicTacToeLobbyController implements Initializable {
 
     private void addUser(String username, String status) {
         boolean isInGame = "in_game".equalsIgnoreCase(status) || "busy".equalsIgnoreCase(status);
+        boolean isViewingHistory = "viewing_history".equalsIgnoreCase(status);
 
         HBox userRow = new HBox(15);
         userRow.setPadding(new Insets(10));
@@ -289,8 +338,8 @@ public class TicTacToeLobbyController implements Initializable {
         Label scoreLabel = new Label("0");
         scoreLabel.setStyle("-fx-text-fill: #88a050; -fx-font-weight: bold;");
 
-        Label statusLabel = new Label(isInGame ? "In Game" : "Online");
-        statusLabel.setStyle(isInGame ? "-fx-text-fill: #f39c12;" : "-fx-text-fill: #888888;");
+        Label statusLabel = new Label(isInGame ? "In Game" : (isViewingHistory ? "Game History" : "Online"));
+        statusLabel.setStyle(isInGame ? "-fx-text-fill: #f39c12;" : (isViewingHistory ? "-fx-text-fill: #3498db;" : "-fx-text-fill: #888888;"));
 
         HBox statusRow = new HBox(8, scoreLabel, statusLabel);
         statusRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -299,10 +348,10 @@ public class TicTacToeLobbyController implements Initializable {
         HBox.setHgrow(info, javafx.scene.layout.Priority.ALWAYS);
 
         Circle dot = new Circle(4);
-        dot.setStyle(isInGame ? "-fx-fill: #f39c12;" : "-fx-fill: #50C878;");
+        dot.setStyle(isInGame ? "-fx-fill: #f39c12;" : (isViewingHistory ? "-fx-fill: #3498db;" : "-fx-fill: #50C878;"));
 
-        Button invite = new Button(isInGame ? "Busy" : "Invite");
-        if (isInGame) {
+        Button invite = new Button(isInGame || isViewingHistory ? "Busy" : "Invite");
+        if (isInGame || isViewingHistory) {
             invite.setDisable(true);
             invite.setStyle(
                     "-fx-background-color: rgba(74, 93, 35, 0.3); -fx-text-fill: #888; -fx-background-radius: 10; -fx-opacity: 0.6;");
@@ -318,7 +367,6 @@ public class TicTacToeLobbyController implements Initializable {
         rowObj.status = status;
         userRowMap.put(username, rowObj);
 
-        // طلب الـ score من السيرفر
         new Thread(() -> {
             try {
                 RequestData request = new RequestData();
@@ -399,7 +447,9 @@ public class TicTacToeLobbyController implements Initializable {
 
     private void enableAllInvites() {
         for (UserRow userRow : userRowMap.values()) {
-            if (!userRow.status.equalsIgnoreCase("in_game") && !userRow.status.equalsIgnoreCase("busy")) {
+            if (!userRow.status.equalsIgnoreCase("in_game") && 
+                !userRow.status.equalsIgnoreCase("busy") && 
+                !userRow.status.equalsIgnoreCase("viewing_history")) {
                 userRow.inviteButton.setDisable(false);
                 userRow.inviteButton.setText("Invite");
                 userRow.inviteButton.setStyle(

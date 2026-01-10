@@ -15,6 +15,7 @@ public class RequestManager {
     private final DataOutputStream dos;
     private final ClientHandler clientHandler;
     private final Gson gson = new Gson();
+    private static int scoreUpdateSequence = 0;
 
     public RequestManager(DataOutputStream dos, ClientHandler clientHandler) {
         this.dos = dos;
@@ -202,13 +203,28 @@ public class RequestManager {
             return;
         }
 
+        String username = clientHandler.getUsername();
         clientHandler.setStatus(newStatus);
-        UserDAO.getInstance().updateUserStatus(clientHandler.getUsername(), newStatus);
+        UserDAO.getInstance().updateUserStatus(username, newStatus);
 
-        System.out.println("Status updated to " + newStatus + " for " + clientHandler.getUsername());
+        System.out.println("Status updated to " + newStatus + " for " + username);
 
         ResponseData response = new ResponseData(ResponseStatus.SUCCESS, "Status updated");
         sendResponse(response);
+
+        // Broadcast status update to all clients
+        String statusUpdateMessage = "STATUS_UPDATE:" + username + ":" + newStatus;
+        System.out.println("Broadcasting: " + statusUpdateMessage);
+        for (ClientHandler client : ServerThread.onlineUsers) {
+            if (client != null) {
+                try {
+                    client.sendMessage(statusUpdateMessage);
+                    System.out.println("Status update sent to: " + client.getUsername());
+                } catch (Exception e) {
+                    System.err.println("Error sending status update to client: " + e.getMessage());
+                }
+            }
+        }
 
         ServerThread.broadcastUserListUpdate();
     }
@@ -267,8 +283,11 @@ public class RequestManager {
             userDAO.updateUserScore(loser, DatabaseConstants.SCORE_DRAW);
 
         } else if ("WITHDRAW".equals(result)) {
-            userDAO.updateUserScore(winner, DatabaseConstants.SCORE_WIN);
-            userDAO.updateUserScore(loser, DatabaseConstants.SCORE_WITHDRAW);
+            // When a player withdraws, the "winner" is actually the player who withdrew (should be penalized)
+            // and the "loser" is the player who stayed (should be rewarded)
+            // This naming is counter-intuitive, so we need to reverse it
+            userDAO.updateUserScore(winner, DatabaseConstants.SCORE_WITHDRAW); // Player who withdrew gets penalty
+            userDAO.updateUserScore(loser, DatabaseConstants.SCORE_WIN);      // Player who stayed gets win bonus
         }
 
         broadcastScoreUpdates(winner, loser);
@@ -282,19 +301,28 @@ public class RequestManager {
             int score1 = userDAO.getUserScore(player1);
             int score2 = userDAO.getUserScore(player2);
 
-            // إرسال للاعبين المعنيين فقط (اللي في اللعبة دي)
             ClientHandler client1 = findClientByUsername(player1);
             ClientHandler client2 = findClientByUsername(player2);
 
+            // Increment sequence number for this score update
+            int currentSequence = ++scoreUpdateSequence;
+
+            // Create consistent score update messages with sequence numbers
+            String scoreUpdate1 = "SCORE_UPDATE:" + currentSequence + ":" + player1 + ":" + score1;
+            String scoreUpdate2 = "SCORE_UPDATE:" + currentSequence + ":" + player2 + ":" + score2;
+
+            // Send updates to both clients in a consistent order
             if (client1 != null) {
-                client1.sendMessage("SCORE_UPDATE:" + player1 + ":" + score1);
-                client1.sendMessage("SCORE_UPDATE:" + player2 + ":" + score2);
+                client1.sendMessage(scoreUpdate1);
+                client1.sendMessage(scoreUpdate2);
             }
 
             if (client2 != null) {
-                client2.sendMessage("SCORE_UPDATE:" + player1 + ":" + score1);
-                client2.sendMessage("SCORE_UPDATE:" + player2 + ":" + score2);
+                client2.sendMessage(scoreUpdate1);
+                client2.sendMessage(scoreUpdate2);
             }
+
+            System.out.println("Broadcasted scores (seq=" + currentSequence + "): " + player1 + "=" + score1 + ", " + player2 + "=" + score2);
         } catch (Exception e) {
             System.err.println("Error broadcasting scores: " + e.getMessage());
         }
@@ -311,8 +339,9 @@ public class RequestManager {
 
             System.out.println("Retrieved score for " + username + ": " + score);
 
-            // إرسال الـ score للـ client اللي طلبه (مش للـ client صاحب الـ username)
-            String message = "SCORE_UPDATE:" + username + ":" + score;
+            // Use sequence number for consistency
+            int currentSequence = ++scoreUpdateSequence;
+            String message = "SCORE_UPDATE:" + currentSequence + ":" + username + ":" + score;
             System.out.println("Sending to client " + this.clientHandler.getUsername() + ": " + message);
             this.clientHandler.sendMessage(message);
 

@@ -1,0 +1,15 @@
+{
+  "gameId": "GAME_20260109_224707",
+  "playerX": "ahmed",
+  "playerO": "shady",
+  "date": "2026-01-09T22:47:07.486446",
+  "result": "ahmed",
+  "moves": [
+    "0,0,X",
+    "0,1,O",
+    "1,0,X",
+    "0,2,O",
+    "2,0,X"
+  ],
+  "durationSeconds": 5
+}
