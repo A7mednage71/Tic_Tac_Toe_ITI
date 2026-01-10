@@ -27,14 +27,4 @@ public class HomeController {
         }
     }
 
-    @FXML
-    private void gameHistory(ActionEvent event) {
-        try {
-            GameSession.previousScreen = AppConstants.PATH_HOME;
-            NavigationManager.switchScene(event, AppConstants.PATH_GAME_HISTORY);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
 }

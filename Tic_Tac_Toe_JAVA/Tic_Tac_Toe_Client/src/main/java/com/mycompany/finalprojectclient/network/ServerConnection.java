@@ -24,6 +24,7 @@ public class ServerConnection {
     private InviteListener inviteListener;
     private GameMoveListener gameMoveListener;
     private ScoreListener scoreListener;
+    private StatusListener statusListener;
     private Thread messageRouter;
 
     public interface NotificationListener {
@@ -77,7 +78,7 @@ public class ServerConnection {
                 dis = new DataInputStream(socket.getInputStream());
                 dos = new DataOutputStream(socket.getOutputStream());
 
-                responseQueue.clear(); // Clear any stale responses
+                responseQueue.clear(); 
                 startMessageRouter();
                 System.out.println("Connected to server: " + AppConstants.SERVER_HOST);
             }
@@ -142,20 +143,47 @@ public class ServerConnection {
                     } else if (message.startsWith("SCORE_UPDATE:")) {
                         System.out.println("=== SCORE_UPDATE received ===");
                         System.out.println("Raw message: " + message);
-                        // Format: SCORE_UPDATE:username:score
                         String[] parts = message.substring("SCORE_UPDATE:".length()).split(":");
                         System.out.println("Parsed parts length: " + parts.length);
-                        if (parts.length >= 2) {
-                            System.out.println("Username: " + parts[0] + ", Score: " + parts[1]);
-                        }
-                        if (parts.length == 2 && scoreListener != null) {
+                        
+                        if (parts.length >= 3) {
+                            int sequence = Integer.parseInt(parts[0]);
+                            String username = parts[1];
+                            int score = Integer.parseInt(parts[2]);
+                            System.out.println("Sequence: " + sequence + ", Username: " + username + ", Score: " + score);
+                            if (scoreListener != null) {
+                                System.out.println("Calling scoreListener.onScoreUpdate(" + username + ", " + score + ")");
+                                scoreListener.onScoreUpdate(username, score);
+                            }
+                        } else if (parts.length == 2) {
+                            // Legacy format without sequence number
                             String username = parts[0];
                             int score = Integer.parseInt(parts[1]);
-                            System.out.println("Calling scoreListener.onScoreUpdate(" + username + ", " + score + ")");
-                            scoreListener.onScoreUpdate(username, score);
+                            System.out.println("Username: " + username + ", Score: " + score);
+                            if (scoreListener != null) {
+                                System.out.println("Calling scoreListener.onScoreUpdate(" + username + ", " + score + ")");
+                                scoreListener.onScoreUpdate(username, score);
+                            }
                         } else {
                             System.out.println(
                                     "ERROR: parts.length=" + parts.length + ", scoreListener=" + scoreListener);
+                        }
+                    } else if (message.startsWith("STATUS_UPDATE:")) {
+                        System.out.println("=== STATUS_UPDATE received ===");
+                        System.out.println("Raw message: " + message);
+                        
+                        String[] parts = message.substring("STATUS_UPDATE:".length()).split(":");
+                        System.out.println("Parsed parts length: " + parts.length);
+                        if (parts.length >= 2) {
+                            System.out.println("Username: " + parts[0] + ", Status: " + parts[1]);
+                        }
+                        if (parts.length == 2 && statusListener != null) {
+                            String username = parts[0];
+                            String status = parts[1];
+                            System.out.println("Calling statusListener.onStatusUpdate(" + username + ", " + status + ")");
+                            statusListener.onStatusUpdate(username, status);
+                        } else {
+                            System.out.println("ERROR: parts.length=" + parts.length + ", statusListener=" + statusListener);
                         }
                     } else {
                         responseQueue.put(message);
@@ -186,11 +214,12 @@ public class ServerConnection {
         void onMoveReceived(int r, int c);
     }
 
-    /**
-     * Listener للاستماع لتحديثات الـ scores من السيرفر
-     */
     public interface ScoreListener {
         void onScoreUpdate(String username, int newScore);
+    }
+
+    public interface StatusListener {
+        void onStatusUpdate(String username, String newStatus);
     }
 
     public void setGameMoveListener(GameMoveListener listener) {
@@ -199,6 +228,10 @@ public class ServerConnection {
 
     public void setScoreListener(ScoreListener listener) {
         this.scoreListener = listener;
+    }
+
+    public void setStatusListener(StatusListener listener) {
+        this.statusListener = listener;
     }
 
     public void sendGameMove(int r, int c) {
@@ -212,13 +245,6 @@ public class ServerConnection {
         }
     }
 
-    /**
-     * إرسال نتيجة اللعبة للسيرفر لتحديث الـ scores
-     * 
-     * @param winner اسم الفائز
-     * @param loser  اسم الخاسر
-     * @param result نوع النتيجة: WIN, DRAW, WITHDRAW
-     */
     public void sendGameEnd(String winner, String loser, String result) {
         try {
             RequestData req = new RequestData();
@@ -233,12 +259,6 @@ public class ServerConnection {
         }
     }
 
-    /**
-     * طلب score لاعب معين من السيرفر
-     * السيرفر هيرد بـ SCORE_UPDATE message
-     * 
-     * @param username اسم اللاعب
-     */
     public void requestUserScore(String username) {
         try {
             RequestData req = new RequestData();

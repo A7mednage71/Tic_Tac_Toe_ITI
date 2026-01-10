@@ -12,7 +12,7 @@
            fx:controller="com.mycompany.finalprojectclient.controllers.LoginController">
     
     <children>
-        <VBox alignment="CENTER" spacing="20.0" styleClass="main-container">
+        <VBox fx:id="rootVBox" alignment="CENTER" spacing="20.0" styleClass="main-container">
             <padding>
                 <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
             </padding>
@@ -73,7 +73,6 @@
                         <Label fx:id="alertIcon" style="-fx-font-size: 30;" />
                         <Label fx:id="alertTitle" styleClass="alert-title" text="Error" />
                         <Label fx:id="alertMessage" styleClass="alert-msg" textAlignment="CENTER" wrapText="true" />
-                        <Button onAction="#closeCustomAlert" styleClass="alert-button" text="OK" />
                     </children>
                 </VBox>
             </children>

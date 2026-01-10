@@ -41,29 +41,28 @@ public class CustomAlertHandler {
 
         alertBox.getStyleClass().removeAll("alert-box-error", "alert-box-success");
         alertBox.getStyleClass().add("alert-box-success");
-        titleLabel.setStyle("-fx-text-fill: #f39c12;");
+        titleLabel.setStyle("-fx-text-fill: #88a050; -fx-font-size: 24px; -fx-font-weight: bold;");
+        messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
 
-        // Remove existing buttons if any
         alertBox.getChildren().removeIf(node -> node instanceof HBox);
 
-        // Create Yes/No buttons with better styling
         Button yesButton = new Button("ACCEPT");
-        yesButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 35; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-size: 14;");
+        yesButton.setStyle("-fx-background-color: #6a8c3d; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 45; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-size: 15; -fx-border-color: #88a050; -fx-border-radius: 12; -fx-border-width: 2;");
         yesButton.setOnAction(e -> {
             hide();
             if (callback != null) callback.onYes();
         });
 
         Button noButton = new Button("REJECT");
-        noButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 35; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-size: 14;");
+        noButton.setStyle("-fx-background-color: #8B4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 45; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-size: 15; -fx-border-color: #B85C5C; -fx-border-radius: 12; -fx-border-width: 2;");
         noButton.setOnAction(e -> {
             hide();
             if (callback != null) callback.onNo();
         });
 
-        HBox buttonBox = new HBox(20, yesButton, noButton);
+        HBox buttonBox = new HBox(25, yesButton, noButton);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.setStyle("-fx-padding: 20 0 0 0;");
+        buttonBox.setStyle("-fx-padding: 25 0 0 0;");
 
         alertBox.getChildren().add(buttonBox);
 
@@ -71,11 +70,11 @@ public class CustomAlertHandler {
         overlay.setVisible(true);
         overlay.toFront();
         UIAnimations.popIn(alertBox);
+        UIAnimations.bounce(alertBox);
     }
 
     public void showLoading(String title, String message) {
         setupAlert(title, message, "alert-box-success", "#f39c12", "⏳");
-        // No buttons for loading, just the message
         alertBox.getChildren().removeIf(node -> node instanceof HBox);
         UIAnimations.popIn(alertBox);
     }
@@ -84,7 +83,6 @@ public class CustomAlertHandler {
         UIAnimations.popOut(alertBox, () -> {
             overlay.setVisible(false);
             overlay.setManaged(false);
-            // Reset state and remove buttons
             alertBox.getChildren().removeIf(node -> node instanceof HBox);
             alertBox.setScaleX(1);
             alertBox.setScaleY(1);
@@ -98,19 +96,18 @@ public class CustomAlertHandler {
 
         alertBox.getStyleClass().removeAll("alert-box-error", "alert-box-success");
         alertBox.getStyleClass().add(cssClass);
-        titleLabel.setStyle("-fx-text-fill: " + colorHex + ";");
+        titleLabel.setStyle("-fx-text-fill: " + colorHex + "; -fx-font-size: 22px; -fx-font-weight: bold;");
+        messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 15px;");
 
-        // Remove buttons if any
         alertBox.getChildren().removeIf(node -> node instanceof HBox);
 
-        // Add a "Close" button for simple alerts
         Button closeButton = new Button("OK");
-        closeButton.setStyle("-fx-background-color: #4A443F; -fx-text-fill: white; -fx-padding: 8 30; -fx-background-radius: 5; -fx-cursor: hand; -fx-font-weight: bold;");
+        closeButton.setStyle("-fx-background-color: #6a8c3d; -fx-text-fill: white; -fx-padding: 10 35; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 14; -fx-border-color: #88a050; -fx-border-radius: 10; -fx-border-width: 2;");
         closeButton.setOnAction(e -> hide());
         
         HBox buttonBox = new HBox(closeButton);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.setStyle("-fx-padding: 15 0 0 0;");
+        buttonBox.setStyle("-fx-padding: 20 0 0 0;");
         alertBox.getChildren().add(buttonBox);
 
         overlay.setManaged(true);

@@ -19,7 +19,7 @@ public final class DatabaseConstants {
     public static final String LOGIN_USER_QUERY = "SELECT * FROM APP.USERS WHERE LOWER(TRIM(USERNAME))=? AND TRIM(PASSWORD)=?";
     public static final String UPDATE_USER_STATUS = "UPDATE APP.USERS SET STATUS = ? WHERE LOWER(TRIM(USERNAME)) = ?";
     public static final String GET_ALL_PLAYERS = "SELECT USERNAME, SCORE, STATUS FROM APP.USERS";
-    public static final String UPDATE_USER_SCORE = "UPDATE APP.USERS SET SCORE = SCORE + ? WHERE LOWER(TRIM(USERNAME)) = ?";
+    public static final String UPDATE_USER_SCORE = "UPDATE APP.USERS SET SCORE = CASE WHEN (SCORE + ?) < 0 THEN 0 ELSE (SCORE + ?) END WHERE LOWER(TRIM(USERNAME)) = ?";
     public static final String GET_USER_SCORE = "SELECT SCORE FROM APP.USERS WHERE LOWER(TRIM(USERNAME)) = ?";
     
     // ==========================================================

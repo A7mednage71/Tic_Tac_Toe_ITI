@@ -91,6 +91,7 @@
                     <children>
                         <Button onAction="#handlePlayAgain" styleClass="action-button" text="Play Again" />
                         <Button fx:id="recordBtn" onAction="#handleRecord" styleClass="action-button" style="-fx-background-color: #e74c3c;" text="Record" />
+                        <Button fx:id="disableInviteBtn" onAction="#handleDisableInvite" styleClass="action-button" style="-fx-background-color: #95a5a6;" text="Invites Enabled" />
                     </children>
                     <VBox.margin>
                         <Insets bottom="10.0" top="10.0" />

@@ -65,10 +65,6 @@
                 <Button styleClass="main-button"
                         text="Two Players"
                         onAction="#twoPlayers"/>
-
-                <Button styleClass="main-button"
-                        text="Game History"
-                        onAction="#gameHistory"/>
             </children>
         </VBox>
 

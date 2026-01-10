@@ -1,0 +1,15 @@
+{
+  "gameId": "GAME_20260110_005042",
+  "playerX": "shady",
+  "playerO": "nader",
+  "date": "2026-01-10T00:50:42.638958200",
+  "result": "shady",
+  "moves": [
+    "0,0,X",
+    "0,1,O",
+    "1,1,X",
+    "0,2,O",
+    "2,2,X"
+  ],
+  "durationSeconds": 2
+}
