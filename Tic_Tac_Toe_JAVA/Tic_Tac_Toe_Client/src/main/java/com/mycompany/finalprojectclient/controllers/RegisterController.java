@@ -47,9 +47,22 @@ public class RegisterController implements Initializable {
 
     private CustomAlertHandler alertHandler;
 
+    @FXML
+    private TextField serverIpField;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         alertHandler = new CustomAlertHandler(customAlertOverlay, alertBox, alertTitle, alertMessage, alertIcon);
+
+        // Initialize Server IP field
+        if (serverIpField != null) {
+            serverIpField.setText(AppConstants.SERVER_HOST);
+            serverIpField.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != null && !newValue.trim().isEmpty()) {
+                    AppConstants.SERVER_HOST = newValue.trim();
+                }
+            });
+        }
     }
 
     @FXML
