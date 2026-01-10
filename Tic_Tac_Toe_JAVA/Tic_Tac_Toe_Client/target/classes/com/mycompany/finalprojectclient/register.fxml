@@ -60,6 +60,16 @@
 
     </VBox>
 
+    <HBox StackPane.alignment="TOP_RIGHT" pickOnBounds="false" maxHeight="-Infinity" maxWidth="-Infinity" spacing="10" alignment="CENTER_RIGHT">
+        <padding>
+            <Insets top="20" right="20"/>
+        </padding>
+        <children>
+            <Label text="Server IP:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+            <TextField fx:id="serverIpField" promptText="127.0.0.1" prefWidth="150" styleClass="custom-text-field"/>
+        </children>
+    </HBox>
+
     <StackPane fx:id="customAlertOverlay" managed="false" visible="false" style="-fx-background-color: rgba(0,0,0,0.85);">
         <children>
             <VBox fx:id="alertBox" alignment="CENTER" maxHeight="200.0" maxWidth="350.0" spacing="20.0" styleClass="custom-alert-box">
