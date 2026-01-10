@@ -130,31 +130,32 @@
 
         <VBox fx:id="alertBox"
               alignment="CENTER"
-              spacing="15"
+              spacing="12"
               maxWidth="320"
+              maxHeight="320"
               style="-fx-background-color: linear-gradient(to bottom right, #3B3631, #2D2926);
                      -fx-background-radius: 20;
                      -fx-border-color: #88a050;
                      -fx-border-radius: 20;
                      -fx-border-width: 2;
-                     -fx-padding: 35;
+                     -fx-padding: 25;
                      -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 20, 0, 0, 10);">
 
             <Label fx:id="alertIcon"
                    text="🔔"
-                   style="-fx-font-size: 40;"/>
+                   style="-fx-font-size: 30;"/>
 
             <Label fx:id="alertTitle"
                    text="Alert"
                    textFill="#f39c12"
-                   style="-fx-font-size: 22; -fx-font-weight: bold; -fx-font-family: 'System'; "/>
+                   style="-fx-font-size: 20; -fx-font-weight: bold; -fx-font-family: 'System'; "/>
 
             <Label fx:id="alertMessage"
                    text="Message"
                    textFill="white"
                    wrapText="true"
                    textAlignment="CENTER"
-                   style="-fx-font-size: 15; -fx-line-spacing: 5px;"/>
+                   style="-fx-font-size: 14; -fx-line-spacing: 3px;"/>
 
         </VBox>
 

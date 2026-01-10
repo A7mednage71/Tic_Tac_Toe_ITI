@@ -1,11 +1,11 @@
 package com.mycompany.finalprojectclient.utils;
 
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.geometry.Pos;
 
 public class CustomAlertHandler {
 
@@ -38,18 +38,18 @@ public class CustomAlertHandler {
         titleLabel.setText(title);
         messageLabel.setText(message);
         if (iconLabel != null)
-            iconLabel.setText("🎮");
+            iconLabel.setText("");
 
         alertBox.getStyleClass().removeAll("alert-box-error", "alert-box-success");
         alertBox.getStyleClass().add("alert-box-success");
-        titleLabel.setStyle("-fx-text-fill: #88a050; -fx-font-size: 24px; -fx-font-weight: bold;");
-        messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        titleLabel.setStyle("-fx-text-fill: #88a050; -fx-font-size: 20px; -fx-font-weight: bold;");
+        messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
 
         alertBox.getChildren().removeIf(node -> node instanceof HBox);
 
         Button yesButton = new Button("ACCEPT");
         yesButton.setStyle(
-                "-fx-background-color: #6a8c3d; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 45; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-size: 15; -fx-border-color: #88a050; -fx-border-radius: 12; -fx-border-width: 2;");
+                "-fx-background-color: #6a8c3d; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 25; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-size: 13; -fx-border-color: #88a050; -fx-border-radius: 10; -fx-border-width: 2;");
         yesButton.setOnAction(e -> {
             hide();
             if (callback != null)
@@ -58,16 +58,16 @@ public class CustomAlertHandler {
 
         Button noButton = new Button("REJECT");
         noButton.setStyle(
-                "-fx-background-color: #8B4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 45; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-size: 15; -fx-border-color: #B85C5C; -fx-border-radius: 12; -fx-border-width: 2;");
+                "-fx-background-color: #8B4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 25; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-size: 13; -fx-border-color: #B85C5C; -fx-border-radius: 10; -fx-border-width: 2;");
         noButton.setOnAction(e -> {
             hide();
             if (callback != null)
                 callback.onNo();
         });
 
-        HBox buttonBox = new HBox(25, yesButton, noButton);
+        HBox buttonBox = new HBox(15, yesButton, noButton);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.setStyle("-fx-padding: 25 0 0 0;");
+        buttonBox.setStyle("-fx-padding: 10 0 0 0;");
 
         alertBox.getChildren().add(buttonBox);
 
@@ -83,13 +83,13 @@ public class CustomAlertHandler {
     }
 
     public void showLoading(String title, String message, CancelCallback callback) {
-        setupAlert(title, message, "alert-box-success", "#f39c12", "⏳");
+        setupAlert(title, message, "alert-box-success", "#f39c12", "");
         alertBox.getChildren().removeIf(node -> node instanceof HBox);
 
         if (callback != null) {
             Button cancelButton = new Button("CANCEL");
             cancelButton.setStyle(
-                    "-fx-background-color: #8B4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 45; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-size: 15; -fx-border-color: #B85C5C; -fx-border-radius: 12; -fx-border-width: 2;");
+                    "-fx-background-color: #8B4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 30; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-size: 13; -fx-border-color: #B85C5C; -fx-border-radius: 10; -fx-border-width: 2;");
             cancelButton.setOnAction(e -> {
                 hide();
                 if (callback != null)
@@ -98,7 +98,7 @@ public class CustomAlertHandler {
 
             HBox buttonBox = new HBox(cancelButton);
             buttonBox.setAlignment(Pos.CENTER);
-            buttonBox.setStyle("-fx-padding: 25 0 0 0;");
+            buttonBox.setStyle("-fx-padding: 10 0 0 0;");
             alertBox.getChildren().add(buttonBox);
         }
 
