@@ -473,17 +473,136 @@ public class BoardController implements Initializable {
                     easyMove();
                 break;
             case HARD:
-                if (smartMove("O"))
-                    return;
-                if (smartMove("X"))
-                    return;
-                if (takeCenter())
-                    return;
-                if (takeCorner())
-                    return;
-                easyMove();
+                performMinimaxMove();
                 break;
         }
+    }
+
+    private void performMinimaxMove() {
+        String[][] board = new String[3][3];
+        Button[][] grid = getGridArray();
+
+        // Capture current board state
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                board[i][j] = grid[i][j].getText();
+            }
+        }
+
+        int bestVal = -1000;
+        int bestRow = -1;
+        int bestCol = -1;
+
+        // Find the best move for 'O' (Computer)
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board[i][j].isEmpty()) {
+                    board[i][j] = "O";
+                    // Pass isMaximizing=false because next turn is X (minimizer)
+                    int moveVal = minimax(board, 0, false);
+                    board[i][j] = "";
+
+                    if (moveVal > bestVal) {
+                        bestRow = i;
+                        bestCol = j;
+                        bestVal = moveVal;
+                    }
+                }
+            }
+        }
+
+        if (bestRow != -1 && bestCol != -1) {
+            playMove(grid[bestRow][bestCol], "O");
+        } else {
+            // Fallback if no moves found (shouldn't happen unless board full)
+            easyMove();
+        }
+    }
+
+    // Returns a score for the board: 10 if O wins, -10 if X wins, 0 otherwise
+    private int evaluate(String[][] board) {
+        // Rows
+        for (int row = 0; row < 3; row++) {
+            if (board[row][0].equals(board[row][1]) && board[row][1].equals(board[row][2])) {
+                if (board[row][0].equals("O"))
+                    return +10;
+                else if (board[row][0].equals("X"))
+                    return -10;
+            }
+        }
+
+        // Columns
+        for (int col = 0; col < 3; col++) {
+            if (board[0][col].equals(board[1][col]) && board[1][col].equals(board[2][col])) {
+                if (board[0][col].equals("O"))
+                    return +10;
+                else if (board[0][col].equals("X"))
+                    return -10;
+            }
+        }
+
+        // Diagonals
+        if (board[0][0].equals(board[1][1]) && board[1][1].equals(board[2][2])) {
+            if (board[0][0].equals("O"))
+                return +10;
+            else if (board[0][0].equals("X"))
+                return -10;
+        }
+        if (board[0][2].equals(board[1][1]) && board[1][1].equals(board[2][0])) {
+            if (board[0][2].equals("O"))
+                return +10;
+            else if (board[0][2].equals("X"))
+                return -10;
+        }
+
+        return 0;
+    }
+
+    private int minimax(String[][] board, int depth, boolean isMaximizing) {
+        int score = evaluate(board);
+
+        // If maximizer (O) or minimizer (X) has won, return score
+        if (score == 10)
+            return score - depth; // Prefer faster wins
+        if (score == -10)
+            return score + depth; // Prefer slower losses (prolong game)
+
+        if (!isMovesLeft(board))
+            return 0;
+
+        if (isMaximizing) {
+            int best = -1000;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    if (board[i][j].isEmpty()) {
+                        board[i][j] = "O";
+                        best = Math.max(best, minimax(board, depth + 1, !isMaximizing));
+                        board[i][j] = "";
+                    }
+                }
+            }
+            return best;
+        } else {
+            int best = 1000;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    if (board[i][j].isEmpty()) {
+                        board[i][j] = "X";
+                        best = Math.min(best, minimax(board, depth + 1, !isMaximizing));
+                        board[i][j] = "";
+                    }
+                }
+            }
+            return best;
+        }
+    }
+
+    private boolean isMovesLeft(String[][] board) {
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                if (board[i][j].isEmpty())
+                    return true;
+        return false;
     }
 
     private boolean smartMove(String symbol) {

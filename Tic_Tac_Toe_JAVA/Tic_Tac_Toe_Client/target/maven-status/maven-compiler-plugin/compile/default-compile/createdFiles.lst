@@ -13,6 +13,7 @@ com\mycompany\finalprojectclient\controllers\TicTacToeLobbyController$1$1.class
 com\mycompany\finalprojectclient\AppLauncher.class
 com\mycompany\finalprojectclient\controllers\TicTacToeLobbyController$2.class
 com\mycompany\finalprojectclient\network\ServerConnection$GameMoveListener.class
+com\mycompany\finalprojectclient\controllers\TicTacToeLobbyController$3.class
 com\mycompany\finalprojectclient\controllers\BoardController$4.class
 com\mycompany\finalprojectclient\network\ServerConnection$StatusListener.class
 com\mycompany\finalprojectclient\utils\AppConstants.class
@@ -21,6 +22,7 @@ com\mycompany\finalprojectclient\models\ResponseData.class
 com\mycompany\finalprojectclient\controllers\GameController.class
 com\mycompany\finalprojectclient\controllers\BoardController$1.class
 com\mycompany\finalprojectclient\controllers\RegisterController.class
+com\mycompany\finalprojectclient\network\ServerConnection$DisconnectionListener.class
 com\mycompany\finalprojectclient\network\ServerConnection$ScoreListener.class
 com\mycompany\finalprojectclient\controllers\BoardController$2.class
 com\mycompany\finalprojectclient\controllers\HomeController.class
@@ -36,6 +38,7 @@ com\mycompany\finalprojectclient\controllers\VsComputerController.class
 com\mycompany\finalprojectclient\MainApp.class
 com\mycompany\finalprojectclient\models\GameSession$Difficulty.class
 com\mycompany\finalprojectclient\controllers\TicTacToeLobbyController$1.class
+com\mycompany\finalprojectclient\utils\CustomAlertHandler$CancelCallback.class
 com\mycompany\finalprojectclient\utils\UIAnimations.class
 com\mycompany\finalprojectclient\controllers\GameHistoryController.class
 com\mycompany\finalprojectclient\utils\NavigationManager.class
