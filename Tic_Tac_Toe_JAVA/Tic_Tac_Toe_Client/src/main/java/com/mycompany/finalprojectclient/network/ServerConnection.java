@@ -145,24 +145,23 @@ public class ServerConnection {
                         System.out.println("Raw message: " + message);
                         String[] parts = message.substring("SCORE_UPDATE:".length()).split(":");
                         System.out.println("Parsed parts length: " + parts.length);
-                        
+                         
                         if (parts.length >= 3) {
                             int sequence = Integer.parseInt(parts[0]);
                             String username = parts[1];
                             int score = Integer.parseInt(parts[2]);
                             System.out.println("Sequence: " + sequence + ", Username: " + username + ", Score: " + score);
                             if (scoreListener != null) {
-                                System.out.println("Calling scoreListener.onScoreUpdate(" + username + ", " + score + ")");
-                                scoreListener.onScoreUpdate(username, score);
+                                System.out.println("Calling scoreListener.onScoreUpdate(" + sequence + ", " + username + ", " + score + ")");
+                                scoreListener.onScoreUpdate(sequence, username, score);
                             }
                         } else if (parts.length == 2) {
-                            // Legacy format without sequence number
                             String username = parts[0];
                             int score = Integer.parseInt(parts[1]);
                             System.out.println("Username: " + username + ", Score: " + score);
                             if (scoreListener != null) {
-                                System.out.println("Calling scoreListener.onScoreUpdate(" + username + ", " + score + ")");
-                                scoreListener.onScoreUpdate(username, score);
+                                System.out.println("Calling scoreListener.onScoreUpdate(-1, " + username + ", " + score + ")");
+                                scoreListener.onScoreUpdate(-1, username, score);
                             }
                         } else {
                             System.out.println(
@@ -215,7 +214,7 @@ public class ServerConnection {
     }
 
     public interface ScoreListener {
-        void onScoreUpdate(String username, int newScore);
+        void onScoreUpdate(int sequence, String username, int newScore);
     }
 
     public interface StatusListener {

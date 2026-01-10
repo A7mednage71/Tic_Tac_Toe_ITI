@@ -99,6 +99,7 @@ public class BoardController implements Initializable {
     private boolean gameOver = false;
     private int currentUserScore = 0;
     private int lastProcessedSequence = -1;
+    private boolean expectingScoreUpdate = false;
     
 
     @Override
@@ -112,9 +113,9 @@ public class BoardController implements Initializable {
         alertHandler = new CustomAlertHandler(customAlertOverlay, alertBox, alertTitle, alertMessage, alertIcon);
         updateBoardHoverState();
 
-        ServerConnection.getInstance().setScoreListener((username, newScore) -> {
+        ServerConnection.getInstance().setScoreListener((sequence, username, newScore) -> {
             Platform.runLater(() -> {
-                updatePlayerScore(username, newScore);
+                processScoreUpdate(sequence, username, newScore);
             });
         });
 
@@ -142,16 +143,23 @@ public class BoardController implements Initializable {
                 playerO = GameSession.opponentName;
                 playerNameLabel.setText(playerX + " (X)");
                 opponentNameLabel.setText(playerO + " (O)");
-                leftPlayer = myName; 
+                leftPlayer = myName;
                 rightPlayer = GameSession.opponentName; // O player (opponent) is on right
             } else {
                 playerX = GameSession.opponentName;
                 playerO = myName;
-                playerNameLabel.setText(playerO + " (O)");
-                opponentNameLabel.setText(playerX + " (X)");
-                leftPlayer = GameSession.opponentName; 
-                rightPlayer = myName;  
+                playerNameLabel.setText(playerX + " (X)");
+                opponentNameLabel.setText(playerO + " (O)");
+                leftPlayer = GameSession.opponentName;
+                rightPlayer = myName;
             }
+            
+            // Debug output to verify player assignments
+            System.out.println("Player assignments:");
+            System.out.println("My name: " + myName + ", My symbol: " + GameSession.playerSymbol);
+            System.out.println("Opponent: " + GameSession.opponentName);
+            System.out.println("leftPlayer (X position): " + leftPlayer);
+            System.out.println("rightPlayer (O position): " + rightPlayer);
 
             System.out.println("leftPlayer (scoreX position): " + leftPlayer);
             System.out.println("rightPlayer (scoreO position): " + rightPlayer);
@@ -1257,47 +1265,66 @@ public class BoardController implements Initializable {
         System.out.println("=== processScoreUpdate called ===");
         System.out.println("Sequence: " + sequence + ", Username: " + username + ", newScore: " + newScore);
         System.out.println("leftPlayer: " + leftPlayer + ", rightPlayer: " + rightPlayer);
+        System.out.println("Last processed sequence: " + lastProcessedSequence);
         
-        String currentUser = AuthManager.getInstance().getCurrentUsername();
-        if (currentUser != null && currentUser.equalsIgnoreCase(username)) {
-            currentUserScore = newScore;
-            System.out.println("Current user score updated to: " + currentUserScore);
-        }
-
-        if (scoreX == null || scoreO == null) {
-            System.out.println("ERROR: scoreX or scoreO is null!");
+        if (sequence <= lastProcessedSequence) {
+            System.out.println("Skipping outdated or duplicate update (sequence " + sequence + " <= " + lastProcessedSequence + ")");
             return;
         }
-
+        
         String myName = AuthManager.getInstance().getCurrentUsername();
         String opponentName = GameSession.opponentName;
         
-        if (myName != null && opponentName != null) {
-            if (username.equalsIgnoreCase(myName)) {
-                if ("X".equals(GameSession.playerSymbol)) {
-                    System.out.println("Updating scoreX (my score as X) to: " + newScore);
-                    scoreX.setText("Score: " + newScore);
-                } else {
-                    System.out.println("Updating scoreO (my score as O) to: " + newScore);
-                    scoreO.setText("Score: " + newScore);
+        if (username.equalsIgnoreCase(myName)) {
+            currentUserScore = newScore;
+            System.out.println("Updated current user score to: " + currentUserScore);
+        } else if (username.equalsIgnoreCase(opponentName)) {
+            GameSession.opponentScore = newScore;
+            System.out.println("Updated opponent score to: " + GameSession.opponentScore);
+        }
+        
+        if (!expectingScoreUpdate) {
+            expectingScoreUpdate = true;
+            lastProcessedSequence = sequence;
+            
+            new Thread(() -> {
+                try {
+                    Thread.sleep(100); // Wait for potential second update
+                    Platform.runLater(() -> {
+                        applyPendingScoreUpdates();
+                    });
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            } else if (username.equalsIgnoreCase(opponentName)) {
-                if ("X".equals(GameSession.playerSymbol)) {
-                    System.out.println("Updating scoreO (opponent score as O) to: " + newScore);
-                    scoreO.setText("Score: " + newScore);
-                } else {
-                    System.out.println("Updating scoreX (opponent score as X) to: " + newScore);
-                    scoreX.setText("Score: " + newScore);
-                }
-            }
+            }).start();
+        }
+    }
+    
+    private void applyPendingScoreUpdates() {
+        System.out.println("=== applyPendingScoreUpdates ===");
+        
+        String myName = AuthManager.getInstance().getCurrentUsername();
+        String opponentName = GameSession.opponentName;
+        
+        if (myName == null || opponentName == null || scoreX == null || scoreO == null) {
+            System.out.println("ERROR: Missing required data for score update");
+            expectingScoreUpdate = false;
+            return;
         }
         
         if ("X".equals(GameSession.playerSymbol)) {
-            leftPlayer = myName;
-            rightPlayer = opponentName;
+            scoreX.setText("Score: " + currentUserScore);
+            scoreO.setText("Score: " + GameSession.opponentScore);
         } else {
-            leftPlayer = opponentName;
-            rightPlayer = myName;
+            scoreX.setText("Score: " + GameSession.opponentScore);
+            scoreO.setText("Score: " + currentUserScore);
         }
+        
+        System.out.println("Final score display:");
+        System.out.println("scoreX (left): " + scoreX.getText() + " - should be " + ("X".equals(GameSession.playerSymbol) ? currentUserScore : GameSession.opponentScore));
+        System.out.println("scoreO (right): " + scoreO.getText() + " - should be " + ("X".equals(GameSession.playerSymbol) ? GameSession.opponentScore : currentUserScore));
+        
+        expectingScoreUpdate = false;
+        System.out.println("Score updates applied successfully");
     }
 }

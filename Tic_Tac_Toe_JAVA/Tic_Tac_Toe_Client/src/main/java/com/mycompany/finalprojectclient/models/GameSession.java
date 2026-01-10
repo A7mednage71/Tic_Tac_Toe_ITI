@@ -11,6 +11,7 @@ public class GameSession {
     public static boolean isOnline = false;
     public static String opponentName = "";
     public static String playerSymbol = "X";
+    public static int opponentScore = 0;
 
     public static boolean isReplay = false;
     public static String replayFilePath = "";

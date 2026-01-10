@@ -178,7 +178,7 @@ public class TicTacToeLobbyController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         alertHandler = new CustomAlertHandler(alertOverlay, alertBox, alertTitle, alertMessage, alertIcon);
 
-        ServerConnection.getInstance().setScoreListener((username, newScore) -> {
+        ServerConnection.getInstance().setScoreListener((sequence, username, newScore) -> {
             Platform.runLater(() -> {
                 String currentUser = AuthManager.getInstance().getCurrentUsername();
                 if (currentUser != null && currentUser.equals(username)) {
