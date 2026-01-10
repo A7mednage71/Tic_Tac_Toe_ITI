@@ -25,10 +25,19 @@ public class ServerConnection {
     private GameMoveListener gameMoveListener;
     private ScoreListener scoreListener;
     private StatusListener statusListener;
+    private DisconnectionListener disconnectionListener;
     private Thread messageRouter;
 
     public interface NotificationListener {
         void onUserListUpdated();
+    }
+
+    public interface DisconnectionListener {
+        void onServerDisconnected();
+    }
+
+    public void setDisconnectionListener(DisconnectionListener listener) {
+        this.disconnectionListener = listener;
     }
 
     public interface InviteListener {
@@ -37,6 +46,8 @@ public class ServerConnection {
         void onInviteAccepted(String username);
 
         void onInviteRejected(String username);
+
+        void onInviteCancelled(String username);
 
         void onOpponentWithdrew(String username);
 
@@ -78,7 +89,7 @@ public class ServerConnection {
                 dis = new DataInputStream(socket.getInputStream());
                 dos = new DataOutputStream(socket.getOutputStream());
 
-                responseQueue.clear(); 
+                responseQueue.clear();
                 startMessageRouter();
                 System.out.println("Connected to server: " + AppConstants.SERVER_HOST);
             }
@@ -118,6 +129,11 @@ public class ServerConnection {
                         if (inviteListener != null) {
                             inviteListener.onInviteRejected(username);
                         }
+                    } else if (message.startsWith("INVITE_CANCELLED:")) {
+                        String username = message.substring("INVITE_CANCELLED:".length());
+                        if (inviteListener != null) {
+                            inviteListener.onInviteCancelled(username);
+                        }
                     } else if (message.startsWith("OPPONENT_WITHDREW:")) {
                         String username = message.substring("OPPONENT_WITHDREW:".length());
                         if (inviteListener != null) {
@@ -141,48 +157,28 @@ public class ServerConnection {
                             inviteListener.onGameStart(parts[1], parts[2]);
                         }
                     } else if (message.startsWith("SCORE_UPDATE:")) {
-                        System.out.println("=== SCORE_UPDATE received ===");
-                        System.out.println("Raw message: " + message);
                         String[] parts = message.substring("SCORE_UPDATE:".length()).split(":");
-                        System.out.println("Parsed parts length: " + parts.length);
-                         
+
                         if (parts.length >= 3) {
                             int sequence = Integer.parseInt(parts[0]);
                             String username = parts[1];
                             int score = Integer.parseInt(parts[2]);
-                            System.out.println("Sequence: " + sequence + ", Username: " + username + ", Score: " + score);
                             if (scoreListener != null) {
-                                System.out.println("Calling scoreListener.onScoreUpdate(" + sequence + ", " + username + ", " + score + ")");
                                 scoreListener.onScoreUpdate(sequence, username, score);
                             }
                         } else if (parts.length == 2) {
                             String username = parts[0];
                             int score = Integer.parseInt(parts[1]);
-                            System.out.println("Username: " + username + ", Score: " + score);
                             if (scoreListener != null) {
-                                System.out.println("Calling scoreListener.onScoreUpdate(-1, " + username + ", " + score + ")");
                                 scoreListener.onScoreUpdate(-1, username, score);
                             }
-                        } else {
-                            System.out.println(
-                                    "ERROR: parts.length=" + parts.length + ", scoreListener=" + scoreListener);
                         }
                     } else if (message.startsWith("STATUS_UPDATE:")) {
-                        System.out.println("=== STATUS_UPDATE received ===");
-                        System.out.println("Raw message: " + message);
-                        
                         String[] parts = message.substring("STATUS_UPDATE:".length()).split(":");
-                        System.out.println("Parsed parts length: " + parts.length);
-                        if (parts.length >= 2) {
-                            System.out.println("Username: " + parts[0] + ", Status: " + parts[1]);
-                        }
                         if (parts.length == 2 && statusListener != null) {
                             String username = parts[0];
                             String status = parts[1];
-                            System.out.println("Calling statusListener.onStatusUpdate(" + username + ", " + status + ")");
                             statusListener.onStatusUpdate(username, status);
-                        } else {
-                            System.out.println("ERROR: parts.length=" + parts.length + ", statusListener=" + statusListener);
                         }
                     } else {
                         responseQueue.put(message);
@@ -190,6 +186,10 @@ public class ServerConnection {
                 }
             } catch (Exception e) {
                 System.err.println("Message router error: " + e.getMessage());
+                cleanup();
+                if (disconnectionListener != null) {
+                    disconnectionListener.onServerDisconnected();
+                }
             }
         });
         messageRouter.setDaemon(true);
@@ -202,11 +202,34 @@ public class ServerConnection {
                 RequestData req = new RequestData();
                 req.key = RequestType.DISCONNECT;
                 dos.writeUTF(gson.toJson(req));
-                socket.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            cleanup();
         }
+    }
+
+    private void cleanup() {
+        try {
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+            }
+        } catch (IOException e) {
+            System.err.println("Error closing socket: " + e.getMessage());
+        }
+
+        socket = null;
+        dis = null;
+        dos = null;
+        responseQueue.clear();
+
+        if (messageRouter != null && messageRouter.isAlive()) {
+            messageRouter.interrupt();
+        }
+        messageRouter = null;
+
+        System.out.println("Connection cleaned up and reset.");
     }
 
     public interface GameMoveListener {

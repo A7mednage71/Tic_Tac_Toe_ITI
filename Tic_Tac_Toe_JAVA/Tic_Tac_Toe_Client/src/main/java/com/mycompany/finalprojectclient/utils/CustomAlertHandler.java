@@ -37,7 +37,8 @@ public class CustomAlertHandler {
     public void showConfirmation(String title, String message, ConfirmationCallback callback) {
         titleLabel.setText(title);
         messageLabel.setText(message);
-        if (iconLabel != null) iconLabel.setText("🎮");
+        if (iconLabel != null)
+            iconLabel.setText("🎮");
 
         alertBox.getStyleClass().removeAll("alert-box-error", "alert-box-success");
         alertBox.getStyleClass().add("alert-box-success");
@@ -47,17 +48,21 @@ public class CustomAlertHandler {
         alertBox.getChildren().removeIf(node -> node instanceof HBox);
 
         Button yesButton = new Button("ACCEPT");
-        yesButton.setStyle("-fx-background-color: #6a8c3d; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 45; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-size: 15; -fx-border-color: #88a050; -fx-border-radius: 12; -fx-border-width: 2;");
+        yesButton.setStyle(
+                "-fx-background-color: #6a8c3d; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 45; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-size: 15; -fx-border-color: #88a050; -fx-border-radius: 12; -fx-border-width: 2;");
         yesButton.setOnAction(e -> {
             hide();
-            if (callback != null) callback.onYes();
+            if (callback != null)
+                callback.onYes();
         });
 
         Button noButton = new Button("REJECT");
-        noButton.setStyle("-fx-background-color: #8B4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 45; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-size: 15; -fx-border-color: #B85C5C; -fx-border-radius: 12; -fx-border-width: 2;");
+        noButton.setStyle(
+                "-fx-background-color: #8B4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 45; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-size: 15; -fx-border-color: #B85C5C; -fx-border-radius: 12; -fx-border-width: 2;");
         noButton.setOnAction(e -> {
             hide();
-            if (callback != null) callback.onNo();
+            if (callback != null)
+                callback.onNo();
         });
 
         HBox buttonBox = new HBox(25, yesButton, noButton);
@@ -74,8 +79,29 @@ public class CustomAlertHandler {
     }
 
     public void showLoading(String title, String message) {
+        showLoading(title, message, null);
+    }
+
+    public void showLoading(String title, String message, CancelCallback callback) {
         setupAlert(title, message, "alert-box-success", "#f39c12", "⏳");
         alertBox.getChildren().removeIf(node -> node instanceof HBox);
+
+        if (callback != null) {
+            Button cancelButton = new Button("CANCEL");
+            cancelButton.setStyle(
+                    "-fx-background-color: #8B4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 45; -fx-background-radius: 12; -fx-cursor: hand; -fx-font-size: 15; -fx-border-color: #B85C5C; -fx-border-radius: 12; -fx-border-width: 2;");
+            cancelButton.setOnAction(e -> {
+                hide();
+                if (callback != null)
+                    callback.onCancel();
+            });
+
+            HBox buttonBox = new HBox(cancelButton);
+            buttonBox.setAlignment(Pos.CENTER);
+            buttonBox.setStyle("-fx-padding: 25 0 0 0;");
+            alertBox.getChildren().add(buttonBox);
+        }
+
         UIAnimations.popIn(alertBox);
     }
 
@@ -92,7 +118,8 @@ public class CustomAlertHandler {
     private void setupAlert(String title, String message, String cssClass, String colorHex, String icon) {
         titleLabel.setText(title);
         messageLabel.setText(message);
-        if (iconLabel != null) iconLabel.setText(icon);
+        if (iconLabel != null)
+            iconLabel.setText(icon);
 
         alertBox.getStyleClass().removeAll("alert-box-error", "alert-box-success");
         alertBox.getStyleClass().add(cssClass);
@@ -102,9 +129,10 @@ public class CustomAlertHandler {
         alertBox.getChildren().removeIf(node -> node instanceof HBox);
 
         Button closeButton = new Button("OK");
-        closeButton.setStyle("-fx-background-color: #6a8c3d; -fx-text-fill: white; -fx-padding: 10 35; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 14; -fx-border-color: #88a050; -fx-border-radius: 10; -fx-border-width: 2;");
+        closeButton.setStyle(
+                "-fx-background-color: #6a8c3d; -fx-text-fill: white; -fx-padding: 10 35; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 14; -fx-border-color: #88a050; -fx-border-radius: 10; -fx-border-width: 2;");
         closeButton.setOnAction(e -> hide());
-        
+
         HBox buttonBox = new HBox(closeButton);
         buttonBox.setAlignment(Pos.CENTER);
         buttonBox.setStyle("-fx-padding: 20 0 0 0;");
@@ -117,6 +145,11 @@ public class CustomAlertHandler {
 
     public interface ConfirmationCallback {
         void onYes();
+
         void onNo();
+    }
+
+    public interface CancelCallback {
+        void onCancel();
     }
 }

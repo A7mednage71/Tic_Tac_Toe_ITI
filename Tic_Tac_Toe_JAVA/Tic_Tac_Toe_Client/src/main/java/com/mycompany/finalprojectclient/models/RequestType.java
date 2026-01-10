@@ -9,8 +9,9 @@ public enum RequestType {
     SEND_INVITE,
     ACCEPT_INVITE,
     REJECT_INVITE,
+    CANCEL_INVITE,
     UPDATE_STATUS,
     WITHDRAW,
     GAME_END,
-    GET_SCORE 
+    GET_SCORE
 }

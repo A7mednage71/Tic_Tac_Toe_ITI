@@ -55,6 +55,7 @@ public class TicTacToeLobbyController implements Initializable {
 
     private CustomAlertHandler alertHandler;
     private Map<String, UserRow> userRowMap = new HashMap<>();
+    private String currentInviteTarget = null;
 
     private static class UserRow {
         HBox row;
@@ -152,7 +153,7 @@ public class TicTacToeLobbyController implements Initializable {
                 request.key = RequestType.UPDATE_STATUS;
                 request.username = username;
                 request.status = "viewing_history";
-                
+
                 try {
                     ServerConnection.getInstance().sendRequest(request);
                     System.out.println("Status update sent to server: viewing_history");
@@ -166,7 +167,8 @@ public class TicTacToeLobbyController implements Initializable {
     }
 
     private void updateCurrentUserStatusDisplay(String status) {
-        boolean isInGame = "in_game".equalsIgnoreCase(status) || "busy".equalsIgnoreCase(status) || "viewing_history".equalsIgnoreCase(status);
+        boolean isInGame = "in_game".equalsIgnoreCase(status) || "busy".equalsIgnoreCase(status)
+                || "viewing_history".equalsIgnoreCase(status);
         if (isInGame) {
             currentUserDot.setStyle("-fx-fill: #f39c12;");
         } else {
@@ -227,6 +229,27 @@ public class TicTacToeLobbyController implements Initializable {
             Platform.runLater(() -> loadOnlineUsers());
         });
 
+        ServerConnection.getInstance().setDisconnectionListener(() -> {
+            Platform.runLater(() -> {
+                alertHandler.showError("Server Disconnected",
+                        "Connection to server lost. Returning to mode selection...");
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    Platform.runLater(() -> {
+                        try {
+                            NavigationManager.switchSceneUsingNode(backButton, AppConstants.PATH_ON_OFF);
+                        } catch (Exception ex) {
+                            System.err.println("Error navigating after disconnection: " + ex.getMessage());
+                        }
+                    });
+                }).start();
+            });
+        });
+
         ServerConnection.getInstance().setInviteListener(new ServerConnection.InviteListener() {
             @Override
             public void onInviteReceived(String fromUsername) {
@@ -252,6 +275,7 @@ public class TicTacToeLobbyController implements Initializable {
             public void onInviteAccepted(String username) {
                 Platform.runLater(() -> {
                     alertHandler.hide();
+                    currentInviteTarget = null;
 
                     updateUserStatus(username, "in_game");
                     updateUserStatus(AuthManager.getInstance().getCurrentUsername(), "in_game");
@@ -268,8 +292,15 @@ public class TicTacToeLobbyController implements Initializable {
             @Override
             public void onInviteRejected(String username) {
                 Platform.runLater(() -> {
-                    alertHandler.hide();
+                    currentInviteTarget = null;
                     alertHandler.showError("Invitation Rejected", username + " rejected your invitation.");
+                });
+            }
+
+            @Override
+            public void onInviteCancelled(String username) {
+                Platform.runLater(() -> {
+                    alertHandler.hide();
                 });
             }
 
@@ -339,7 +370,8 @@ public class TicTacToeLobbyController implements Initializable {
         scoreLabel.setStyle("-fx-text-fill: #88a050; -fx-font-weight: bold;");
 
         Label statusLabel = new Label(isInGame ? "In Game" : (isViewingHistory ? "Game History" : "Online"));
-        statusLabel.setStyle(isInGame ? "-fx-text-fill: #f39c12;" : (isViewingHistory ? "-fx-text-fill: #3498db;" : "-fx-text-fill: #888888;"));
+        statusLabel.setStyle(isInGame ? "-fx-text-fill: #f39c12;"
+                : (isViewingHistory ? "-fx-text-fill: #3498db;" : "-fx-text-fill: #888888;"));
 
         HBox statusRow = new HBox(8, scoreLabel, statusLabel);
         statusRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -348,7 +380,8 @@ public class TicTacToeLobbyController implements Initializable {
         HBox.setHgrow(info, javafx.scene.layout.Priority.ALWAYS);
 
         Circle dot = new Circle(4);
-        dot.setStyle(isInGame ? "-fx-fill: #f39c12;" : (isViewingHistory ? "-fx-fill: #3498db;" : "-fx-fill: #50C878;"));
+        dot.setStyle(
+                isInGame ? "-fx-fill: #f39c12;" : (isViewingHistory ? "-fx-fill: #3498db;" : "-fx-fill: #50C878;"));
 
         Button invite = new Button(isInGame || isViewingHistory ? "Busy" : "Invite");
         if (isInGame || isViewingHistory) {
@@ -382,16 +415,38 @@ public class TicTacToeLobbyController implements Initializable {
 
     private void sendInvite(String targetUsername) {
         try {
+            currentInviteTarget = targetUsername;
             RequestData request = new RequestData();
             request.key = RequestType.SEND_INVITE;
             request.username = AuthManager.getInstance().getCurrentUsername();
             request.targetUsername = targetUsername;
             ServerConnection.getInstance().sendRequest(request);
-            alertHandler.showLoading("Waiting", "Waiting for " + targetUsername + " to respond...");
+            alertHandler.showLoading("Waiting", "Waiting for " + targetUsername + " to respond...",
+                    new CustomAlertHandler.CancelCallback() {
+                        @Override
+                        public void onCancel() {
+                            cancelInvite(targetUsername);
+                        }
+                    });
             System.out.println("Invite sent to: " + targetUsername);
         } catch (Exception e) {
             e.printStackTrace();
+            currentInviteTarget = null;
             alertHandler.showError("Error", "Failed to send invitation");
+        }
+    }
+
+    private void cancelInvite(String targetUsername) {
+        try {
+            RequestData request = new RequestData();
+            request.key = RequestType.CANCEL_INVITE;
+            request.username = AuthManager.getInstance().getCurrentUsername();
+            request.targetUsername = targetUsername;
+            ServerConnection.getInstance().sendRequest(request);
+            currentInviteTarget = null;
+            System.out.println("Invite cancelled to: " + targetUsername);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -447,9 +502,9 @@ public class TicTacToeLobbyController implements Initializable {
 
     private void enableAllInvites() {
         for (UserRow userRow : userRowMap.values()) {
-            if (!userRow.status.equalsIgnoreCase("in_game") && 
-                !userRow.status.equalsIgnoreCase("busy") && 
-                !userRow.status.equalsIgnoreCase("viewing_history")) {
+            if (!userRow.status.equalsIgnoreCase("in_game") &&
+                    !userRow.status.equalsIgnoreCase("busy") &&
+                    !userRow.status.equalsIgnoreCase("viewing_history")) {
                 userRow.inviteButton.setDisable(false);
                 userRow.inviteButton.setText("Invite");
                 userRow.inviteButton.setStyle(

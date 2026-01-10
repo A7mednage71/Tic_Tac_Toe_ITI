@@ -100,7 +100,6 @@ public class BoardController implements Initializable {
     private int currentUserScore = 0;
     private int lastProcessedSequence = -1;
     private boolean expectingScoreUpdate = false;
-    
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -123,7 +122,7 @@ public class BoardController implements Initializable {
             int sequence;
             String username;
             int score;
-            
+
             ScoreUpdate(int sequence, String username, int score) {
                 this.sequence = sequence;
                 this.username = username;
@@ -153,7 +152,7 @@ public class BoardController implements Initializable {
                 leftPlayer = GameSession.opponentName;
                 rightPlayer = myName;
             }
-            
+
             // Debug output to verify player assignments
             System.out.println("Player assignments:");
             System.out.println("My name: " + myName + ", My symbol: " + GameSession.playerSymbol);
@@ -181,6 +180,13 @@ public class BoardController implements Initializable {
                         public void onInviteRejected(String user) {
                             Platform.runLater(() -> {
                                 alertHandler.showError("DECLINED", user + " doesn't want to play again.");
+                            });
+                        }
+
+                        @Override
+                        public void onInviteCancelled(String user) {
+                            Platform.runLater(() -> {
+                                alertHandler.hide();
                             });
                         }
 
@@ -354,7 +360,7 @@ public class BoardController implements Initializable {
             if (GameSession.vsComputer) {
                 playMove(clickedButton, "X");
                 if (checkWinner("X")) {
-                    
+
                     finishGame("X Wins!");
                 } else if (isBoardFull()) {
                     finishGame("Draw!");
@@ -562,37 +568,53 @@ public class BoardController implements Initializable {
 
     @FXML
     private void handleDisableInvite(ActionEvent event) {
-        if (disableInviteBtn == null) return;
-        
+        if (disableInviteBtn == null)
+            return;
+
         if ("Invites Enabled".equals(disableInviteBtn.getText())) {
             disableInviteBtn.setText("Invites Disabled");
             disableInviteBtn.setStyle("-fx-background-color: #e74c3c;");
-            
+
             if (GameSession.isOnline) {
                 ServerConnection.getInstance().setInviteListener(null);
             }
         } else {
             disableInviteBtn.setText("Invites Enabled");
             disableInviteBtn.setStyle("-fx-background-color: #95a5a6;");
-            
+
             if (GameSession.isOnline) {
                 ServerConnection.getInstance().setInviteListener(new ServerConnection.InviteListener() {
                     @Override
-                    public void onInviteReceived(String from) {}
+                    public void onInviteReceived(String from) {
+                    }
+
                     @Override
                     public void onInviteAccepted(String user) {
                         Platform.runLater(() -> alertHandler.hide());
                     }
+
                     @Override
                     public void onInviteRejected(String user) {
-                        Platform.runLater(() -> alertHandler.showError("DECLINED", user + " doesn't want to play again."));
+                        Platform.runLater(
+                                () -> alertHandler.showError("DECLINED", user + " doesn't want to play again."));
                     }
+
                     @Override
-                    public void onOpponentWithdrew(String username) {}
+                    public void onInviteCancelled(String user) {
+                        Platform.runLater(() -> alertHandler.hide());
+                    }
+
                     @Override
-                    public void onPlayAgainRequested(String username) {}
+                    public void onOpponentWithdrew(String username) {
+                    }
+
                     @Override
-                    public void onGameStart(String symbol, String opponent) {}
+                    public void onPlayAgainRequested(String username) {
+                    }
+
+                    @Override
+                    public void onGameStart(String symbol, String opponent) {
+                    }
                 });
             }
         }
@@ -720,10 +742,10 @@ public class BoardController implements Initializable {
 
     private void showDrawAlert() {
         alertHandler.showSuccess("DRAW! 🤝", "Game ended in a draw! (+3 points)");
-        
+
         new Thread(() -> {
             try {
-                Thread.sleep(2000); 
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -840,7 +862,7 @@ public class BoardController implements Initializable {
         gameOver = false;
         gameFinishMessage = null;
         isXTurn = true;
-        gameStarted = false; 
+        gameStarted = false;
 
         stopGameTimer();
         if (timerLabel != null) {
@@ -850,30 +872,29 @@ public class BoardController implements Initializable {
         if (GameSession.isOnline) {
             String myName = AuthManager.getInstance().getCurrentUsername();
             String opponent = GameSession.opponentName;
-            
+
             if ("X".equals(GameSession.playerSymbol)) {
                 playerX = myName;
                 playerO = opponent;
-                leftPlayer = myName;  
-                rightPlayer = opponent; 
+                leftPlayer = myName;
+                rightPlayer = opponent;
             } else {
                 playerX = opponent;
                 playerO = myName;
-                leftPlayer = opponent; 
-                rightPlayer = myName;  
+                leftPlayer = opponent;
+                rightPlayer = myName;
             }
-            
+
             if (recordBtn != null) {
                 recordBtn.setVisible(true);
                 recordBtn.setManaged(true);
                 recordBtn.setText("Record");
                 recordBtn.setStyle("-fx-background-color: #e74c3c;");
             }
-            
+
             playerNameLabel.setText(playerX + " (X)");
             opponentNameLabel.setText(playerO + " (O)");
-            
-           
+
             updateScoreLabels();
         } else if (GameSession.vsComputer) {
             playerX = "You";
@@ -1051,7 +1072,7 @@ public class BoardController implements Initializable {
                 }
             }
         } else {
-           
+
             scoreX.setText(playerX + " (X)");
             scoreO.setText(playerO + " (O)");
         }
@@ -1215,7 +1236,7 @@ public class BoardController implements Initializable {
 
     private void sendGameEndToServer(String gameMessage) {
         if (!GameSession.isOnline) {
-            return; 
+            return;
         }
 
         String currentUser = AuthManager.getInstance().getCurrentUsername();
@@ -1266,15 +1287,16 @@ public class BoardController implements Initializable {
         System.out.println("Sequence: " + sequence + ", Username: " + username + ", newScore: " + newScore);
         System.out.println("leftPlayer: " + leftPlayer + ", rightPlayer: " + rightPlayer);
         System.out.println("Last processed sequence: " + lastProcessedSequence);
-        
+
         if (sequence <= lastProcessedSequence) {
-            System.out.println("Skipping outdated or duplicate update (sequence " + sequence + " <= " + lastProcessedSequence + ")");
+            System.out.println("Skipping outdated or duplicate update (sequence " + sequence + " <= "
+                    + lastProcessedSequence + ")");
             return;
         }
-        
+
         String myName = AuthManager.getInstance().getCurrentUsername();
         String opponentName = GameSession.opponentName;
-        
+
         if (username.equalsIgnoreCase(myName)) {
             currentUserScore = newScore;
             System.out.println("Updated current user score to: " + currentUserScore);
@@ -1282,11 +1304,11 @@ public class BoardController implements Initializable {
             GameSession.opponentScore = newScore;
             System.out.println("Updated opponent score to: " + GameSession.opponentScore);
         }
-        
+
         if (!expectingScoreUpdate) {
             expectingScoreUpdate = true;
             lastProcessedSequence = sequence;
-            
+
             new Thread(() -> {
                 try {
                     Thread.sleep(100); // Wait for potential second update
@@ -1299,19 +1321,19 @@ public class BoardController implements Initializable {
             }).start();
         }
     }
-    
+
     private void applyPendingScoreUpdates() {
         System.out.println("=== applyPendingScoreUpdates ===");
-        
+
         String myName = AuthManager.getInstance().getCurrentUsername();
         String opponentName = GameSession.opponentName;
-        
+
         if (myName == null || opponentName == null || scoreX == null || scoreO == null) {
             System.out.println("ERROR: Missing required data for score update");
             expectingScoreUpdate = false;
             return;
         }
-        
+
         if ("X".equals(GameSession.playerSymbol)) {
             scoreX.setText("Score: " + currentUserScore);
             scoreO.setText("Score: " + GameSession.opponentScore);
@@ -1319,11 +1341,13 @@ public class BoardController implements Initializable {
             scoreX.setText("Score: " + GameSession.opponentScore);
             scoreO.setText("Score: " + currentUserScore);
         }
-        
+
         System.out.println("Final score display:");
-        System.out.println("scoreX (left): " + scoreX.getText() + " - should be " + ("X".equals(GameSession.playerSymbol) ? currentUserScore : GameSession.opponentScore));
-        System.out.println("scoreO (right): " + scoreO.getText() + " - should be " + ("X".equals(GameSession.playerSymbol) ? GameSession.opponentScore : currentUserScore));
-        
+        System.out.println("scoreX (left): " + scoreX.getText() + " - should be "
+                + ("X".equals(GameSession.playerSymbol) ? currentUserScore : GameSession.opponentScore));
+        System.out.println("scoreO (right): " + scoreO.getText() + " - should be "
+                + ("X".equals(GameSession.playerSymbol) ? GameSession.opponentScore : currentUserScore));
+
         expectingScoreUpdate = false;
         System.out.println("Score updates applied successfully");
     }
