@@ -1183,6 +1183,28 @@ public class BoardController implements Initializable {
         ft.setOnFinished(e -> {
             videoOverlay.setVisible(false);
             videoOverlay.setManaged(false);
+
+            // لو حد انسحب، الفايز يرجع للوبي
+            if (gameFinishMessage != null &&
+                    (gameFinishMessage.contains("Opponent Left") || gameFinishMessage.contains("You Left"))) {
+                try {
+                    if (GameSession.isOnline) {
+                        // تحديث الـ status لـ online قبل الرجوع للوبي
+                        String username = AuthManager.getInstance().getCurrentUsername();
+                        if (username != null && !username.isEmpty()) {
+                            RequestData statusRequest = new RequestData();
+                            statusRequest.key = RequestType.UPDATE_STATUS;
+                            statusRequest.username = username;
+                            statusRequest.status = "online";
+                            ServerConnection.getInstance().sendRequest(statusRequest);
+                        }
+
+                        NavigationManager.switchSceneUsingNode(videoOverlay, AppConstants.PATH_GAME_LOBBY);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
         });
         ft.play();
     }
